@@ -5,10 +5,25 @@ import { createClient } from "@/lib/supabase/server";
 import type { Resource } from "@/types/database";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 
+import type { Metadata } from "next";
+
 interface SearchPageProps {
   searchParams: Promise<{
     q?: string;
   }>;
+}
+
+export async function generateMetadata({ searchParams }: SearchPageProps): Promise<Metadata> {
+  const { q } = await searchParams;
+  const query = (q || "").trim();
+  return {
+    title: query ? `Search results for "${query}"` : "Search Digital Resources",
+    description: `Browse verified software and digital resource search results for "${query || "NammaTech"}".`,
+    robots: {
+      index: false,
+      follow: true,
+    },
+  };
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {

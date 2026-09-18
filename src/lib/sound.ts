@@ -1,17 +1,25 @@
 "use client";
 
-// Web Audio API based instant sound generator
-// Zero network requests, 0 latency, pure algorithmic micro-sounds
+import { CLICK_SOUND_BASE64 } from "./sound-data";
 
 let audioCtx: AudioContext | null = null;
+let clickAudioBuffer: AudioBuffer | null = null;
+let isAudioBufferLoading = false;
+const fallbackAudioPool: HTMLAudioElement[] = [];
 let soundEnabled = true;
+let lastClickTime = 0;
 
-// Initialize on client
-if (typeof window !== "undefined") {
-  const saved = localStorage.getItem("namatech_sound_enabled");
-  if (saved !== null) {
-    soundEnabled = saved !== "false";
+const CLICK_SOUND_URL = "/sounds/click.mp3";
+
+// Helper: Convert base64 data URL to ArrayBuffer in browser
+function base64ToArrayBuffer(base64Data: string): ArrayBuffer {
+  const binaryString = window.atob(base64Data.replace(/^data:audio\/\w+;base64,/, ""));
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
   }
+  return bytes.buffer;
 }
 
 function getAudioContext(): AudioContext | null {
@@ -30,36 +38,109 @@ function getAudioContext(): AudioContext | null {
   return audioCtx;
 }
 
-/**
- * Play a crisp, modern tactile UI click sound
- */
-export function playClickSound() {
-  if (!soundEnabled) return;
+// Pre-decode audio buffer directly from in-memory base64 data for instant zero-latency playback
+async function initClickBuffer() {
+  if (typeof window === "undefined" || clickAudioBuffer || isAudioBufferLoading) return;
+  isAudioBufferLoading = true;
   try {
     const ctx = getAudioContext();
     if (!ctx) return;
-
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    const now = ctx.currentTime;
-
-    // Fast snappy click frequency drop
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(850, now);
-    osc.frequency.exponentialRampToValueAtTime(140, now + 0.035);
-
-    // Soft volume envelope to prevent harsh pops
-    gain.gain.setValueAtTime(0.08, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start(now);
-    osc.stop(now + 0.038);
+    const arrayBuffer = base64ToArrayBuffer(CLICK_SOUND_BASE64);
+    clickAudioBuffer = await ctx.decodeAudioData(arrayBuffer);
   } catch {
-    // AudioContext failure fallback gracefully
+    // Graceful fallback to HTMLAudioElement pool
+  } finally {
+    isAudioBufferLoading = false;
+  }
+}
+
+// Client initialization
+if (typeof window !== "undefined") {
+  // Ensure sound is active by default
+  soundEnabled = true;
+
+  // Initialize a pool of pre-buffered HTMLAudioElements
+  try {
+    for (let i = 0; i < 4; i++) {
+      const audio = new Audio();
+      audio.src = CLICK_SOUND_BASE64;
+      audio.preload = "auto";
+      audio.volume = 1.0;
+      fallbackAudioPool.push(audio);
+    }
+  } catch {
+    // Non-blocking
+  }
+
+  // Pre-decode on first user touch/pointer/key
+  const primeAudio = () => {
+    initClickBuffer();
+    const ctx = getAudioContext();
+    if (ctx && ctx.state === "suspended") {
+      ctx.resume().catch(() => {});
+    }
+    window.removeEventListener("pointerdown", primeAudio);
+    window.removeEventListener("keydown", primeAudio);
+  };
+  window.addEventListener("pointerdown", primeAudio, { once: true, passive: true });
+  window.addEventListener("keydown", primeAudio, { once: true, passive: true });
+}
+
+/**
+ * Play the custom community click sound instantly with zero latency
+ */
+export function playClickSound() {
+  if (!soundEnabled) return;
+
+  // Debounce ultra-fast micro jitter (30ms)
+  const nowMs = Date.now();
+  if (nowMs - lastClickTime < 30) return;
+  lastClickTime = nowMs;
+
+  try {
+    const ctx = getAudioContext();
+
+    // Unlock context if suspended
+    if (ctx && ctx.state === "suspended") {
+      ctx.resume().catch(() => {});
+    }
+
+    // 1. High-Fidelity Web Audio Buffer playback
+    if (ctx && clickAudioBuffer) {
+      const source = ctx.createBufferSource();
+      source.buffer = clickAudioBuffer;
+      const gain = ctx.createGain();
+      gain.gain.value = 1.0; // Clear, audible volume
+      source.connect(gain);
+      gain.connect(ctx.destination);
+      source.start(0);
+      return;
+    }
+
+    // 2. High-speed HTMLAudioElement pool playback
+    if (fallbackAudioPool.length > 0) {
+      const audio = fallbackAudioPool.find((a) => a.paused || a.ended) || fallbackAudioPool[0];
+      audio.currentTime = 0;
+      audio.volume = 1.0;
+      audio.play().catch(() => {
+        // Retry with direct instance if needed
+        const direct = new Audio(CLICK_SOUND_BASE64);
+        direct.volume = 1.0;
+        direct.play().catch(() => {});
+      });
+
+      if (!clickAudioBuffer && !isAudioBufferLoading) {
+        initClickBuffer();
+      }
+      return;
+    }
+
+    // 3. Direct audio fallback
+    const directAudio = new Audio(CLICK_SOUND_BASE64);
+    directAudio.volume = 1.0;
+    directAudio.play().catch(() => {});
+  } catch {
+    // Autoplay fallback gracefully
   }
 }
 

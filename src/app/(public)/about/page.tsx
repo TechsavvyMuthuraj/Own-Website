@@ -3,14 +3,42 @@ import Image from "next/image";
 import { ShieldCheck, CheckCircle2, Lock, FileCode, Layers } from "lucide-react";
 import { FounderProfile } from "@/components/home/founder-profile";
 
-export const metadata = {
-  title: "About NammaTech",
-  description: "Learn about NammaTech's mission to provide fast, verified, and legal digital resources. All you need. One place.",
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About NammaTech & Founder Muthuraj C",
+  description:
+    "Learn about NammaTech's mission to deliver verified open-source software, developer tools, and digital resources. Founded by Muthuraj C.",
+  openGraph: {
+    title: "About NammaTech & Founder Muthuraj C",
+    description:
+      "Learn about NammaTech's mission to deliver verified digital resources and open-source software.",
+  },
+};
+
+const aboutJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  mainEntity: {
+    "@type": "Person",
+    name: "Muthuraj C",
+    jobTitle: "Founder & Lead Architect",
+    image: "https://nammatech.in/images/founder-muthuraj.png",
+    worksFor: {
+      "@type": "Organization",
+      name: "NammaTech",
+      url: "https://nammatech.in",
+    },
+  },
 };
 
 export default function AboutPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full space-y-16">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutJsonLd) }}
+      />
       <div className="max-w-3xl mx-auto text-center">
         <div className="w-16 h-16 rounded-2xl overflow-hidden mx-auto mb-5 shadow-xl bg-slate-950 flex items-center justify-center border border-amber-500/30 p-2">
           <Image

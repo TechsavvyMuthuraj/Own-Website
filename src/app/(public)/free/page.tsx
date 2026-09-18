@@ -2,7 +2,19 @@ import React from "react";
 import { Download, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import type { Resource } from "@/types/database";
+import type { Metadata } from "next";
 import { ResourceGrid } from "@/components/resources/resource-grid";
+
+export const metadata: Metadata = {
+  title: "Free Digital Resources & Open-Source Downloads",
+  description:
+    "Discover 100% free open-source software, developer tools, authorized APKs, and design templates. No hidden fees, completely verified.",
+  openGraph: {
+    title: "Free Digital Resources & Open-Source Downloads | NammaTech",
+    description:
+      "Download verified free open-source tools and software with zero cost on NammaTech.",
+  },
+};
 
 export const revalidate = 60;
 
@@ -20,10 +32,19 @@ export default async function FreeResourcesPage() {
       .limit(36);
 
     if (data) {
-      resources = (data as unknown[]).map((item: any) => ({
-        ...item,
-        category: Array.isArray(item.category) ? item.category[0] : item.category,
-      })) as Resource[];
+      resources = (data as unknown[])
+        .map((item: any) => ({
+          ...item,
+          category: Array.isArray(item.category) ? item.category[0] : item.category,
+        }))
+        .filter((item: any) => {
+          if (item.category?.slug === "movies") return false;
+          const tags = Array.isArray(item.tags) ? item.tags.map((t: string) => String(t).toLowerCase()) : [];
+          if (tags.includes("movie") || tags.includes("movies") || tags.includes("cinema")) {
+            return false;
+          }
+          return true;
+        }) as Resource[];
     }
   } catch (err) {
     console.error("Error loading free resources:", err);

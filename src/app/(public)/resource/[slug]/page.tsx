@@ -35,11 +35,85 @@ import { ResourceVisual } from "@/components/resources/resource-visual";
 import { AdSlot } from "@/components/ads/ad-slot";
 import { getActiveAd } from "@/lib/ads";
 
+import type { Metadata } from "next";
+
 interface ResourceDetailPageProps {
   params: Promise<{ slug: string }>;
 }
 
 export const revalidate = 60;
+
+export async function generateMetadata({
+  params,
+}: ResourceDetailPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+
+  const { data: res } = await supabase
+    .from("resources")
+    .select("title, short_description, description, thumbnail_url, tags, platform, version, category:categories(name)")
+    .eq("slug", slug)
+    .eq("status", "PUBLISHED")
+    .maybeSingle();
+
+  if (!res) {
+    return {
+      title: "Resource Not Found | NammaTech",
+      description: "The requested digital resource could not be found.",
+    };
+  }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_SITE_URL.includes("localhost")
+    ? process.env.NEXT_PUBLIC_SITE_URL
+    : "https://nammatech.in";
+
+  const title = `${res.title} - Download Free & Verified | NammaTech`;
+  const description =
+    res.short_description ||
+    res.description?.slice(0, 160) ||
+    `Download ${res.title} safely on NammaTech. Fast, verified, and malware-free.`;
+  const imageUrl = res.thumbnail_url || `${siteUrl}/images/hero-clean.png`;
+
+  const categoryName = Array.isArray(res.category)
+    ? (res.category[0] as any)?.name
+    : (res.category as any)?.name;
+
+  return {
+    title,
+    description,
+    keywords: [
+      res.title,
+      categoryName || "Digital Resources",
+      res.platform || "Multi-Platform",
+      ...(Array.isArray(res.tags) ? res.tags : []),
+      "safe download",
+      "verified software",
+    ],
+    alternates: {
+      canonical: `${siteUrl}/resource/${slug}`,
+    },
+    openGraph: {
+      type: "article",
+      url: `${siteUrl}/resource/${slug}`,
+      title,
+      description,
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: res.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [imageUrl],
+    },
+  };
+}
 
 export default async function ResourceDetailPage({ params }: ResourceDetailPageProps) {
   const { slug } = await params;
@@ -98,8 +172,34 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
   const isPaid = resource.access_type === "PAID";
   const isExternal = resource.access_type === "EXTERNAL" || resource.resource_type === "EXTERNAL_LINK";
 
+  const schemaOrgProduct = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: resource.title,
+    description: resource.short_description || resource.description,
+    applicationCategory: resource.category?.name || "UtilitiesApplication",
+    operatingSystem: resource.platform || "Windows, Android, Web",
+    offers: {
+      "@type": "Offer",
+      price: resource.price || "0.00",
+      priceCurrency: "INR",
+      availability: "https://schema.org/InStock",
+    },
+    ...(resource.thumbnail_url && { image: resource.thumbnail_url }),
+    author: {
+      "@type": "Person",
+      name: resource.developer || "NammaTech",
+    },
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
+      {/* Product / SoftwareApplication Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrgProduct) }}
+      />
+
       {/* Breadcrumbs */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)] mb-6">
         <Link href="/" className="hover:text-[var(--foreground)]">

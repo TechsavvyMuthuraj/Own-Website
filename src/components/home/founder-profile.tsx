@@ -23,7 +23,7 @@ export function FounderProfile() {
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Left Column: Portrait Polaroid Frame */}
           <div className="lg:col-span-5 flex justify-center">
-            <div className="group relative w-full max-w-xs sm:max-w-sm">
+            <div className="group relative w-full max-w-[240px] sm:max-w-xs lg:max-w-sm">
               {/* Outer Golden Aura Glow */}
               <div className="absolute -inset-2 bg-gradient-to-r from-amber-500/30 via-yellow-400/30 to-amber-600/30 rounded-3xl blur-xl opacity-75 group-hover:opacity-100 transition duration-500" />
 
@@ -34,6 +34,7 @@ export function FounderProfile() {
                     src="/images/founder-muthuraj.png"
                     alt="Muthuraj C - Founder & CEO of NammaTech"
                     fill
+                    unoptimized
                     sizes="(max-width: 640px) 280px, (max-width: 1024px) 340px, 400px"
                     className="object-cover object-center"
                     priority

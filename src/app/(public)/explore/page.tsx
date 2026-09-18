@@ -5,6 +5,19 @@ import { createClient } from "@/lib/supabase/server";
 import type { Resource, Category } from "@/types/database";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Explore Digital Resources, Software & Tools",
+  description:
+    "Explore our complete catalog of verified open-source software, freeware utilities, Android APKs, developer tools, and templates. Filter by category, platform, or price.",
+  openGraph: {
+    title: "Explore Digital Resources, Software & Tools | NammaTech",
+    description:
+      "Explore verified open-source software, freeware utilities, Android APKs, and developer tools on NammaTech.",
+  },
+};
+
 interface ExplorePageProps {
   searchParams: Promise<{
     category?: string;
@@ -37,8 +50,11 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
       .order("sort_order", { ascending: true });
 
     if (catData) {
-      categories = catData as Category[];
+      // Exclude Movies & Cinema from software explore categories
+      categories = (catData as Category[]).filter((c) => c.slug !== "movies");
     }
+
+    const movieCat = (catData as Category[] | undefined)?.find((c) => c.slug === "movies");
 
     // 2. Build filtered resource query
     let query = supabase
@@ -52,6 +68,9 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
       if (selectedCat) {
         query = query.eq("category_id", selectedCat.id);
       }
+    } else if (movieCat?.id) {
+      // Isolate software: exclude movies in all-category view
+      query = query.neq("category_id", movieCat.id);
     }
 
     // Access type filter
@@ -81,10 +100,20 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
     const { data: resData } = await query.limit(48);
 
     if (resData) {
-      resources = (resData as unknown[]).map((item: any) => ({
-        ...item,
-        category: Array.isArray(item.category) ? item.category[0] : item.category,
-      })) as Resource[];
+      resources = (resData as unknown[])
+        .map((item: any) => ({
+          ...item,
+          category: Array.isArray(item.category) ? item.category[0] : item.category,
+        }))
+        .filter((r: any) => {
+          if (movieCat && r.category_id === movieCat.id) return false;
+          if (r.category?.slug === "movies") return false;
+          const tags = Array.isArray(r.tags) ? r.tags.map((t: string) => String(t).toLowerCase()) : [];
+          if (tags.includes("movie") || tags.includes("movies") || tags.includes("cinema")) {
+            return false;
+          }
+          return true;
+        }) as Resource[];
     }
   } catch (error) {
     console.error("Error fetching explore resources:", error);

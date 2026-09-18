@@ -5,6 +5,19 @@ import { createClient } from "@/lib/supabase/server";
 import type { Resource } from "@/types/database";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "New Releases & Latest Updated Software",
+  description:
+    "Stay updated with the latest software versions, newly added developer tools, authorized APK updates, and fresh digital assets on NammaTech.",
+  openGraph: {
+    title: "New Releases & Latest Updated Software | NammaTech",
+    description:
+      "Stay updated with the latest software versions and releases on NammaTech.",
+  },
+};
+
 interface NewUpdatedPageProps {
   searchParams: Promise<{
     tab?: string;
@@ -40,10 +53,19 @@ export default async function NewAndUpdatedPage({ searchParams }: NewUpdatedPage
     const { data } = await query.limit(36);
 
     if (data) {
-      resources = (data as unknown[]).map((item: any) => ({
-        ...item,
-        category: Array.isArray(item.category) ? item.category[0] : item.category,
-      })) as Resource[];
+      resources = (data as unknown[])
+        .map((item: any) => ({
+          ...item,
+          category: Array.isArray(item.category) ? item.category[0] : item.category,
+        }))
+        .filter((item: any) => {
+          if (item.category?.slug === "movies") return false;
+          const tags = Array.isArray(item.tags) ? item.tags.map((t: string) => String(t).toLowerCase()) : [];
+          if (tags.includes("movie") || tags.includes("movies") || tags.includes("cinema")) {
+            return false;
+          }
+          return true;
+        }) as Resource[];
     }
   } catch (err) {
     console.error("Error fetching new and updated resources:", err);

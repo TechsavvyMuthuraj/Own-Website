@@ -14,8 +14,20 @@ import {
   Film,
   Folder,
 } from "lucide-react";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import type { Category } from "@/types/database";
+
+export const metadata: Metadata = {
+  title: "Resource Categories - Software, Tools & Assets",
+  description:
+    "Browse verified digital resources across categories including Android APKs, PC Software, Developer Tools, AI Utilities, Templates, and Cinema.",
+  openGraph: {
+    title: "Resource Categories - Software, Tools & Assets | NammaTech",
+    description:
+      "Browse verified digital resources across curated categories on NammaTech.",
+  },
+};
 
 export const revalidate = 60;
 
@@ -70,7 +82,7 @@ export default async function CategoriesPage() {
           {categories.map((cat) => (
             <Link
               key={cat.id}
-              href={`/category/${cat.slug}`}
+              href={cat.slug === "movies" ? "/movies" : `/category/${cat.slug}`}
               className="group flex flex-col p-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] hover:border-[var(--ring)]/50 hover:bg-[var(--secondary)]/40 transition-all shadow-sm"
             >
               <div className="w-12 h-12 rounded-xl bg-[var(--secondary)] border border-[var(--border)] flex items-center justify-center mb-4 group-hover:scale-105 transition-transform shadow-xs">

@@ -61,22 +61,34 @@ export default async function HomePage() {
 
     homepageAd = adResult;
 
+    const isMovie = (item: any) => {
+      if (item.category?.slug === "movies") return true;
+      const tags = Array.isArray(item.tags) ? item.tags.map((t: string) => String(t).toLowerCase()) : [];
+      return tags.includes("movie") || tags.includes("movies") || tags.includes("cinema");
+    };
+
     if (featuredResult.data) {
-      featuredResources = (featuredResult.data as unknown[]).map((item: any) => ({
-        ...item,
-        category: Array.isArray(item.category) ? item.category[0] : item.category,
-      })) as Resource[];
+      featuredResources = (featuredResult.data as unknown[])
+        .map((item: any) => ({
+          ...item,
+          category: Array.isArray(item.category) ? item.category[0] : item.category,
+        }))
+        .filter((item: any) => !isMovie(item)) as Resource[];
     }
 
     if (latestResult.data) {
-      latestResources = (latestResult.data as unknown[]).map((item: any) => ({
-        ...item,
-        category: Array.isArray(item.category) ? item.category[0] : item.category,
-      })) as Resource[];
+      latestResources = (latestResult.data as unknown[])
+        .map((item: any) => ({
+          ...item,
+          category: Array.isArray(item.category) ? item.category[0] : item.category,
+        }))
+        .filter((item: any) => !isMovie(item)) as Resource[];
     }
 
     if (categoriesResult.data) {
-      categories = categoriesResult.data as Category[];
+      categories = (categoriesResult.data as Category[]).filter(
+        (cat) => cat.slug !== "movies"
+      );
     }
   } catch (error) {
     console.error("Failed to load homepage resources from database:", error);
@@ -97,13 +109,13 @@ export default async function HomePage() {
       <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-neutral-950 shadow-2xl">
           {/* Full resolution graphic banner */}
-          <div className="relative w-full aspect-[1024/286]">
+          <div className="relative w-full aspect-[2172/724]">
             <Image
               src="/images/hero-clean.png"
               alt="NammaTech - Everything You Need In One Place. Founder Muthuraj"
               fill
               priority
-              quality={95}
+              unoptimized
               sizes="(max-width: 768px) 100vw, (max-width: 1280px) 1200px, 1280px"
               className="object-cover object-center select-none"
             />
@@ -115,9 +127,9 @@ export default async function HomePage() {
               className="hidden md:flex items-center absolute"
               style={{
                 left: "3.5%",
-                top: "47%",
-                width: "41%",
-                height: "17%",
+                top: "60.5%",
+                width: "41.5%",
+                height: "10%",
               }}
             >
               <div className="relative w-full h-full flex items-center">

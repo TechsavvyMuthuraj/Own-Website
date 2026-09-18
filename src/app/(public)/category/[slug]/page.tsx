@@ -1,10 +1,12 @@
 import React from "react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, ChevronRight, Layers, Filter } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import type { Resource, Category } from "@/types/database";
 import { ResourceGrid } from "@/components/resources/resource-grid";
+
+import type { Metadata } from "next";
 
 interface CategoryDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -13,11 +15,77 @@ interface CategoryDetailPageProps {
 
 export const revalidate = 60;
 
+export async function generateMetadata({
+  params,
+}: CategoryDetailPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  if (slug === "movies") {
+    return {
+      title: "Movies Cinema Hub | NammaTech",
+    };
+  }
+
+  const supabase = await createClient();
+  const { data: cat } = await supabase
+    .from("categories")
+    .select("name, description, slug")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (!cat) {
+    return {
+      title: "Category Not Found | NammaTech",
+    };
+  }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_SITE_URL.includes("localhost")
+    ? process.env.NEXT_PUBLIC_SITE_URL
+    : "https://nammatech.in";
+
+  const title = `${cat.name} - Free & Verified Digital Resources | NammaTech`;
+  const description =
+    cat.description ||
+    `Browse verified ${cat.name} tools, software downloads, and digital assets on NammaTech.`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${siteUrl}/category/${cat.slug}`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${siteUrl}/category/${cat.slug}`,
+      type: "website",
+      images: [
+        {
+          url: `${siteUrl}/images/hero-clean.png`,
+          width: 1200,
+          height: 630,
+          alt: cat.name,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
+
 export default async function CategoryDetailPage({
   params,
   searchParams,
 }: CategoryDetailPageProps) {
   const { slug } = await params;
+
+  // Movies have a dedicated VIP cinema hub
+  if (slug === "movies") {
+    redirect("/movies");
+  }
+
   const { sort } = await searchParams;
   const currentSort = sort || "newest";
 

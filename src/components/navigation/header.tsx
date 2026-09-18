@@ -226,7 +226,7 @@ export function Header() {
 
         {/* Mobile Navigation Drawer */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden border-t border-[var(--border)] bg-[var(--card)] px-4 py-4 space-y-1 text-sm shadow-xl">
+          <div className="lg:hidden border-t border-[var(--border)] bg-[var(--card)] px-4 py-4 space-y-1 text-sm shadow-xl animate-in slide-in-from-top-2 duration-150">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -241,15 +241,59 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
-            {isAdmin && (
-              <Link
-                href="/admin"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block px-3 py-2 rounded-xl text-xs font-semibold text-[#FD1843] hover:bg-[var(--secondary)]"
-              >
-                Admin Console
-              </Link>
-            )}
+
+            {/* Mobile Auth & Account Quick Links */}
+            <div className="pt-2 mt-2 border-t border-[var(--border)] space-y-1">
+              {user ? (
+                <>
+                  <Link
+                    href="/account/downloads"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--secondary)]"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-[#FD1843]" />
+                    <span>My Downloads</span>
+                  </Link>
+
+                  <Link
+                    href="/account"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--secondary)]"
+                  >
+                    <User className="w-3.5 h-3.5" />
+                    <span>Account Overview</span>
+                  </Link>
+
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-[#FD1843] hover:bg-[var(--secondary)]"
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      <span>Admin Console</span>
+                    </Link>
+                  )}
+                </>
+              ) : (
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <Link
+                    href="/auth/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-center py-2 px-3 rounded-xl border border-[var(--border)] text-xs font-medium text-[var(--foreground)] hover:bg-[var(--secondary)]"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/auth/register"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-center py-2 px-3 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] shadow-xs"
+                  >
+                    Get Started
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </header>

@@ -93,7 +93,10 @@ export async function POST(request: Request) {
     const total = Math.max(0, subtotal - discount);
     const orderNumber = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-    // 5. Create Order record in database with status PENDING
+    const isFreeOrder = total === 0;
+    const initialStatus = isFreeOrder ? "PAID" : "PENDING";
+
+    // 5. Create Order record in database
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert({
@@ -103,7 +106,8 @@ export async function POST(request: Request) {
         discount,
         total,
         currency: "INR",
-        status: "PENDING",
+        status: initialStatus,
+        payment_provider: isFreeOrder ? "FREE" : null,
         coupon_code: validatedCoupon ? validatedCoupon.code : null,
       })
       .select()
@@ -123,6 +127,21 @@ export async function POST(request: Request) {
 
     await supabase.from("order_items").insert(orderItems);
 
+    // 7. If this is a free order, grant active entitlements immediately!
+    if (isFreeOrder) {
+      const { createAdminClient } = await import("@/lib/supabase/admin");
+      const supabaseAdmin = createAdminClient();
+      const entitlementsToInsert = resources.map((res) => ({
+        user_id: user.id,
+        resource_id: res.id,
+        order_id: order.id,
+        status: "ACTIVE",
+      }));
+      await supabaseAdmin
+        .from("entitlements")
+        .upsert(entitlementsToInsert, { onConflict: "user_id,resource_id" });
+    }
+
     return NextResponse.json({
       orderId: order.id,
       orderNumber: order.order_number,
@@ -130,6 +149,7 @@ export async function POST(request: Request) {
       discount,
       total,
       currency: "INR",
+      isFreeOrder,
     });
   } catch (err) {
     console.error("Checkout create order error:", err);

@@ -5,20 +5,27 @@ import { playClickSound } from "@/lib/sound";
 
 export function ClickSoundProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
+    // Ensure sound is active
+    try {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("namatech_sound_enabled", "true");
+      }
+    } catch {
+      // Non-blocking
+    }
+
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
       if (!target) return;
 
-      // Check if clicked element or any ancestor is interactive
-      const interactiveEl = target.closest(
-        'button, a, input[type="submit"], input[type="button"], input[type="checkbox"], input[type="radio"], [role="button"], [role="tab"], summary, select, [data-sound="click"]'
-      );
+      // Skip if explicitly opted out
+      if (target.closest('[data-no-sound="true"]')) return;
 
-      if (interactiveEl) {
-        // Skip if specifically opted out
-        if (interactiveEl.getAttribute("data-no-sound") === "true") return;
-        playClickSound();
-      }
+      // Skip if selecting text
+      const selection = window.getSelection();
+      if (selection && selection.toString().trim().length > 0) return;
+
+      playClickSound();
     };
 
     // Attach to document in capture phase

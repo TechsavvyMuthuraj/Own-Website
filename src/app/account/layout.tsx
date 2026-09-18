@@ -75,9 +75,9 @@ export default function AccountLayout({
 
         {/* Sidebar & Content Layout */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Left 1 Col: Navigation */}
+          {/* Left 1 Col: Navigation (Horizontal scroll on mobile, Vertical stack on desktop) */}
           <aside className="space-y-1">
-            <div className="p-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xs space-y-1">
+            <div className="p-1.5 sm:p-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xs flex md:flex-col overflow-x-auto gap-1">
               {navItems.map((item) => {
                 const isActive = pathname === item.href;
                 const Icon = item.icon;
@@ -85,17 +85,17 @@ export default function AccountLayout({
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all ${
+                    className={`flex items-center justify-between px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl text-xs font-medium transition-all whitespace-nowrap flex-shrink-0 ${
                       isActive
                         ? "bg-[var(--primary)] text-white shadow-sm"
                         : "text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--secondary)]"
                     }`}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <Icon className="w-4 h-4" />
+                    <div className="flex items-center gap-2">
+                      <Icon className="w-3.5 h-3.5" />
                       <span>{item.label}</span>
                     </div>
-                    {isActive && <ChevronRight className="w-3.5 h-3.5" />}
+                    {isActive && <ChevronRight className="w-3.5 h-3.5 hidden md:inline" />}
                   </Link>
                 );
               })}
@@ -103,9 +103,9 @@ export default function AccountLayout({
               <button
                 type="button"
                 onClick={() => signOut()}
-                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-medium text-red-500 hover:bg-red-500/10 transition-colors mt-2"
+                className="flex items-center gap-2 px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl text-xs font-medium text-red-500 hover:bg-red-500/10 transition-colors md:mt-2 whitespace-nowrap flex-shrink-0"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-3.5 h-3.5" />
                 <span>Sign Out</span>
               </button>
             </div>

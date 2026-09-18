@@ -2,7 +2,19 @@ import React from "react";
 import { Sparkles, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import type { Resource } from "@/types/database";
+import type { Metadata } from "next";
 import { ResourceGrid } from "@/components/resources/resource-grid";
+
+export const metadata: Metadata = {
+  title: "Premium Digital Resources & Commercial Tools",
+  description:
+    "Explore verified premium software, professional UI kits, enterprise developer templates, and exclusive assets with verified authenticity.",
+  openGraph: {
+    title: "Premium Digital Resources & Commercial Tools | NammaTech",
+    description:
+      "Explore verified premium software and professional developer assets on NammaTech.",
+  },
+};
 
 export const revalidate = 60;
 
@@ -20,10 +32,19 @@ export default async function PremiumResourcesPage() {
       .limit(36);
 
     if (data) {
-      resources = (data as unknown[]).map((item: any) => ({
-        ...item,
-        category: Array.isArray(item.category) ? item.category[0] : item.category,
-      })) as Resource[];
+      resources = (data as unknown[])
+        .map((item: any) => ({
+          ...item,
+          category: Array.isArray(item.category) ? item.category[0] : item.category,
+        }))
+        .filter((item: any) => {
+          if (item.category?.slug === "movies") return false;
+          const tags = Array.isArray(item.tags) ? item.tags.map((t: string) => String(t).toLowerCase()) : [];
+          if (tags.includes("movie") || tags.includes("movies") || tags.includes("cinema")) {
+            return false;
+          }
+          return true;
+        }) as Resource[];
     }
   } catch (err) {
     console.error("Error loading premium resources:", err);

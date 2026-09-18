@@ -22,6 +22,7 @@ import {
   Menu,
   X,
   ExternalLink,
+  Film,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -44,6 +45,7 @@ export default function AdminLayout({
   const navItems = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/resources", label: "Resources", icon: Package },
+    { href: "/admin/movies", label: "Movies & Cinema", icon: Film },
     { href: "/admin/categories", label: "Categories", icon: Layers },
     { href: "/admin/users", label: "Users & Verification", icon: Users },
     { href: "/admin/orders", label: "Orders", icon: ShoppingBag },

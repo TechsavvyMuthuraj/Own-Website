@@ -27,12 +27,20 @@ import { useToast } from "@/components/ui/toast";
 import { useAuth } from "@/lib/auth/auth-context";
 import { UpiQrCard } from "@/components/payments/upi-qr-card";
 
+export interface MovieDownloadLink {
+  id?: string;
+  title: string;
+  size: string;
+  url: string;
+  isVip: boolean;
+}
+
 export interface MovieItem {
   id: string;
   title: string;
   year: number;
   genres: string[];
-  quality: "4K UHD" | "1080p FHD" | "720p HD";
+  quality: string;
   posterUrl: string;
   rating: string;
   sizeNormal: string;
@@ -42,6 +50,8 @@ export interface MovieItem {
   premiumPrice: number;
   description: string;
   duration?: string;
+  freeLinks?: MovieDownloadLink[];
+  vipLinks?: MovieDownloadLink[];
 }
 
 interface MoviesClientProps {
@@ -222,22 +232,26 @@ export function MoviesClient({ movies }: MoviesClientProps) {
 
       {/* ── Movie Results Grid ── */}
       {filteredMovies.length === 0 ? (
-        <div className="text-center py-20 p-8 rounded-3xl border border-[var(--border)] bg-[var(--card)]">
-          <Film className="w-12 h-12 text-[var(--muted-foreground)] mx-auto mb-3 opacity-40" />
-          <h3 className="text-base font-bold text-[var(--foreground)]">No movies found</h3>
-          <p className="text-xs text-[var(--muted-foreground)] mt-1 max-w-sm mx-auto">
-            Try adjusting your search keywords or switching quality filters.
+        <div className="text-center py-20 p-8 rounded-3xl border border-[var(--border)] bg-[var(--card)] space-y-3">
+          <Film className="w-12 h-12 text-amber-500/50 mx-auto mb-2" />
+          <h3 className="text-base font-bold text-[var(--foreground)]">No Movies Published Yet</h3>
+          <p className="text-xs text-[var(--muted-foreground)] max-w-sm mx-auto leading-relaxed">
+            There are currently no cinema resources in the catalog. You can add and publish real movie titles directly in the Admin Console.
           </p>
-          <button
-            onClick={() => {
-              setSearchQuery("");
-              setSelectedQuality("ALL");
-              setSelectedGenre("ALL");
-            }}
-            className="mt-4 px-4 py-2 rounded-xl bg-[var(--secondary)] text-xs font-semibold hover:bg-[var(--border)] transition-all"
-          >
-            Reset All Filters
-          </button>
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <Link
+              href="/admin/resources/new"
+              className="px-4 py-2 rounded-xl bg-amber-500 text-neutral-950 font-bold text-xs hover:brightness-110 transition-all"
+            >
+              + Add Movie (Admin)
+            </Link>
+            <Link
+              href="/categories"
+              className="px-4 py-2 rounded-xl bg-[var(--secondary)] text-xs font-semibold hover:bg-[var(--border)] transition-all"
+            >
+              Browse Categories
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -252,6 +266,7 @@ export function MoviesClient({ movies }: MoviesClientProps) {
                   src={movie.posterUrl}
                   alt={movie.title}
                   fill
+                  unoptimized
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                   priority={false}
@@ -344,8 +359,8 @@ export function MoviesClient({ movies }: MoviesClientProps) {
 
       {/* ── Normal Free Download Modal ── */}
       {activeNormalMovie && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-2xl space-y-4 my-auto max-h-[90vh] overflow-y-auto scrollbar-thin">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500">
@@ -386,29 +401,82 @@ export function MoviesClient({ movies }: MoviesClientProps) {
                   </div>
                   <div>
                     <h5 className="text-xs font-bold text-[var(--foreground)]">
-                      Download Link Ready!
+                      Download Options Ready!
                     </h5>
                     <p className="text-[11px] text-[var(--muted-foreground)]">
-                      Standard speed mirror (720p / 1080p, Verified Safe).
+                      Select your preferred resolution and file size below (Verified Safe).
                     </p>
                   </div>
-                  <a
-                    href={activeNormalMovie.normalDownloadUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-all shadow-md shadow-emerald-600/20"
-                    onClick={() => {
-                      showToast({
-                        type: "success",
-                        title: "Download Started",
-                        message: `Enjoy ${activeNormalMovie.title}!`,
-                      });
-                      setTimeout(() => setActiveNormalMovie(null), 1500);
-                    }}
-                  >
-                    <Download className="w-4 h-4" />
-                    <span>Click Here to Download Now ({activeNormalMovie.sizeNormal})</span>
-                  </a>
+
+                  <div className="space-y-2 pt-1 w-full text-left">
+                    {activeNormalMovie.freeLinks && activeNormalMovie.freeLinks.length > 0 ? (
+                      activeNormalMovie.freeLinks.map((link, idx) => (
+                        <a
+                          key={idx}
+                          href={link.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center justify-between p-3 rounded-xl bg-[var(--card)] border border-emerald-500/30 hover:border-emerald-500 hover:bg-emerald-500/10 transition-all shadow-xs group cursor-pointer"
+                          onClick={() => {
+                            if (activeNormalMovie.id) {
+                              fetch("/api/downloads/record", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ resourceId: activeNormalMovie.id }),
+                              }).catch(() => {});
+                            }
+                            showToast({
+                              type: "success",
+                              title: "Download Started",
+                              message: `Starting ${link.title} (${link.size})!`,
+                            });
+                          }}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                              <Download className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <h6 className="text-xs font-bold text-[var(--foreground)] group-hover:text-emerald-500 transition-colors">
+                                {link.title}
+                              </h6>
+                              <span className="text-[10px] text-[var(--muted-foreground)]">
+                                Free Direct Speed Mirror
+                              </span>
+                            </div>
+                          </div>
+                          <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-emerald-600 text-white shadow-xs flex-shrink-0">
+                            {link.size}
+                          </span>
+                        </a>
+                      ))
+                    ) : (
+                      <a
+                        href={activeNormalMovie.normalDownloadUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-all shadow-md shadow-emerald-600/20"
+                        onClick={() => {
+                          if (activeNormalMovie.id) {
+                            fetch("/api/downloads/record", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ resourceId: activeNormalMovie.id }),
+                            }).catch(() => {});
+                          }
+                          showToast({
+                            type: "success",
+                            title: "Download Started",
+                            message: `Enjoy ${activeNormalMovie.title}!`,
+                          });
+                          setTimeout(() => setActiveNormalMovie(null), 1500);
+                        }}
+                      >
+                        <Download className="w-4 h-4" />
+                        <span>Click Here to Download Now ({activeNormalMovie.sizeNormal})</span>
+                      </a>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -428,7 +496,7 @@ export function MoviesClient({ movies }: MoviesClientProps) {
                   setActiveNormalMovie(null);
                   setActivePremiumMovie(m);
                 }}
-                className="px-2.5 py-1 rounded-lg bg-amber-500 text-neutral-950 font-bold text-[11px] hover:brightness-110"
+                className="px-2.5 py-1 rounded-lg bg-amber-500 text-neutral-950 font-bold text-[11px] hover:brightness-110 cursor-pointer"
               >
                 Go VIP (₹{activeNormalMovie.premiumPrice})
               </button>
@@ -439,24 +507,24 @@ export function MoviesClient({ movies }: MoviesClientProps) {
 
       {/* ── Premium VIP Download Modal ── */}
       {activePremiumMovie && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
-          <div className="bg-[var(--card)] border border-amber-500/40 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-[var(--card)] border border-amber-500/40 rounded-3xl max-w-md w-full p-4 sm:p-5 shadow-2xl space-y-3 sm:space-y-4 my-auto max-h-[92vh] overflow-y-auto scrollbar-thin">
             {/* Header */}
             <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-2xl bg-amber-500/20 text-amber-500 border border-amber-500/30">
-                  <Crown className="w-6 h-6" />
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-amber-500/20 text-amber-500 border border-amber-500/30">
+                  <Crown className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-base font-black text-[var(--foreground)]">
+                  <div className="flex items-center gap-1.5">
+                    <h4 className="text-sm sm:text-base font-black text-[var(--foreground)]">
                       4K Ultra HD VIP Access
                     </h4>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-500 text-neutral-950">
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-amber-500 text-neutral-950">
                       VIP LINK
                     </span>
                   </div>
-                  <p className="text-xs text-[var(--muted-foreground)]">
+                  <p className="text-[11px] text-[var(--muted-foreground)]">
                     {activePremiumMovie.title} • {activePremiumMovie.sizePremium}
                   </p>
                 </div>
@@ -465,31 +533,59 @@ export function MoviesClient({ movies }: MoviesClientProps) {
                 onClick={() => setActivePremiumMovie(null)}
                 className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] p-1 rounded-lg"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* VIP Perks */}
-            <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
-              <div className="p-2.5 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/60">
-                <Zap className="w-4 h-4 text-amber-500 mx-auto mb-1" />
+            <div className="grid grid-cols-3 gap-1.5 text-center text-[9px] sm:text-[10px]">
+              <div className="p-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/60">
+                <Zap className="w-3.5 h-3.5 text-amber-500 mx-auto mb-0.5" />
                 <span className="font-bold text-[var(--foreground)] block">1000 Mbps</span>
-                <span className="text-[var(--muted-foreground)]">No Wait Time</span>
+                <span className="text-[var(--muted-foreground)]">Zero Waiting</span>
               </div>
-              <div className="p-2.5 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/60">
-                <Sparkles className="w-4 h-4 text-amber-500 mx-auto mb-1" />
+              <div className="p-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/60">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500 mx-auto mb-0.5" />
                 <span className="font-bold text-[var(--foreground)] block">4K HDR</span>
-                <span className="text-[var(--muted-foreground)]">Dolby Atmos</span>
+                <span className="text-[var(--muted-foreground)]">Dolby 5.1</span>
               </div>
-              <div className="p-2.5 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/60">
-                <ShieldCheck className="w-4 h-4 text-emerald-500 mx-auto mb-1" />
+              <div className="p-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/60">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 mx-auto mb-0.5" />
                 <span className="font-bold text-[var(--foreground)] block">Lifetime</span>
                 <span className="text-[var(--muted-foreground)]">Cloud Access</span>
               </div>
             </div>
 
+            {/* Included VIP Tiers List Based on Size */}
+            {activePremiumMovie.vipLinks && activePremiumMovie.vipLinks.length > 0 && (
+              <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-left space-y-1.5">
+                <div className="flex items-center justify-between text-amber-500 font-bold text-xs">
+                  <span className="flex items-center gap-1.5">
+                    <Crown className="w-3.5 h-3.5" />
+                    <span>Included 4K VIP Sizes:</span>
+                  </span>
+                  <span className="text-[9px] font-mono uppercase bg-amber-500 text-neutral-950 px-1.5 py-0.5 rounded font-black">
+                    All Included in ₹{activePremiumMovie.premiumPrice}
+                  </span>
+                </div>
+                <div className="divide-y divide-amber-500/20 text-xs">
+                  {activePremiumMovie.vipLinks.map((v, i) => (
+                    <div key={i} className="py-1 flex items-center justify-between">
+                      <span className="font-semibold text-[var(--foreground)] text-[11px] flex items-center gap-1.5">
+                        <Sparkles className="w-3 h-3 text-amber-400" />
+                        {v.title}
+                      </span>
+                      <span className="font-mono font-bold text-amber-500 text-[11px] bg-amber-500/10 px-2 py-0.5 rounded">
+                        {v.size}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* UPI QR & Direct Pay */}
-            <div className="border-t border-[var(--border)] pt-4">
+            <div className="border-t border-[var(--border)] pt-3">
               <UpiQrCard
                 amount={activePremiumMovie.premiumPrice}
                 orderNumber={`MOV-${Date.now().toString().slice(-6)}`}
