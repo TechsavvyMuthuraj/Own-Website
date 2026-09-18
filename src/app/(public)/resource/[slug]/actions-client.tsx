@@ -1,0 +1,219 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  Download,
+  ShoppingCart,
+  Zap,
+  ExternalLink,
+  Heart,
+  Check,
+  Loader2,
+} from "lucide-react";
+import type { Resource } from "@/types/database";
+import { useCart } from "@/lib/cart/cart-store";
+import { useAuth } from "@/lib/auth/auth-context";
+import { createClient } from "@/lib/supabase/client";
+
+interface ResourceDetailActionsProps {
+  resource: Resource;
+}
+
+export function ResourceDetailActions({ resource }: ResourceDetailActionsProps) {
+  const router = useRouter();
+  const { addItem, isInCart } = useCart();
+  const { user } = useAuth();
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [isFavoriteLoading, setIsFavoriteLoading] = useState(false);
+  const [hasPurchased, setHasPurchased] = useState(false);
+  const [checkingEntitlement, setCheckingEntitlement] = useState(false);
+  const [addedAnimation, setAddedAnimation] = useState(false);
+  const supabase = createClient();
+
+  const isPaid = resource.access_type === "PAID";
+  const isExternal = resource.access_type === "EXTERNAL" || resource.resource_type === "EXTERNAL_LINK";
+  const inCart = isInCart(resource.id);
+
+  // Check if current user already owns the resource or has favorited it
+  useEffect(() => {
+    if (!user) return;
+
+    async function checkUserStatus() {
+      if (isPaid) {
+        setCheckingEntitlement(true);
+        try {
+          const { data } = await supabase
+            .from("entitlements")
+            .select("id")
+            .eq("user_id", user?.id)
+            .eq("resource_id", resource.id)
+            .eq("status", "ACTIVE")
+            .maybeSingle();
+
+          if (data) {
+            setHasPurchased(true);
+          }
+        } catch (e) {
+          console.error("Error checking entitlement:", e);
+        } finally {
+          setCheckingEntitlement(false);
+        }
+      }
+
+      // Check favorite status
+      try {
+        const { data: fav } = await supabase
+          .from("favorites")
+          .select("id")
+          .eq("user_id", user?.id)
+          .eq("resource_id", resource.id)
+          .maybeSingle();
+
+        if (fav) {
+          setIsFavorited(true);
+        }
+      } catch (e) {
+        console.error("Error checking favorite:", e);
+      }
+    }
+
+    checkUserStatus();
+  }, [user, resource.id, isPaid, supabase]);
+
+  const toggleFavorite = async () => {
+    if (!user) {
+      router.push(`/auth/login?redirect=/resource/${resource.slug}`);
+      return;
+    }
+
+    setIsFavoriteLoading(true);
+    try {
+      if (isFavorited) {
+        await supabase
+          .from("favorites")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("resource_id", resource.id);
+        setIsFavorited(false);
+      } else {
+        await supabase
+          .from("favorites")
+          .insert({ user_id: user.id, resource_id: resource.id });
+        setIsFavorited(true);
+      }
+    } catch (e) {
+      console.error("Error toggling favorite:", e);
+    } finally {
+      setIsFavoriteLoading(false);
+    }
+  };
+
+  const handleAddToCart = () => {
+    const success = addItem(resource);
+    if (success) {
+      setAddedAnimation(true);
+      setTimeout(() => setAddedAnimation(false), 2000);
+    }
+  };
+
+  const handleBuyNow = () => {
+    addItem(resource);
+    router.push("/checkout");
+  };
+
+  return (
+    <div className="space-y-3">
+      {isPaid ? (
+        hasPurchased ? (
+          <div className="space-y-2">
+            <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2">
+              <Check className="w-4 h-4" />
+              <span>You already own this digital product</span>
+            </div>
+            <Link
+              href={`/resource/${resource.slug}/download`}
+              className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-emerald-600 text-white font-semibold text-sm hover:bg-emerald-700 transition-all shadow-md shadow-emerald-500/20"
+            >
+              <Download className="w-4 h-4" />
+              <span>Download Your Product</span>
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            <button
+              type="button"
+              onClick={handleBuyNow}
+              className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-[var(--primary)] text-white font-semibold text-sm hover:bg-[var(--primary-hover)] transition-all shadow-md shadow-indigo-500/20"
+            >
+              <Zap className="w-4 h-4" />
+              <span>Buy Now</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              disabled={inCart || addedAnimation}
+              className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-2xl border border-[var(--border)] bg-[var(--secondary)] hover:bg-[var(--secondary)]/80 text-[var(--foreground)] font-semibold text-sm transition-all disabled:opacity-80"
+            >
+              {addedAnimation ? (
+                <>
+                  <Check className="w-4 h-4 text-emerald-500" />
+                  <span>Added to Cart!</span>
+                </>
+              ) : inCart ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  <span>In Cart</span>
+                </>
+              ) : (
+                <>
+                  <ShoppingCart className="w-4 h-4" />
+                  <span>Add to Cart</span>
+                </>
+              )}
+            </button>
+          </div>
+        )
+      ) : isExternal ? (
+        <a
+          href={resource.official_url || "#"}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 transition-all shadow-md shadow-indigo-500/20"
+        >
+          <ExternalLink className="w-4 h-4" />
+          <span>Visit Official Website</span>
+        </a>
+      ) : (
+        <Link
+          href={`/resource/${resource.slug}/download`}
+          className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-[var(--primary)] text-white font-semibold text-sm hover:bg-[var(--primary-hover)] transition-all shadow-md shadow-indigo-500/20"
+        >
+          <Download className="w-4 h-4" />
+          <span>Get / Download</span>
+        </Link>
+      )}
+
+      {/* Favorite / Bookmark Button */}
+      <button
+        type="button"
+        onClick={toggleFavorite}
+        disabled={isFavoriteLoading}
+        className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl border transition-all text-xs font-medium ${
+          isFavorited
+            ? "border-rose-500/30 bg-rose-500/10 text-rose-500"
+            : "border-[var(--border)] bg-[var(--card)] hover:bg-[var(--secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+        }`}
+      >
+        {isFavoriteLoading ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <Heart className={`w-4 h-4 ${isFavorited ? "fill-rose-500 text-rose-500" : ""}`} />
+        )}
+        <span>{isFavorited ? "Saved to Favorites" : "Add to Favorites"}</span>
+      </button>
+    </div>
+  );
+}

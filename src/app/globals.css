@@ -1,0 +1,161 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --card-border: #e2e8f0;
+  
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --primary-foreground: #ffffff;
+  
+  --secondary: #f1f5f9;
+  --secondary-foreground: #1e293b;
+  
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  
+  --accent: #06b6d4;
+  --accent-foreground: #ffffff;
+  
+  --success: #10b981;
+  --success-foreground: #ffffff;
+  
+  --warning: #f59e0b;
+  --warning-foreground: #ffffff;
+  
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #6366f1;
+
+  --badge-new: #10b981;
+  --badge-updated: #06b6d4;
+  --badge-premium: #f59e0b;
+  --badge-free: #6366f1;
+}
+
+.dark {
+  --background: #090d16;
+  --foreground: #f8fafc;
+  
+  --card: #0f172a;
+  --card-foreground: #f8fafc;
+  --card-border: #1e293b;
+  
+  --popover: #0f172a;
+  --popover-foreground: #f8fafc;
+  
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --primary-foreground: #ffffff;
+  
+  --secondary: #1e293b;
+  --secondary-foreground: #e2e8f0;
+  
+  --muted: #131d33;
+  --muted-foreground: #94a3b8;
+  
+  --accent: #0891b2;
+  --accent-foreground: #ffffff;
+  
+  --success: #10b981;
+  --success-foreground: #ffffff;
+  
+  --warning: #f59e0b;
+  --warning-foreground: #ffffff;
+  
+  --destructive: #f43f5e;
+  --destructive-foreground: #ffffff;
+  
+  --border: #1e293b;
+  --input: #1e293b;
+  --ring: #818cf8;
+
+  --badge-new: #10b981;
+  --badge-updated: #06b6d4;
+  --badge-premium: #f59e0b;
+  --badge-free: #818cf8;
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Glassmorphism utility */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.dark .glass-panel {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(30, 41, 59, 0.7);
+}
+
+/* Custom modern scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  opacity: 0.4;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  opacity: 0.8;
+}
+
+/* Subtle glow utility */
+.glow-primary {
+  box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.25);
+}
+
+.dark .glow-primary {
+  box-shadow: 0 0 30px -5px rgba(99, 102, 241, 0.35);
+}
+
+/* Google Translate clean integration */
+.goog-te-banner-frame.skiptranslate,
+.goog-te-gadget-icon,
+#goog-gt-tt,
+.goog-tooltip,
+.goog-tooltip:hover,
+.goog-te-balloon-frame {
+  display: none !important;
+}
+
+body {
+  top: 0px !important;
+}
+
+.goog-text-highlight {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
