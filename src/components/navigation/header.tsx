@@ -17,7 +17,6 @@ import {
   Settings,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { LanguageTranslator } from "@/components/ui/language-translator";
 import { SearchModal } from "@/components/search/search-modal";
 import { useCart } from "@/lib/cart/cart-store";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -34,6 +33,7 @@ export function Header() {
     { href: "/", label: "Home" },
     { href: "/explore", label: "Explore" },
     { href: "/categories", label: "Categories" },
+    { href: "/movies", label: "Movies" },
     { href: "/new-and-updated", label: "New & Updated" },
     { href: "/free", label: "Free" },
     { href: "/premium", label: "Premium" },
@@ -47,13 +47,13 @@ export function Header() {
           {/* Brand Logo */}
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="relative w-9 h-9 rounded-xl overflow-hidden shadow-md shadow-cyan-500/20 group-hover:scale-105 transition-transform bg-slate-950 flex items-center justify-center border border-white/10">
+              <div className="relative w-9 h-9 rounded-xl overflow-hidden shadow-md group-hover:scale-105 transition-transform flex items-center justify-center">
                 <Image
-                  src="/images/nammatech-logo.png"
+                  src="/images/namma-tech-icon.svg"
                   alt="NammaTech Logo"
                   width={36}
                   height={36}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                   priority
                 />
               </div>
@@ -119,9 +119,6 @@ export function Header() {
                 </span>
               )}
             </Link>
-
-            {/* Language Translator */}
-            <LanguageTranslator />
 
             {/* Theme Toggle */}
             <ThemeToggle />

@@ -21,9 +21,11 @@ import {
   ShieldX,
   Eye,
   EyeOff,
+  Trash2,
 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useToast } from "@/components/ui/toast";
 
 function OrderStatusBadge({ status }: { status: string }) {
   if (status === "PAID")
@@ -69,10 +71,12 @@ function UtrMatchIndicator({
 
 function OrderRow({ order }: { order: any }) {
   const router = useRouter();
+  const { showToast, confirm } = useToast();
   const [expanded, setExpanded] = useState(false);
   const [adminUtr, setAdminUtr] = useState("");
   const [showUserUtr, setShowUserUtr] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
@@ -83,41 +87,92 @@ function OrderRow({ order }: { order: any }) {
   const utrMatched = adminUtr.length === 12 && adminUtr === userUtr;
   const canVerify = utrMatched && !verifying;
 
-  const handleVerify = async () => {
+  const handleVerify = () => {
     if (!utrMatched) {
       setError("Admin UTR must match user-submitted UTR exactly before verifying.");
       return;
     }
 
-    if (
-      !confirm(
-        `Verify payment for order #${order.order_number}?\n\nUTR: ${adminUtr}\nUser: ${order.user?.email || "unknown"}\n\nThis will unlock digital downloads for this user.`
-      )
-    )
-      return;
+    confirm({
+      title: `Verify Payment for Order #${order.order_number}?`,
+      message: `UTR: ${adminUtr}\nUser: ${order.user?.email || "unknown"}\n\nThis will mark the order as PAID and unlock digital downloads for this user.`,
+      confirmText: "Verify & Unlock",
+      variant: "primary",
+      onConfirm: async () => {
+        setVerifying(true);
+        setError("");
 
-    setVerifying(true);
-    setError("");
+        try {
+          const res = await fetch("/api/admin/orders/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orderId: order.id, utrNumber: adminUtr }),
+          });
 
-    try {
-      const res = await fetch("/api/admin/orders/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: order.id, utrNumber: adminUtr }),
-      });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            setSuccess(true);
+            showToast({
+              type: "success",
+              title: "Payment Verified! 🎉",
+              message: `Order #${order.order_number} has been verified and products unlocked.`,
+            });
+            setTimeout(() => router.refresh(), 1200);
+          } else {
+            setError(data.error || "Verification failed.");
+            showToast({
+              type: "error",
+              title: "Verification Failed",
+              message: data.error || "Verification failed.",
+            });
+          }
+        } catch {
+          setError("Network error. Check connection and retry.");
+        } finally {
+          setVerifying(false);
+        }
+      },
+    });
+  };
 
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setSuccess(true);
-        setTimeout(() => router.refresh(), 1500);
-      } else {
-        setError(data.error || "Verification failed.");
-      }
-    } catch {
-      setError("Network error. Check connection and retry.");
-    } finally {
-      setVerifying(false);
-    }
+  const handleDeleteOrder = () => {
+    confirm({
+      title: `Delete Order #${order.order_number}?`,
+      message: "This will permanently remove this order and all payment/UTR details. This cannot be undone.",
+      confirmText: "Delete Order",
+      variant: "danger",
+      onConfirm: async () => {
+        setDeleting(true);
+        try {
+          const res = await fetch(`/api/admin/orders/${order.id}`, {
+            method: "DELETE",
+          });
+          const data = await res.json();
+          if (res.ok) {
+            showToast({
+              type: "success",
+              title: "Order Deleted",
+              message: `Order #${order.order_number} has been permanently deleted.`,
+            });
+            router.refresh();
+          } else {
+            showToast({
+              type: "error",
+              title: "Failed to Delete",
+              message: data.error || "Could not delete order.",
+            });
+          }
+        } catch {
+          showToast({
+            type: "error",
+            title: "Network Error",
+            message: "Failed to reach server.",
+          });
+        } finally {
+          setDeleting(false);
+        }
+      },
+    });
   };
 
   return (
@@ -165,9 +220,28 @@ function OrderRow({ order }: { order: any }) {
 
         <OrderStatusBadge status={order.status} />
 
-        <span className="text-[var(--muted-foreground)]">
-          {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        </span>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDeleteOrder();
+            }}
+            disabled={deleting}
+            className="p-1.5 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
+            title="Delete Order & Payment"
+          >
+            {deleting ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Trash2 className="w-3.5 h-3.5" />
+            )}
+          </button>
+
+          <span className="text-[var(--muted-foreground)]">
+            {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </span>
+        </div>
       </div>
 
       {/* Detail Panel */}

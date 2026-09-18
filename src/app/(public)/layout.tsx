@@ -5,18 +5,38 @@ import { AnnouncementBar } from "@/components/announcements/announcement-bar";
 import { AdSlot } from "@/components/ads/ad-slot";
 import { getActiveAd } from "@/lib/ads";
 
+import { createAdminClient } from "@/lib/supabase/admin";
+import { AdminMaintenanceBanner } from "@/components/admin/admin-maintenance-banner";
+
 export default async function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [headerAd, footerAd] = await Promise.all([
+  const supabaseAdmin = createAdminClient();
+  const [headerAd, footerAd, { data: settingsData }] = await Promise.all([
     getActiveAd("HEADER"),
     getActiveAd("FOOTER"),
+    supabaseAdmin
+      .from("site_settings")
+      .select("value")
+      .eq("key", "maintenance_mode")
+      .single(),
   ]);
+
+  let isMaintenanceActive = false;
+  if (settingsData?.value) {
+    try {
+      const parsed = typeof settingsData.value === "string" ? JSON.parse(settingsData.value) : settingsData.value;
+      isMaintenanceActive = parsed === true || parsed === "true";
+    } catch {
+      isMaintenanceActive = settingsData.value === "true";
+    }
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
+      <AdminMaintenanceBanner isMaintenanceActive={isMaintenanceActive} />
       <AnnouncementBar />
       <Header />
 

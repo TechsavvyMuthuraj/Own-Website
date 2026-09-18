@@ -28,12 +28,6 @@ export async function proxy(request: NextRequest) {
   });
 
   const { pathname } = request.nextUrl;
-  const host =
-    request.headers.get("x-forwarded-host") ||
-    request.headers.get("host") ||
-    request.nextUrl.hostname ||
-    "";
-  const isAdminSubdomain = host.startsWith("admin.");
 
   const isMaintenanceExempt =
     pathname.startsWith("/admin") ||
@@ -65,18 +59,7 @@ export async function proxy(request: NextRequest) {
     maintenanceFetch,
   ]);
 
-  // ── Admin Subdomain Routing ────────────────────────────────────────────────
-  if (isAdminSubdomain) {
-    if (pathname === "/") {
-      if (!user) return NextResponse.redirect(new URL("/admin/login", request.url));
-      return NextResponse.rewrite(new URL("/admin", request.url));
-    }
-    if (!pathname.startsWith("/admin") && !pathname.startsWith("/api") && !pathname.startsWith("/auth")) {
-      return NextResponse.rewrite(new URL(`/admin${pathname}`, request.url));
-    }
-  }
-
-  // ── Protect /admin routes ──────────────────────────────────────────────────
+  // ── Protect /admin routes (Access strictly via /admin and /admin/login) ──────
   if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
     if (!user) {
       const loginUrl = new URL("/admin/login", request.url);

@@ -65,13 +65,13 @@ function AdminLoginForm() {
       <div className="w-full max-w-md p-6 sm:p-8 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-2xl">
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-3">
-            <div className="w-14 h-14 rounded-2xl overflow-hidden mx-auto shadow-lg bg-slate-950 flex items-center justify-center border border-white/10 hover:scale-105 transition-transform">
+            <div className="w-14 h-14 rounded-2xl overflow-hidden mx-auto shadow-lg flex items-center justify-center hover:scale-105 transition-transform">
               <Image
-                src="/images/nammatech-logo.png"
+                src="/images/namma-tech-icon.svg"
                 alt="NammaTech Logo"
                 width={56}
                 height={56}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
                 priority
               />
             </div>

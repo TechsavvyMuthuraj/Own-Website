@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   User,
   Mail,
@@ -12,14 +13,25 @@ import {
   Trash2,
   AlertTriangle,
   X,
+  Camera,
+  Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { createClient } from "@/lib/supabase/client";
+
+const PRESET_AVATARS = [
+  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&auto=format&fit=crop&q=80",
+];
 
 export default function AccountProfilePage() {
   const router = useRouter();
   const { user, profile, refreshProfile, signOut } = useAuth();
   const [fullName, setFullName] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
@@ -36,6 +48,9 @@ export default function AccountProfilePage() {
     if (profile?.full_name) {
       setFullName(profile.full_name);
     }
+    if (profile?.avatar_url) {
+      setAvatarUrl(profile.avatar_url);
+    }
   }, [profile]);
 
   const handleUpdate = async (e: React.FormEvent) => {
@@ -51,6 +66,7 @@ export default function AccountProfilePage() {
         .from("profiles")
         .update({
           full_name: fullName.trim(),
+          avatar_url: avatarUrl.trim() || null,
           updated_at: new Date().toISOString(),
         })
         .eq("id", user.id);
@@ -107,7 +123,7 @@ export default function AccountProfilePage() {
           Profile & Account Settings
         </h2>
         <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
-          Manage your personal details, credentials, and account lifecycle.
+          Manage your personal details, avatar photo, and account lifecycle.
         </p>
       </div>
 
@@ -127,7 +143,62 @@ export default function AccountProfilePage() {
           </div>
         )}
 
-        <form onSubmit={handleUpdate} className="space-y-4">
+        <form onSubmit={handleUpdate} className="space-y-5">
+          {/* Avatar Section */}
+          <div>
+            <label className="block text-xs font-medium text-[var(--foreground)] mb-2">
+              Profile Avatar
+            </label>
+            <div className="flex items-center gap-4">
+              <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-[var(--secondary)] border border-[var(--border)] flex items-center justify-center flex-shrink-0 shadow-inner">
+                {avatarUrl ? (
+                  <Image
+                    src={avatarUrl}
+                    alt="Avatar"
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                ) : (
+                  <User className="w-8 h-8 text-[var(--muted-foreground)]" />
+                )}
+              </div>
+              <div className="flex-1 space-y-2">
+                <input
+                  type="url"
+                  value={avatarUrl}
+                  onChange={(e) => setAvatarUrl(e.target.value)}
+                  placeholder="https://... image URL"
+                  className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs text-[var(--foreground)]"
+                />
+                <div className="flex items-center gap-1.5 overflow-x-auto py-1">
+                  <span className="text-[10px] text-[var(--muted-foreground)] mr-1">Presets:</span>
+                  {PRESET_AVATARS.map((preset, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setAvatarUrl(preset)}
+                      className={`relative w-6 h-6 rounded-lg overflow-hidden border transition-all flex-shrink-0 ${
+                        avatarUrl === preset ? "border-[var(--primary)] ring-2 ring-[var(--primary)]" : "border-transparent opacity-75 hover:opacity-100"
+                      }`}
+                    >
+                      <Image src={preset} alt="preset" fill className="object-cover" unoptimized />
+                    </button>
+                  ))}
+                  {avatarUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setAvatarUrl("")}
+                      className="text-[10px] text-red-500 hover:underline ml-1"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div>
             <label className="block text-xs font-medium text-[var(--foreground)] mb-1.5">
               Display Name

@@ -2,13 +2,15 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Megaphone, Loader2, AlertCircle } from "lucide-react";
+import { Plus, Trash2, Edit2, Megaphone, Loader2, AlertCircle, Check, X } from "lucide-react";
 import type { Announcement } from "@/types/database";
 import { formatDate } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useToast } from "@/components/ui/toast";
 
 export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncements: Announcement[] }) {
   const router = useRouter();
+  const { showToast, confirm } = useToast();
   const [showAddForm, setShowAddForm] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -19,6 +21,38 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
   const [endDate, setEndDate] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Edit Announcement Modal state
+  const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editContent, setEditContent] = useState("");
+  const [editCtaText, setEditCtaText] = useState("");
+  const [editCtaUrl, setEditCtaUrl] = useState("");
+  const [editPriority, setEditPriority] = useState("0");
+  const [editStartDate, setEditStartDate] = useState("");
+  const [editEndDate, setEditEndDate] = useState("");
+  const [editIsActive, setEditIsActive] = useState(true);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editErrorMsg, setEditErrorMsg] = useState("");
+
+  const openEditModal = (a: Announcement) => {
+    setEditingAnnouncement(a);
+    setEditTitle(a.title);
+    setEditContent(a.content || "");
+    setEditCtaText(a.cta_text || "");
+    setEditCtaUrl(a.cta_url || "");
+    setEditPriority(String(a.priority ?? 0));
+    setEditStartDate(a.start_date ? a.start_date.split("T")[0] : "");
+    setEditEndDate(a.end_date ? a.end_date.split("T")[0] : "");
+    setEditIsActive(a.is_active ?? true);
+    setEditErrorMsg("");
+  };
+
+  const closeEditModal = () => {
+    setEditingAnnouncement(null);
+    setEditErrorMsg("");
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +79,17 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
       const data = await res.json();
       if (!res.ok) {
         setErrorMsg(data.error || "Failed to create announcement.");
+        showToast({
+          type: "error",
+          title: "Create Failed",
+          message: data.error || "Failed to create announcement.",
+        });
       } else {
+        showToast({
+          type: "success",
+          title: "Announcement Published 📢",
+          message: `"${title}" has been published.`,
+        });
         setTitle("");
         setContent("");
         setCtaText("");
@@ -60,18 +104,89 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this announcement?")) return;
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingAnnouncement || !editTitle.trim()) return;
+
+    setEditLoading(true);
+    setEditErrorMsg("");
+
     try {
       const res = await fetch("/api/admin/announcements", {
-        method: "DELETE",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({
+          id: editingAnnouncement.id,
+          title: editTitle.trim(),
+          content: editContent.trim() || null,
+          cta_text: editCtaText.trim() || null,
+          cta_url: editCtaUrl.trim() || null,
+          priority: Number(editPriority) || 0,
+          start_date: editStartDate ? new Date(editStartDate).toISOString() : null,
+          end_date: editEndDate ? new Date(editEndDate).toISOString() : null,
+          is_active: editIsActive,
+        }),
       });
-      if (res.ok) router.refresh();
+
+      const data = await res.json();
+      if (!res.ok) {
+        setEditErrorMsg(data.error || "Failed to update announcement.");
+      } else {
+        showToast({
+          type: "success",
+          title: "Announcement Updated ✏️",
+          message: `"${editTitle}" updated successfully.`,
+        });
+        closeEditModal();
+        router.refresh();
+      }
     } catch {
-      alert("Error deleting announcement.");
+      setEditErrorMsg("Network error occurred.");
+    } finally {
+      setEditLoading(false);
     }
+  };
+
+  const handleDelete = (id: string, annTitle?: string) => {
+    confirm({
+      title: "Delete Announcement?",
+      message: "Are you sure you want to permanently delete this announcement?",
+      confirmText: "Delete",
+      variant: "danger",
+      onConfirm: async () => {
+        setDeletingId(id);
+        try {
+          const res = await fetch("/api/admin/announcements", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id }),
+          });
+          const data = await res.json();
+          if (res.ok) {
+            showToast({
+              type: "success",
+              title: "Announcement Removed",
+              message: "The announcement has been deleted.",
+            });
+            router.refresh();
+          } else {
+            showToast({
+              type: "error",
+              title: "Deletion Failed",
+              message: data.error || "Failed to delete announcement.",
+            });
+          }
+        } catch {
+          showToast({
+            type: "error",
+            title: "Network Error",
+            message: "Error deleting announcement.",
+          });
+        } finally {
+          setDeletingId(null);
+        }
+      },
+    });
   };
 
   return (
@@ -83,14 +198,14 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] transition-all shadow-sm"
         >
           <Plus className="w-4 h-4" />
-          <span>{showAddForm ? "Cancel" : "New Announcement"}</span>
+          <span>{showAddForm ? "Cancel" : "Add Announcement"}</span>
         </button>
       </div>
 
       {showAddForm && (
         <form onSubmit={handleCreate} className="p-6 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm space-y-4 max-w-2xl">
           <h3 className="text-sm font-bold text-[var(--foreground)] uppercase tracking-wider">
-            Create Announcement
+            Broadcast Announcement
           </h3>
 
           {errorMsg && (
@@ -102,27 +217,27 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
 
           <div>
             <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
-              Title / Primary Headline *
+              Headline Title *
             </label>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Major Software Update v2.0 Released!"
+              placeholder="e.g. 🚀 Summer Release: 50+ new open-source templates added!"
               className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
             />
           </div>
 
           <div>
             <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
-              Sub-content / Details (Optional)
+              Details / Content (optional)
             </label>
-            <input
-              type="text"
+            <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="New tools for developers have been added today."
+              rows={2}
+              placeholder="Further context or instructions..."
               className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
             />
           </div>
@@ -136,20 +251,20 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
                 type="text"
                 value={ctaText}
                 onChange={(e) => setCtaText(e.target.value)}
-                placeholder="Explore now"
+                placeholder="e.g. Explore Now"
                 className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
-                CTA Destination URL
+                CTA URL
               </label>
               <input
-                type="text"
+                type="url"
                 value={ctaUrl}
                 onChange={(e) => setCtaUrl(e.target.value)}
-                placeholder="/new-and-updated"
-                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-mono"
+                placeholder="https://... or /resources"
+                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
               />
             </div>
           </div>
@@ -163,7 +278,6 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
                 type="number"
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
-                placeholder="0"
                 className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-mono"
               />
             </div>
@@ -217,10 +331,19 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
               {initialAnnouncements.map((a) => (
                 <tr key={a.id} className="hover:bg-[var(--secondary)]/30 transition-colors">
                   <td className="px-5 py-3.5 font-semibold text-[var(--foreground)]">
-                    {a.title}
+                    <div>{a.title}</div>
+                    {a.content && (
+                      <div className="text-[11px] text-[var(--muted-foreground)] line-clamp-1">
+                        {a.content}
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3.5 font-mono text-[var(--muted-foreground)]">
-                    {a.cta_url || "None"}
+                    {a.cta_url ? (
+                      <span className="truncate max-w-[150px] inline-block">{a.cta_url}</span>
+                    ) : (
+                      "None"
+                    )}
                   </td>
                   <td className="px-4 py-3.5 font-mono">{a.priority}</td>
                   <td className="px-4 py-3.5">
@@ -235,14 +358,29 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
                     )}
                   </td>
                   <td className="px-5 py-3.5 text-right">
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(a.id)}
-                      className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg"
-                      title="Delete announcement"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="inline-flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => openEditModal(a)}
+                        className="p-1.5 text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--secondary)] rounded-lg transition-colors"
+                        title="Edit announcement"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(a.id)}
+                        disabled={deletingId === a.id}
+                        className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                        title="Delete announcement"
+                      >
+                        {deletingId === a.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -257,6 +395,154 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
           actionText="Create First Announcement"
           onAction={() => setShowAddForm(true)}
         />
+      )}
+
+      {/* Edit Announcement Modal */}
+      {editingAnnouncement && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-lg rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Edit2 className="w-4 h-4 text-[var(--primary)]" />
+                <h3 className="font-bold text-sm text-[var(--foreground)]">Edit Announcement</h3>
+              </div>
+              <button
+                type="button"
+                onClick={closeEditModal}
+                className="p-1.5 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--secondary)] transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {editErrorMsg && (
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                <span>{editErrorMsg}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleUpdate} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+                  Headline Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+                  Details / Content (optional)
+                </label>
+                <textarea
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  rows={2}
+                  className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+                    CTA Button Text
+                  </label>
+                  <input
+                    type="text"
+                    value={editCtaText}
+                    onChange={(e) => setEditCtaText(e.target.value)}
+                    placeholder="e.g. Explore Now"
+                    className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+                    CTA URL
+                  </label>
+                  <input
+                    type="text"
+                    value={editCtaUrl}
+                    onChange={(e) => setEditCtaUrl(e.target.value)}
+                    placeholder="https://... or /resources"
+                    className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+                    Priority
+                  </label>
+                  <input
+                    type="number"
+                    value={editPriority}
+                    onChange={(e) => setEditPriority(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+                    Start Date
+                  </label>
+                  <input
+                    type="date"
+                    value={editStartDate}
+                    onChange={(e) => setEditStartDate(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+                    End / Expiry Date
+                  </label>
+                  <input
+                    type="date"
+                    value={editEndDate}
+                    onChange={(e) => setEditEndDate(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center pt-2">
+                <label className="flex items-center gap-2 cursor-pointer text-xs">
+                  <input
+                    type="checkbox"
+                    checked={editIsActive}
+                    onChange={(e) => setEditIsActive(e.target.checked)}
+                    className="rounded text-[var(--primary)]"
+                  />
+                  <span>Active (Broadcasting)</span>
+                </label>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--border)]">
+                <button
+                  type="button"
+                  onClick={closeEditModal}
+                  className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-medium hover:bg-[var(--secondary)] transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={editLoading}
+                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] transition-all disabled:opacity-50 shadow-sm"
+                >
+                  {editLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                  <span>{editLoading ? "Updating..." : "Save Changes"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

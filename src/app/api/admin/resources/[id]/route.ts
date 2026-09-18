@@ -173,7 +173,19 @@ export async function DELETE(
       .eq("id", id)
       .single();
 
-    // Soft delete or hard delete (prompt section 81 & 19 recommends ARCHIVED or explicit DELETE)
+    // ── Safe Foreign Key Cleanup ─────────────────────────────────────────────
+    // Clean up all related child rows to prevent foreign key constraint violations
+    await Promise.allSettled([
+      supabaseAdmin.from("download_links").delete().eq("resource_id", id),
+      supabaseAdmin.from("resource_images").delete().eq("resource_id", id),
+      supabaseAdmin.from("order_items").delete().eq("resource_id", id),
+      supabaseAdmin.from("favorites").delete().eq("resource_id", id),
+      supabaseAdmin.from("download_logs").delete().eq("resource_id", id),
+      supabaseAdmin.from("user_entitlements").delete().eq("resource_id", id),
+      supabaseAdmin.from("reviews").delete().eq("resource_id", id),
+    ]);
+
+    // Now safely delete the resource itself
     const { error: deleteError } = await supabaseAdmin
       .from("resources")
       .delete()
@@ -192,7 +204,7 @@ export async function DELETE(
     });
 
     return NextResponse.json({ success: true });
-  } catch (err) {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  } catch (err: any) {
+    return NextResponse.json({ error: err?.message || "Internal server error" }, { status: 500 });
   }
 }

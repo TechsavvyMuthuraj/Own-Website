@@ -15,11 +15,14 @@ import {
   CheckCircle2,
   Clock,
   Archive,
+  Sparkles,
+  AlertTriangle,
 } from "lucide-react";
 import type { Resource, Category } from "@/types/database";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ResourceVisual } from "@/components/resources/resource-visual";
+import { useToast } from "@/components/ui/toast";
 
 interface ResourceTableClientProps {
   initialResources: Resource[];
@@ -37,6 +40,7 @@ export function ResourceTableClient({
   currentStatus,
 }: ResourceTableClientProps) {
   const router = useRouter();
+  const { showToast, confirm } = useToast();
   const [searchTerm, setSearchTerm] = useState(currentQuery);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
@@ -55,42 +59,126 @@ export function ResourceTableClient({
     handleFilterChange("q", searchTerm);
   };
 
-  const handleDuplicate = async (id: string) => {
-    if (!confirm("Are you sure you want to duplicate this resource?")) return;
-    setActionLoading(`dup_${id}`);
-    try {
-      const res = await fetch(`/api/admin/resources/${id}/duplicate`, {
-        method: "POST",
-      });
-      if (res.ok) {
-        router.refresh();
-      } else {
-        alert("Failed to duplicate resource.");
-      }
-    } catch {
-      alert("Error duplicating resource.");
-    } finally {
-      setActionLoading(null);
-    }
+  const handleDuplicate = (id: string, title: string) => {
+    confirm({
+      title: "Duplicate Resource?",
+      message: `Create a new draft copy of "${title}" with all its configurations?`,
+      confirmText: "Duplicate",
+      variant: "primary",
+      onConfirm: async () => {
+        setActionLoading(`dup_${id}`);
+        try {
+          const res = await fetch(`/api/admin/resources/${id}/duplicate`, {
+            method: "POST",
+          });
+          const data = await res.json();
+          if (res.ok) {
+            showToast({
+              type: "success",
+              title: "Duplicate Created",
+              message: `Successfully duplicated "${title}".`,
+            });
+            router.refresh();
+          } else {
+            showToast({
+              type: "error",
+              title: "Duplicate Failed",
+              message: data.error || "Failed to duplicate resource.",
+            });
+          }
+        } catch {
+          showToast({
+            type: "error",
+            title: "Network Error",
+            message: "Error duplicating resource.",
+          });
+        } finally {
+          setActionLoading(null);
+        }
+      },
+    });
   };
 
-  const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Are you sure you want to delete "${title}"? This cannot be undone.`)) return;
-    setActionLoading(`del_${id}`);
-    try {
-      const res = await fetch(`/api/admin/resources/${id}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        router.refresh();
-      } else {
-        alert("Failed to delete resource.");
-      }
-    } catch {
-      alert("Error deleting resource.");
-    } finally {
-      setActionLoading(null);
-    }
+  const handleDelete = (id: string, title: string) => {
+    confirm({
+      title: `Delete "${title}"?`,
+      message: "This will permanently remove this resource and all associated download links. This cannot be undone.",
+      confirmText: "Delete Permanently",
+      variant: "danger",
+      onConfirm: async () => {
+        setActionLoading(`del_${id}`);
+        try {
+          const res = await fetch(`/api/admin/resources/${id}`, {
+            method: "DELETE",
+          });
+          const data = await res.json();
+          if (res.ok) {
+            showToast({
+              type: "success",
+              title: "Resource Deleted",
+              message: `"${title}" has been permanently removed.`,
+            });
+            router.refresh();
+          } else {
+            showToast({
+              type: "error",
+              title: "Deletion Failed",
+              message: data.error || "Failed to delete resource.",
+            });
+          }
+        } catch {
+          showToast({
+            type: "error",
+            title: "Network Error",
+            message: "Error communicating with server.",
+          });
+        } finally {
+          setActionLoading(null);
+        }
+      },
+    });
+  };
+
+  const handlePurgeAll = () => {
+    confirm({
+      title: "Clear All Resources & Start Fresh?",
+      message:
+        "WARNING: This will permanently purge ALL resource products, download links, and images across the entire platform. Use this option to start with a fresh catalog.",
+      confirmText: "Wipe All & Start Fresh",
+      variant: "danger",
+      onConfirm: async () => {
+        setActionLoading("purge_all");
+        try {
+          const res = await fetch("/api/admin/resources/purge", {
+            method: "POST",
+          });
+          const data = await res.json();
+          if (res.ok) {
+            showToast({
+              type: "success",
+              title: "Fresh Slate Activated! 🚀",
+              message: data.message || "All resources purged successfully.",
+              duration: 5000,
+            });
+            router.refresh();
+          } else {
+            showToast({
+              type: "error",
+              title: "Purge Failed",
+              message: data.error || "Could not purge resources.",
+            });
+          }
+        } catch {
+          showToast({
+            type: "error",
+            title: "Network Error",
+            message: "Failed to reach server to purge resources.",
+          });
+        } finally {
+          setActionLoading(null);
+        }
+      },
+    });
   };
 
   const getStatusBadge = (status: string) => {
@@ -118,8 +206,8 @@ export function ResourceTableClient({
 
   return (
     <div className="space-y-4">
-      {/* Search & Filter Bar */}
-      <div className="p-4 rounded-3xl border border-[var(--border)] bg-[var(--card)] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs shadow-xs">
+      {/* Search & Filter Bar with Purge Action */}
+      <div className="p-4 rounded-3xl border border-[var(--border)] bg-[var(--card)] flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 text-xs shadow-xs">
         <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-2.5 w-3.5 h-3.5 text-[var(--muted-foreground)]" />
           <input
@@ -157,6 +245,24 @@ export function ResourceTableClient({
             <option value="DRAFT">Draft</option>
             <option value="ARCHIVED">Archived</option>
           </select>
+
+          {/* Start Fresh / Purge All Option */}
+          {initialResources.length > 0 && (
+            <button
+              type="button"
+              onClick={handlePurgeAll}
+              disabled={actionLoading === "purge_all"}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 font-semibold text-xs transition-all shadow-xs"
+              title="Remove all products to start completely fresh"
+            >
+              {actionLoading === "purge_all" ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Sparkles className="w-3.5 h-3.5" />
+              )}
+              <span>Clear All & Start Fresh</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -221,7 +327,7 @@ export function ResourceTableClient({
                             href={`/resource/${res.slug}`}
                             target="_blank"
                             title="View Public Page"
-                            className="p-1.5 rounded-lg border border-[var(--border)] hover:bg-[var(--secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                            className="p-1.5 rounded-lg border border-[var(--border)] hover:bg-[var(--secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
                           >
                             <ExternalLink className="w-3.5 h-3.5" />
                           </Link>
@@ -229,16 +335,16 @@ export function ResourceTableClient({
                         <Link
                           href={`/admin/resources/${res.id}/edit`}
                           title="Edit Resource"
-                          className="p-1.5 rounded-lg border border-[var(--border)] hover:bg-[var(--secondary)] text-[var(--foreground)]"
+                          className="p-1.5 rounded-lg border border-[var(--border)] hover:bg-[var(--secondary)] text-[var(--foreground)] transition-colors"
                         >
                           <Edit className="w-3.5 h-3.5" />
                         </Link>
                         <button
                           type="button"
-                          onClick={() => handleDuplicate(res.id)}
+                          onClick={() => handleDuplicate(res.id, res.title)}
                           disabled={actionLoading === `dup_${res.id}`}
                           title="Duplicate Resource"
-                          className="p-1.5 rounded-lg border border-[var(--border)] hover:bg-[var(--secondary)] text-[var(--foreground)]"
+                          className="p-1.5 rounded-lg border border-[var(--border)] hover:bg-[var(--secondary)] text-[var(--foreground)] transition-colors"
                         >
                           {actionLoading === `dup_${res.id}` ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -251,7 +357,7 @@ export function ResourceTableClient({
                           onClick={() => handleDelete(res.id, res.title)}
                           disabled={actionLoading === `del_${res.id}`}
                           title="Delete Resource"
-                          className="p-1.5 rounded-lg border border-red-500/20 hover:bg-red-500/10 text-red-500"
+                          className="p-1.5 rounded-lg border border-red-500/20 hover:bg-red-500/10 text-red-500 transition-colors"
                         >
                           {actionLoading === `del_${res.id}` ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -270,9 +376,9 @@ export function ResourceTableClient({
       ) : (
         <EmptyState
           icon={Package}
-          title="No resources found"
-          description="There are no resources matching the active filter criteria. Click 'Add New Resource' to publish software or assets."
-          actionText="Create First Resource"
+          title="No resources in database"
+          description="Your catalog is clean and ready for fresh products. Click 'Add New Resource' to publish software or digital assets."
+          actionText="Add New Resource"
           actionHref="/admin/resources/new"
         />
       )}

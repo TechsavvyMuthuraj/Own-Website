@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 90" fill="none">
+  <!-- Glowing Yellow/Gold N Logo Icon -->
+  <g transform="translate(6, 6)">
+    <!-- Rounded Dark Icon Container with Gold Glow -->
+    <rect width="78" height="78" rx="20" fill="#0E1015" stroke="#FACC15" stroke-opacity="0.35" stroke-width="2"/>
+    <!-- Stylized Geometric N Symbol in Vibrant Electric Gold -->
+    <path d="M22 60V22C22 19.2 24.2 17 27 17H31.2C33.8 17 36.2 18.4 37.5 20.6L52.5 45.5V22C52.5 19.2 54.7 17 57.5 17H59C61.8 17 64 19.2 64 22V60C64 62.8 61.8 65 59 65H54.8C52.2 65 49.8 63.6 48.5 61.4L33.5 36.5V60C33.5 62.8 31.3 65 28.5 65H27C24.2 65 22 62.8 22 60Z" fill="url(#n-gold-gradient)"/>
+    <!-- Subtle Golden Sparkle Accent -->
+    <circle cx="63" cy="18" r="3.5" fill="#FFE600"/>
+  </g>
+
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="n-gold-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF066"/>
+      <stop offset="35%" stop-color="#FACC15"/>
+      <stop offset="100%" stop-color="#EAB308"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Wordmark: NammaTech -->
+  <text x="100" y="48" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="34" letter-spacing="-0.8">
+    <tspan fill="#FFFFFF">Namma</tspan><tspan fill="#FACC15">Tech</tspan>
+  </text>
+
+  <!-- Tagline: All You Need, One Place. -->
+  <text x="102" y="68" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" font-size="11" letter-spacing="0.8" fill="#94A3B8">
+    All You Need, One Place.
+  </text>
+</svg>

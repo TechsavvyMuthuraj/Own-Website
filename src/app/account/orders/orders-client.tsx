@@ -19,8 +19,11 @@ import {
   Download,
   BadgeCheck,
   IndianRupee,
+  Trash2,
 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { useToast } from "@/components/ui/toast";
+import { useRouter } from "next/navigation";
 
 function StatusBadge({ status }: { status: string }) {
   if (status === "PAID")
@@ -46,8 +49,11 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function OrderCard({ order }: { order: any }) {
+  const router = useRouter();
+  const { showToast, confirm } = useToast();
   const [expanded, setExpanded] = useState(order.status === "PENDING");
   const [editing, setEditing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [utrInput, setUtrInput] = useState(
     order.payment_id?.match(/^\d{12}$/) ? order.payment_id : ""
   );
@@ -59,6 +65,46 @@ function OrderCard({ order }: { order: any }) {
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   const isPending = order.status === "PENDING";
+
+  const handleDeleteOrder = () => {
+    confirm({
+      title: `Delete Order #${order.order_number}?`,
+      message: "Are you sure you want to remove this order from your order history?",
+      confirmText: "Delete Order",
+      variant: "danger",
+      onConfirm: async () => {
+        setDeleting(true);
+        try {
+          const res = await fetch(`/api/user/orders/${order.id}`, {
+            method: "DELETE",
+          });
+          const data = await res.json();
+          if (res.ok) {
+            showToast({
+              type: "success",
+              title: "Order Removed",
+              message: "The order has been removed from your history.",
+            });
+            router.refresh();
+          } else {
+            showToast({
+              type: "error",
+              title: "Failed to Remove",
+              message: data.error || "Could not delete order.",
+            });
+          }
+        } catch {
+          showToast({
+            type: "error",
+            title: "Network Error",
+            message: "Failed to communicate with server.",
+          });
+        } finally {
+          setDeleting(false);
+        }
+      },
+    });
+  };
 
   const handleSaveUtr = async () => {
     const trimmed = utrInput.trim();
@@ -139,9 +185,27 @@ function OrderCard({ order }: { order: any }) {
           <span className="text-base font-extrabold text-[var(--foreground)]">
             {formatCurrency(order.total, order.currency)}
           </span>
-          <span className="text-[var(--muted-foreground)]">
-            {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteOrder();
+              }}
+              disabled={deleting}
+              className="p-1.5 rounded-lg text-[var(--muted-foreground)] hover:text-red-500 hover:bg-red-500/10 transition-colors"
+              title="Remove order from history"
+            >
+              {deleting ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Trash2 className="w-3.5 h-3.5" />
+              )}
+            </button>
+            <span className="text-[var(--muted-foreground)]">
+              {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </span>
+          </div>
         </div>
       </div>
 

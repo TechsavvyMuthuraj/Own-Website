@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Compass,
   ArrowRight,
@@ -21,6 +22,7 @@ import type { Resource, Category } from "@/types/database";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 import { AdSlot } from "@/components/ads/ad-slot";
 import { getActiveAd } from "@/lib/ads";
+import { FounderProfile } from "@/components/home/founder-profile";
 
 export const revalidate = 60; // Cache revalidation every 60s
 
@@ -30,50 +32,51 @@ export default async function HomePage() {
   let featuredResources: Resource[] = [];
   let latestResources: Resource[] = [];
   let categories: Category[] = [];
-  const homepageAd = await getActiveAd("HOMEPAGE");
+  let homepageAd: any = null;
 
   try {
-    // 1. Fetch Featured Resources
-    const { data: featuredData } = await supabase
-      .from("resources")
-      .select("*, category:categories(*)")
-      .eq("status", "PUBLISHED")
-      .eq("featured", true)
-      .order("published_at", { ascending: false })
-      .limit(4);
+    // Concurrent queries in parallel for ultra-fast rendering speed
+    const [adResult, featuredResult, latestResult, categoriesResult] = await Promise.all([
+      getActiveAd("HOMEPAGE"),
+      supabase
+        .from("resources")
+        .select("*, category:categories(*)")
+        .eq("status", "PUBLISHED")
+        .eq("featured", true)
+        .order("published_at", { ascending: false })
+        .limit(4),
+      supabase
+        .from("resources")
+        .select("*, category:categories(*)")
+        .eq("status", "PUBLISHED")
+        .order("published_at", { ascending: false })
+        .limit(8),
+      supabase
+        .from("categories")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .limit(8),
+    ]);
 
-    if (featuredData) {
-      featuredResources = (featuredData as unknown[]).map((item: any) => ({
+    homepageAd = adResult;
+
+    if (featuredResult.data) {
+      featuredResources = (featuredResult.data as unknown[]).map((item: any) => ({
         ...item,
         category: Array.isArray(item.category) ? item.category[0] : item.category,
       })) as Resource[];
     }
 
-    // 2. Fetch Latest Published Resources
-    const { data: latestData } = await supabase
-      .from("resources")
-      .select("*, category:categories(*)")
-      .eq("status", "PUBLISHED")
-      .order("published_at", { ascending: false })
-      .limit(8);
-
-    if (latestData) {
-      latestResources = (latestData as unknown[]).map((item: any) => ({
+    if (latestResult.data) {
+      latestResources = (latestResult.data as unknown[]).map((item: any) => ({
         ...item,
         category: Array.isArray(item.category) ? item.category[0] : item.category,
       })) as Resource[];
     }
 
-    // 3. Fetch Active Categories
-    const { data: categoriesData } = await supabase
-      .from("categories")
-      .select("*")
-      .eq("is_active", true)
-      .order("sort_order", { ascending: true })
-      .limit(8);
-
-    if (categoriesData) {
-      categories = categoriesData as Category[];
+    if (categoriesResult.data) {
+      categories = categoriesResult.data as Category[];
     }
   } catch (error) {
     console.error("Failed to load homepage resources from database:", error);
@@ -90,68 +93,99 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col gap-16 py-8 sm:py-12">
-      {/* 1. HERO SECTION */}
+      {/* 1. HERO SECTION WITH FOUNDER GRAPHIC */}
       <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-gradient-to-b from-[var(--secondary)]/50 via-[var(--card)] to-[var(--card)] p-8 sm:p-14 text-center">
-          {/* Subtle background decorative aura */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#FD1843]/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-neutral-950 shadow-2xl">
+          {/* Full resolution graphic banner */}
+          <div className="relative w-full aspect-[1024/286] min-h-[220px] sm:min-h-[280px]">
+            <Image
+              src="/images/hero-clean.png"
+              alt="NammaTech - Everything You Need In One Place. Founder Muthuraj"
+              fill
+              priority
+              quality={95}
+              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 1200px, 1280px"
+              className="object-cover object-left sm:object-center select-none"
+            />
 
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#FD1843]/20 bg-[var(--background)] text-xs font-medium text-[var(--muted-foreground)] mb-6 shadow-sm">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#FD1843]" />
-            <span>NammaTech • Explore • Download • Upgrade • Together</span>
+            {/* Desktop Interactive Search Overlay perfectly mapped to the banner's search bar */}
+            <form
+              action="/search"
+              method="GET"
+              className="hidden md:flex items-center absolute"
+              style={{
+                left: "3.5%",
+                top: "47%",
+                width: "41%",
+                height: "17%",
+              }}
+            >
+              <div className="relative w-full h-full flex items-center">
+                <input
+                  type="text"
+                  name="q"
+                  placeholder="Search software, tools, games, templates..."
+                  aria-label="Search resources"
+                  className="w-full h-full pl-10 pr-24 rounded-full bg-black/40 hover:bg-black/60 focus:bg-neutral-900/95 text-white placeholder-neutral-400 text-xs font-medium border border-amber-500/30 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500/40 transition-all shadow-inner backdrop-blur-sm"
+                />
+                <Search className="absolute left-3.5 w-3.5 h-3.5 text-neutral-400 pointer-events-none" />
+                <button
+                  type="submit"
+                  className="absolute right-1 px-4 py-1.5 rounded-full bg-amber-400 hover:bg-amber-300 text-neutral-950 text-xs font-bold transition-all shadow-md active:scale-95 cursor-pointer"
+                >
+                  Search
+                </button>
+              </div>
+            </form>
           </div>
 
-          {/* Main Title */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-[var(--foreground)] tracking-tight max-w-4xl mx-auto mb-6 leading-tight">
-            Discover trusted digital resources on{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FD1843] via-[#ff4d6d] to-[#ff758f]">
-              NammaTech
-            </span>
-          </h1>
-
-          {/* Subtitle */}
-          <p className="text-sm sm:text-lg text-[var(--muted-foreground)] max-w-2xl mx-auto mb-8 leading-relaxed">
-            All you need. One place. Verified open-source software, developer tools, authorized APKs, templates, and digital files in one fast, reliable platform.
-          </p>
-
-          {/* Hero CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-md mx-auto mb-10">
-            <Link
-              href="/explore"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[var(--primary)] text-white font-semibold text-sm hover:bg-[var(--primary-hover)] transition-all shadow-md shadow-[#FD1843]/25"
-            >
-              <Compass className="w-4 h-4" />
-              <span>Explore Resources</span>
-            </Link>
-
-            <Link
-              href="/categories"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)] hover:bg-[var(--secondary)] text-[var(--foreground)] font-semibold text-sm transition-all"
-            >
-              <Layers className="w-4 h-4" />
-              <span>Browse Categories</span>
-            </Link>
-          </div>
-
-          {/* Quick Search Redirect Input */}
-          <div className="max-w-xl mx-auto">
+          {/* Mobile-Friendly Search Bar Below Graphic */}
+          <div className="md:hidden p-4 bg-neutral-900/90 border-t border-neutral-800">
             <form action="/search" method="GET" className="relative flex items-center">
-              <Search className="absolute left-4 w-4 h-4 text-[var(--muted-foreground)]" />
+              <Search className="absolute left-3.5 w-4 h-4 text-neutral-400" />
               <input
                 type="text"
                 name="q"
-                placeholder="Search apps, utilities, tools, templates..."
-                className="w-full pl-11 pr-24 py-3 rounded-2xl border border-[var(--border)] bg-[var(--background)] text-sm text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] shadow-inner"
+                placeholder="Search software, movies, tools, APKs..."
+                className="w-full pl-10 pr-24 py-2.5 rounded-2xl border border-amber-500/30 bg-neutral-950 text-xs text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-amber-500/40 shadow-inner"
               />
               <button
                 type="submit"
-                className="absolute right-2 px-3.5 py-1.5 rounded-xl bg-[var(--secondary)] hover:bg-[var(--primary)] hover:text-white text-xs font-semibold text-[var(--foreground)] transition-all"
+                className="absolute right-1.5 px-3.5 py-1.5 rounded-xl bg-amber-400 text-neutral-950 text-xs font-bold hover:bg-amber-300 transition-all cursor-pointer"
               >
                 Search
               </button>
             </form>
           </div>
+        </div>
+
+        {/* Quick Trending / Quick-Access Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto py-3 px-1 text-xs font-semibold text-neutral-300">
+          <span className="text-[var(--muted-foreground)] text-xs flex-shrink-0 font-medium">Trending:</span>
+          <Link
+            href="/movies"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 whitespace-nowrap transition-all shadow-sm"
+          >
+            <span>🎬 Movies (Free & 4K VIP)</span>
+          </Link>
+          <Link
+            href="/free"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 whitespace-nowrap transition-all"
+          >
+            <span>⚡ Free Downloads</span>
+          </Link>
+          <Link
+            href="/premium"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 whitespace-nowrap transition-all"
+          >
+            <span>👑 VIP Premium</span>
+          </Link>
+          <Link
+            href="/categories"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--secondary)] hover:bg-[var(--border)] text-[var(--foreground)] border border-[var(--border)] whitespace-nowrap transition-all"
+          >
+            <span>📱 APKs & Software</span>
+          </Link>
         </div>
       </section>
 
@@ -259,6 +293,9 @@ export default async function HomePage() {
           emptyActionHref="/categories"
         />
       </section>
+
+      {/* 5. FOUNDER & LEAD DEVELOPER PROFILE */}
+      <FounderProfile />
     </div>
   );
 }
