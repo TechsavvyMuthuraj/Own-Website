@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(request: Request) {
   try {
-    const { orderId, paymentId, upiReference } = await request.json();
+    const { orderId, upiReference, pendingOnly } = await request.json();
 
     if (!orderId) {
       return NextResponse.json({ error: "Missing required order ID" }, { status: 400 });
@@ -11,7 +11,7 @@ export async function POST(request: Request) {
 
     const supabaseAdmin = createAdminClient();
 
-    // 1. Fetch order
+    // Fetch order
     const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
       .select("*, items:order_items(*)")
@@ -22,15 +22,29 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    // 2. If already PAID, return idempotent success
     if (order.status === "PAID") {
       return NextResponse.json({ success: true, message: "Order is already verified as paid" });
     }
 
-    const recordedUpiRef = upiReference || paymentId || `UPI_TXN_${Date.now()}`;
+    const recordedUpiRef = upiReference || `UPI_${Date.now()}`;
 
-    // 3. Update order to PAID with UPI payment provider
-    const { error: updateError } = await supabaseAdmin
+    // pendingOnly = true: just store the UTR without granting entitlements
+    // This is used by the user-facing checkout to record the UTR for admin review
+    if (pendingOnly) {
+      await supabaseAdmin
+        .from("orders")
+        .update({
+          payment_id: recordedUpiRef,
+          payment_provider: "UPI",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", orderId);
+
+      return NextResponse.json({ success: true, pending: true });
+    }
+
+    // Full verification path (legacy / admin bypass) — mark as PAID and grant entitlements
+    await supabaseAdmin
       .from("orders")
       .update({
         status: "PAID",
@@ -40,19 +54,13 @@ export async function POST(request: Request) {
       })
       .eq("id", orderId);
 
-    if (updateError) {
-      console.error("Order update error:", updateError);
-      return NextResponse.json({ error: "Failed to update order status" }, { status: 500 });
-    }
-
-    // 4. Update coupon times_used if applied
+    // Update coupon usage
     if (order.coupon_code) {
       const { data: coupon } = await supabaseAdmin
         .from("coupons")
         .select("times_used")
         .eq("code", order.coupon_code)
         .single();
-
       if (coupon) {
         await supabaseAdmin
           .from("coupons")
@@ -61,7 +69,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // 5. Grant Entitlements for all items in order
+    // Grant entitlements
     if (order.items && order.items.length > 0) {
       const entitlementsToInsert = order.items.map((item: any) => ({
         user_id: order.user_id,
@@ -69,8 +77,6 @@ export async function POST(request: Request) {
         order_id: order.id,
         status: "ACTIVE",
       }));
-
-      // Upsert to prevent duplicate entitlement violations
       await supabaseAdmin
         .from("entitlements")
         .upsert(entitlementsToInsert, { onConflict: "user_id,resource_id" });

@@ -5,12 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ShieldCheck,
-  CheckCircle2,
+  Clock,
   Download,
   ShoppingBag,
   ArrowLeft,
   AlertCircle,
   Tag,
+  CheckCircle2,
+  Bell,
 } from "lucide-react";
 import { useCart } from "@/lib/cart/cart-store";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -24,14 +26,13 @@ export default function CheckoutPage() {
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const [completedOrder, setCompletedOrder] = useState<any>(null);
+  const [pendingOrder, setPendingOrder] = useState<any>(null);
 
-  // Generate temporary client order ref for prefilling QR note
   const [tempOrderNumber] = useState(
     () => `ORD-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`
   );
 
-  if (items.length === 0 && !completedOrder) {
+  if (items.length === 0 && !pendingOrder) {
     return (
       <div className="max-w-md mx-auto px-4 py-20 text-center flex flex-col items-center justify-center">
         <div className="w-16 h-16 rounded-2xl bg-[var(--secondary)] text-[var(--muted-foreground)] flex items-center justify-center mb-4">
@@ -51,10 +52,17 @@ export default function CheckoutPage() {
     );
   }
 
-  // Handle UPI Confirmation
+  // Handle UPI Submission — creates PENDING order and stores UTR for admin review
   const handleConfirmUpiPayment = async (utr: string) => {
     if (!user) {
       router.push("/auth/login?redirect=/checkout");
+      return;
+    }
+
+    // Validate UTR format — must be 12 digits
+    const trimmedUtr = utr.trim();
+    if (trimmedUtr && !/^\d{12}$/.test(trimmedUtr)) {
+      setErrorMsg("UTR number must be exactly 12 digits. Find it in your UPI app's payment details.");
       return;
     }
 
@@ -62,109 +70,138 @@ export default function CheckoutPage() {
     setErrorMsg("");
 
     try {
-      // 1. Create order on server
+      // Create a PENDING order — admin will verify and unlock entitlements
       const createRes = await fetch("/api/checkout/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           resourceIds: items.map((i) => i.resource.id),
           couponCode: appliedCoupon?.code,
+          upiReference: trimmedUtr || undefined,
         }),
       });
 
       const orderData = await createRes.json();
       if (!createRes.ok) {
-        setErrorMsg(orderData.error || "Failed to initialize order.");
+        setErrorMsg(orderData.error || "Failed to place order. Please try again.");
         setIsProcessing(false);
         return;
       }
 
-      // 2. Verify and grant instant digital entitlements
-      const verifyRes = await fetch("/api/checkout/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          orderId: orderData.orderId,
-          upiReference: utr || `UPI_${Date.now()}`,
-        }),
-      });
-
-      const verifyData = await verifyRes.json();
-      if (verifyRes.ok && verifyData.success) {
-        clearCart();
-        setCompletedOrder({
-          orderNumber: orderData.orderNumber,
-          total: orderData.total,
-          items: [...items],
-          utr: utr || "Verified via UPI",
+      // Store the UTR on the order record for admin to see
+      if (trimmedUtr) {
+        await fetch("/api/checkout/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId: orderData.orderId,
+            upiReference: trimmedUtr,
+            pendingOnly: true, // flag: only record UTR, don't grant entitlements yet
+          }),
         });
-      } else {
-        setErrorMsg(verifyData.error || "Payment verification could not be completed.");
       }
+
+      clearCart();
+      setPendingOrder({
+        orderNumber: orderData.orderNumber,
+        total: orderData.total,
+        items: [...items],
+        utr: trimmedUtr || null,
+      });
     } catch (err) {
-      console.error("Checkout payment confirmation error:", err);
-      setErrorMsg("Network error occurred during payment verification.");
+      console.error("Checkout error:", err);
+      setErrorMsg("Network error. Please check your connection and try again.");
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // SUCCESS STATE
-  if (completedOrder) {
+  // PENDING SUCCESS STATE — waiting for admin verification
+  if (pendingOrder) {
     return (
-      <div className="max-w-xl mx-auto px-4 py-16 w-full flex flex-col items-center justify-center text-center">
-        <div className="p-8 sm:p-10 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-2xl shadow-emerald-500/10 w-full space-y-6 animate-in zoom-in-95 duration-300">
-          <div className="w-20 h-20 rounded-3xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto ring-1 ring-emerald-500/30 shadow-lg shadow-emerald-500/10">
-            <CheckCircle2 className="w-10 h-10" />
+      <div className="max-w-xl mx-auto px-4 py-10 sm:py-16 w-full flex flex-col items-center justify-center text-center">
+        <div className="p-6 sm:p-10 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-2xl shadow-amber-500/10 w-full space-y-6 animate-in zoom-in-95 duration-300">
+          {/* Icon */}
+          <div className="w-20 h-20 rounded-3xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto ring-1 ring-amber-500/30 shadow-lg shadow-amber-500/10">
+            <Clock className="w-10 h-10" />
           </div>
 
+          {/* Status Badge */}
           <div>
-            <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 mb-2">
-              Payment Confirmed • Digital Access Ready
+            <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 mb-3">
+              Payment Submitted • Pending Admin Verification
             </span>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--foreground)] tracking-tight">
-              Order Confirmed!
+              Order Placed!
             </h1>
-            <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1">
-              Order <strong className="font-mono text-[var(--foreground)]">#{completedOrder.orderNumber}</strong> has been processed. Your digital licenses are unlocked!
+            <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1.5 max-w-sm mx-auto">
+              Order{" "}
+              <strong className="font-mono text-[var(--foreground)]">
+                #{pendingOrder.orderNumber}
+              </strong>{" "}
+              is placed. Your download will unlock once admin verifies your UPI payment.
             </p>
           </div>
 
-          {/* Purchased Items List with Direct Download Links */}
-          <div className="divide-y divide-[var(--border)] rounded-2xl bg-[var(--secondary)]/60 border border-[var(--border)] p-4 text-left text-xs space-y-3">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
-              Your Unlocked Products
-            </span>
-            {completedOrder.items.map(({ id, resource }: any) => (
-              <div key={id} className="pt-3 first:pt-2 flex items-center justify-between gap-3">
-                <div className="truncate">
-                  <p className="font-bold text-[var(--foreground)] truncate">{resource.title}</p>
-                  <p className="text-[11px] text-[var(--muted-foreground)]">License: {resource.license || "Full Access"}</p>
-                </div>
+          {/* Order Details Box */}
+          <div className="rounded-2xl bg-[var(--secondary)]/60 border border-[var(--border)] p-4 text-left space-y-3">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+              Order Summary
+            </p>
 
-                <Link
-                  href={`/resource/${resource.slug}/download`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--primary)] text-white font-semibold text-xs hover:bg-[var(--primary-hover)] transition-all shadow-sm flex-shrink-0"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Download</span>
-                </Link>
+            <div className="divide-y divide-[var(--border)]/60">
+              {pendingOrder.items.map(({ id, resource }: any) => (
+                <div key={id} className="py-2 first:pt-0 last:pb-0">
+                  <p className="font-semibold text-xs text-[var(--foreground)] truncate">{resource.title}</p>
+                  <p className="text-[11px] text-[var(--muted-foreground)]">
+                    License: {resource.license || "Full Access"}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-2 border-t border-[var(--border)]/60 flex justify-between items-center">
+              <span className="text-xs text-[var(--muted-foreground)]">Total Paid</span>
+              <span className="font-bold text-sm text-[#FD1843]">
+                {formatCurrency(pendingOrder.total)}
+              </span>
+            </div>
+
+            {pendingOrder.utr && (
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-[var(--muted-foreground)]">UTR Number</span>
+                <span className="font-mono font-bold text-[var(--foreground)] bg-[var(--secondary)] px-2 py-0.5 rounded-lg">
+                  {pendingOrder.utr}
+                </span>
               </div>
-            ))}
+            )}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+          {/* Info Notice */}
+          <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-blue-500/5 border border-blue-500/15 text-left">
+            <Bell className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-[var(--muted-foreground)]">
+              Admin will verify your payment shortly. Once approved, your products will
+              automatically appear in{" "}
+              <strong className="text-[var(--foreground)]">My Downloads</strong>. This usually takes
+              a few minutes.
+            </p>
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-1">
             <Link
               href="/account/downloads"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-all shadow-md shadow-emerald-600/25"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-xs font-semibold transition-all shadow-md shadow-[#FD1843]/25"
             >
-              <span>Go to My Downloads</span>
+              <Download className="w-4 h-4" />
+              <span>Check My Downloads</span>
             </Link>
             <Link
               href="/explore"
               className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--secondary)] text-xs font-semibold text-[var(--foreground)] transition-all"
             >
-              <span>Explore More Resources</span>
+              <span>Explore More</span>
             </Link>
           </div>
         </div>
@@ -184,10 +221,10 @@ export default function CheckoutPage() {
           <span>Back to Cart</span>
         </Link>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--foreground)] tracking-tight">
-          Checkout &amp; Instant UPI Payment
+          Checkout &amp; UPI Payment
         </h1>
         <p className="text-xs sm:text-sm text-[var(--muted-foreground)] max-w-md mx-auto">
-          Scan the dynamic QR code with any UPI app. The exact total is prefilled automatically!
+          Scan the QR or open your UPI app. Enter your 12-digit UTR after paying and click confirm.
         </p>
       </div>
 
@@ -200,10 +237,12 @@ export default function CheckoutPage() {
 
       {/* Account Check Notice */}
       {!user && !authLoading && (
-        <div className="w-full max-w-md p-4 rounded-2xl bg-[#FD1843]/10 border border-[#FD1843]/20 flex flex-col sm:flex-row items-center justify-between gap-3 mb-6 text-left">
+        <div className="w-full max-w-md p-4 rounded-2xl bg-[#FD1843]/10 border border-[#FD1843]/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6 text-left">
           <div>
             <p className="text-xs font-bold text-[var(--foreground)]">Sign in to save downloads</p>
-            <p className="text-[11px] text-[var(--muted-foreground)]">Your digital licenses will be tied to your account.</p>
+            <p className="text-[11px] text-[var(--muted-foreground)]">
+              Your digital licenses will be tied to your account.
+            </p>
           </div>
           <Link
             href="/auth/login?redirect=/checkout"
@@ -214,18 +253,32 @@ export default function CheckoutPage() {
         </div>
       )}
 
+      {/* Admin Verification Notice */}
+      <div className="w-full max-w-md p-3.5 rounded-2xl bg-amber-500/8 border border-amber-500/20 flex items-start gap-2.5 mb-5 text-left">
+        <Clock className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+        <p className="text-xs text-[var(--muted-foreground)]">
+          <strong className="text-[var(--foreground)]">Manual verification:</strong> After paying, enter your
+          12-digit UTR number. Admin will verify and unlock your download within minutes.
+        </p>
+      </div>
+
       {/* Center Card Container */}
-      <div className="w-full max-w-md p-6 sm:p-8 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-xl space-y-6">
-        {/* Order Items Collapsible Summary */}
+      <div className="w-full max-w-md p-5 sm:p-8 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-xl space-y-6">
+        {/* Order Summary */}
         <div className="p-4 rounded-2xl bg-[var(--secondary)]/60 border border-[var(--border)] text-left space-y-2.5">
           <div className="flex items-center justify-between text-xs font-bold text-[var(--foreground)]">
-            <span>Order Summary ({items.length} {items.length === 1 ? "item" : "items"})</span>
+            <span>
+              Order Summary ({items.length} {items.length === 1 ? "item" : "items"})
+            </span>
             <span className="text-[#FD1843] font-bold">{formatCurrency(total)}</span>
           </div>
 
           <div className="divide-y divide-[var(--border)]/60 max-h-36 overflow-y-auto pr-1 text-xs">
             {items.map(({ id, resource, price }) => (
-              <div key={id} className="py-1.5 first:pt-0 last:pb-0 flex justify-between items-center text-[11px]">
+              <div
+                key={id}
+                className="py-1.5 first:pt-0 last:pb-0 flex justify-between items-center text-[11px]"
+              >
                 <span className="truncate pr-2 text-[var(--foreground)]">{resource.title}</span>
                 <span className="font-semibold text-[var(--foreground)] flex-shrink-0">
                   {formatCurrency(price, resource.currency)}
@@ -245,7 +298,7 @@ export default function CheckoutPage() {
           )}
         </div>
 
-        {/* Dynamic UPI QR Card Component */}
+        {/* Dynamic UPI QR Card */}
         <UpiQrCard
           amount={total}
           orderNumber={tempOrderNumber}
@@ -259,7 +312,7 @@ export default function CheckoutPage() {
       {/* Security note */}
       <div className="mt-6 flex items-center justify-center gap-2 text-[11px] text-[var(--muted-foreground)]">
         <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-        <span>Direct UPI Payment • Zero Extra Fees • Instant Digital Delivery</span>
+        <span>Direct UPI Payment • Zero Extra Fees • Admin Verified Delivery</span>
       </div>
     </div>
   );

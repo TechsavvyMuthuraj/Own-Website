@@ -2,9 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+  let supabaseResponse = NextResponse.next({ request });
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -37,16 +35,40 @@ export async function proxy(request: NextRequest) {
     "";
   const isAdminSubdomain = host.startsWith("admin.");
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const isMaintenanceExempt =
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/_next") ||
+    pathname === "/ads.txt" ||
+    pathname === "/robots.txt" ||
+    pathname === "/sitemap.xml";
 
-  // Admin Subdomain Routing
+  // ── Run auth check + maintenance fetch IN PARALLEL for max speed ───────────
+  const maintenanceFetch =
+    !isMaintenanceExempt && supabaseServiceKey
+      ? fetch(
+          `${supabaseUrl}/rest/v1/site_settings?key=eq.maintenance_mode&select=value&limit=1`,
+          {
+            headers: {
+              apikey: supabaseServiceKey,
+              Authorization: `Bearer ${supabaseServiceKey}`,
+              "Content-Type": "application/json",
+            },
+            cache: "no-store",
+          }
+        ).catch(() => null)
+      : Promise.resolve(null);
+
+  const [{ data: { user } }, maintenanceRes] = await Promise.all([
+    supabase.auth.getUser(),
+    maintenanceFetch,
+  ]);
+
+  // ── Admin Subdomain Routing ────────────────────────────────────────────────
   if (isAdminSubdomain) {
     if (pathname === "/") {
-      if (!user) {
-        return NextResponse.redirect(new URL("/admin/login", request.url));
-      }
+      if (!user) return NextResponse.redirect(new URL("/admin/login", request.url));
       return NextResponse.rewrite(new URL("/admin", request.url));
     }
     if (!pathname.startsWith("/admin") && !pathname.startsWith("/api") && !pathname.startsWith("/auth")) {
@@ -54,7 +76,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // Protect /admin routes
+  // ── Protect /admin routes ──────────────────────────────────────────────────
   if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
     if (!user) {
       const loginUrl = new URL("/admin/login", request.url);
@@ -83,68 +105,36 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // Protect /account routes
+  // ── Protect /account routes ────────────────────────────────────────────────
   if (pathname.startsWith("/account") && !user) {
     const loginUrl = new URL("/auth/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // ── Maintenance Mode ──────────────────────────────────────────────────────
-  const isMaintenanceExempt =
-    pathname.startsWith("/admin") ||
-    pathname.startsWith("/auth") ||
-    pathname.startsWith("/api") ||
-    pathname.startsWith("/_next") ||
-    pathname === "/ads.txt" ||
-    pathname === "/robots.txt" ||
-    pathname === "/sitemap.xml";
-
-  if (!isMaintenanceExempt && supabaseServiceKey) {
+  // ── Maintenance Mode ───────────────────────────────────────────────────────
+  if (!isMaintenanceExempt && maintenanceRes) {
     try {
-      // Use direct fetch to Supabase REST API — avoids dynamic import overhead,
-      // is Edge-runtime compatible, and is significantly faster (~10ms vs ~100ms).
-      const settingsRes = await fetch(
-        `${supabaseUrl}/rest/v1/site_settings?key=eq.maintenance_mode&select=value&limit=1`,
-        {
-          headers: {
-            apikey: supabaseServiceKey,
-            Authorization: `Bearer ${supabaseServiceKey}`,
-            "Content-Type": "application/json",
-            Prefer: "return=representation",
-          },
-          // No caching — always get the fresh value
-          cache: "no-store",
-        }
-      );
-
       let isInMaintenance = false;
-      if (settingsRes.ok) {
-        const rows: Array<{ value: string | boolean }> = await settingsRes.json();
+
+      if (maintenanceRes.ok) {
+        const rows: Array<{ value: string | boolean }> = await maintenanceRes.json();
         if (rows.length > 0) {
-          try {
-            const raw = rows[0].value;
-            const val = typeof raw === "string" ? JSON.parse(raw) : raw;
-            isInMaintenance = val === true || val === "true";
-          } catch { /* skip */ }
+          const raw = rows[0].value;
+          const val = typeof raw === "string" ? JSON.parse(raw) : raw;
+          isInMaintenance = val === true || val === "true";
         }
       }
 
-      // Case 1: Maintenance is OFF, but user requested /maintenance -> redirect to home
       if (!isInMaintenance && pathname === "/maintenance") {
-        const liveRedirect = NextResponse.redirect(new URL("/", request.url), 307);
-        liveRedirect.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
-        liveRedirect.headers.set("Pragma", "no-cache");
-        return liveRedirect;
+        const r = NextResponse.redirect(new URL("/", request.url), 307);
+        r.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+        return r;
       }
 
-      // Case 2: Maintenance is ON
       if (isInMaintenance) {
-        // Admins logged in can bypass maintenance by visiting /?admin_preview=true
         const hasAdminPreviewQuery = request.nextUrl.searchParams.get("admin_preview") === "true";
         const hasAdminPreviewCookie = request.cookies.get("admin_preview")?.value === "true";
-
-        // Also allow bypass if the user is a logged-in admin (user object already fetched above)
         const adminEmails = (process.env.ADMIN_EMAILS || "techsavvy.muthuraj.dev@gmail.com")
           .split(",")
           .map((e) => e.trim().toLowerCase());
@@ -157,16 +147,14 @@ export async function proxy(request: NextRequest) {
           return supabaseResponse;
         }
 
-        // For all public pages, redirect to /maintenance
         if (pathname !== "/maintenance") {
-          const maintRedirect = NextResponse.redirect(new URL("/maintenance", request.url), 307);
-          maintRedirect.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
-          maintRedirect.headers.set("Pragma", "no-cache");
-          return maintRedirect;
+          const r = NextResponse.redirect(new URL("/maintenance", request.url), 307);
+          r.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+          return r;
         }
       }
     } catch (err) {
-      console.error("[Proxy] Maintenance check failed:", err);
+      console.error("[Proxy] Maintenance check error:", err);
     }
   }
 
