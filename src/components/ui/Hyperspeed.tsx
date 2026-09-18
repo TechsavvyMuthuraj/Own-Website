@@ -391,7 +391,7 @@ const Hyperspeed = ({ effectOptions = DEFAULT_EFFECT_OPTIONS, lightMode = false 
         const options = this.options;
         const curve = new THREE.LineCurve3(new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,-1));
         const geometry = new THREE.TubeGeometry(curve, 40, 1, 8, false);
-        const instanced = new THREE.InstancedBufferGeometry().copy(geometry);
+        const instanced = new THREE.InstancedBufferGeometry().copy(geometry as any);
         instanced.instanceCount = options.lightPairsPerRoadWay * 2;
         const laneWidth = options.roadWidth / options.lanesPerRoad;
         const aOffset: number[] = [], aMetrics: number[] = [], aColor: number[] = [];
@@ -432,7 +432,7 @@ const Hyperspeed = ({ effectOptions = DEFAULT_EFFECT_OPTIONS, lightMode = false 
       init() {
         const options = this.options;
         const geometry = new THREE.PlaneGeometry(1, 1);
-        const instanced = new THREE.InstancedBufferGeometry().copy(geometry);
+        const instanced = new THREE.InstancedBufferGeometry().copy(geometry as any);
         const totalSticks = options.totalSideLightSticks;
         instanced.instanceCount = totalSticks;
         const stickoffset = options.length / (totalSticks - 1);
