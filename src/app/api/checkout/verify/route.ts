@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { verifyPaymentSignature } from "@/lib/payments/razorpay";
 
 export async function POST(request: Request) {
   try {
-    const { orderId, paymentId, signature } = await request.json();
+    const { orderId, paymentId, upiReference } = await request.json();
 
-    if (!orderId || !paymentId) {
-      return NextResponse.json({ error: "Missing required payment details" }, { status: 400 });
+    if (!orderId) {
+      return NextResponse.json({ error: "Missing required order ID" }, { status: 400 });
     }
 
     const supabaseAdmin = createAdminClient();
@@ -28,32 +27,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, message: "Order is already verified as paid" });
     }
 
-    // 3. Signature verification
-    // In production with real Razorpay, verifyPaymentSignature is checked.
-    // If PAYMENT_KEY_SECRET is configured, enforce strict verification.
-    if (process.env.PAYMENT_KEY_SECRET && signature) {
-      const isValid = verifyPaymentSignature(order.order_number, paymentId, signature);
-      if (!isValid) {
-        await supabaseAdmin
-          .from("orders")
-          .update({ status: "FAILED", payment_id: paymentId })
-          .eq("id", orderId);
-        return NextResponse.json({ error: "Payment verification signature mismatch" }, { status: 400 });
-      }
-    }
+    const recordedUpiRef = upiReference || paymentId || `UPI_TXN_${Date.now()}`;
 
-    // 4. Update order to PAID
-    await supabaseAdmin
+    // 3. Update order to PAID with UPI payment provider
+    const { error: updateError } = await supabaseAdmin
       .from("orders")
       .update({
         status: "PAID",
-        payment_id: paymentId,
-        payment_provider: "RAZORPAY",
+        payment_id: recordedUpiRef,
+        payment_provider: "UPI",
         updated_at: new Date().toISOString(),
       })
       .eq("id", orderId);
 
-    // 5. Update coupon times_used if applied
+    if (updateError) {
+      console.error("Order update error:", updateError);
+      return NextResponse.json({ error: "Failed to update order status" }, { status: 500 });
+    }
+
+    // 4. Update coupon times_used if applied
     if (order.coupon_code) {
       const { data: coupon } = await supabaseAdmin
         .from("coupons")
@@ -69,7 +61,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // 6. Grant Entitlements for all items in order
+    // 5. Grant Entitlements for all items in order
     if (order.items && order.items.length > 0) {
       const entitlementsToInsert = order.items.map((item: any) => ({
         user_id: order.user_id,

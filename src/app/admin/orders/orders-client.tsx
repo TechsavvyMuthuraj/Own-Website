@@ -78,6 +78,7 @@ export function OrdersTableClient({ initialOrders }: { initialOrders: any[] }) {
               <th className="px-4 py-3.5">Customer</th>
               <th className="px-4 py-3.5">Items</th>
               <th className="px-4 py-3.5">Amount</th>
+              <th className="px-4 py-3.5">Payment / UTR</th>
               <th className="px-4 py-3.5">Status</th>
               <th className="px-4 py-3.5">Date</th>
               <th className="px-5 py-3.5 text-right">Actions</th>
@@ -102,6 +103,14 @@ export function OrdersTableClient({ initialOrders }: { initialOrders: any[] }) {
                 </td>
                 <td className="px-4 py-3.5 font-bold text-[var(--foreground)]">
                   {formatCurrency(order.total, order.currency)}
+                </td>
+                <td className="px-4 py-3.5">
+                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-[var(--secondary)] text-[11px] font-mono text-[var(--foreground)] border border-[var(--border)]">
+                    <span className="font-bold text-[#FD1843]">{order.payment_provider || "UPI"}:</span>
+                    <span className="truncate max-w-[110px]" title={order.payment_id || "Direct"}>
+                      {order.payment_id || "—"}
+                    </span>
+                  </div>
                 </td>
                 <td className="px-4 py-3.5">{getStatusBadge(order.status)}</td>
                 <td className="px-4 py-3.5 text-[var(--muted-foreground)] whitespace-nowrap">

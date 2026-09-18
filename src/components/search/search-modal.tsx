@@ -19,8 +19,19 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleAnimatedClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 190);
+  };
+
   useEffect(() => {
     if (isOpen) {
+      setIsClosing(false);
       setTimeout(() => inputRef.current?.focus(), 50);
       document.body.style.overflow = "hidden";
     } else {
@@ -34,18 +45,18 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        if (isOpen) onClose();
+        if (isOpen) handleAnimatedClose();
         else {
           // Open handled by parent or custom event
         }
       }
       if (e.key === "Escape" && isOpen) {
-        onClose();
+        handleAnimatedClose();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   // Debounced search query
   useEffect(() => {
@@ -89,9 +100,16 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div
+      onClick={handleAnimatedClose}
+      className={`fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-black/60 backdrop-blur-sm transition-opacity duration-200 ${
+        isClosing ? "opacity-0" : "animate-in fade-in duration-200"
+      }`}
+    >
       <div
-        className="relative w-full max-w-2xl rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
+        className={`relative w-full max-w-2xl rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-2xl overflow-hidden flex flex-col max-h-[80vh] transition-all duration-200 ${
+          isClosing ? "animate-popup-exit" : "animate-popup-enter"
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}

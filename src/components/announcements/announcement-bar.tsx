@@ -42,22 +42,30 @@ export function AnnouncementBar() {
     loadActiveAnnouncement();
   }, [supabase]);
 
+  const [isDismissing, setIsDismissing] = useState(false);
+
   if (!announcement || isDismissed) {
-    // If there is no active announcement in the real database: hide completely
     return null;
   }
 
   const handleDismiss = () => {
-    setIsDismissed(true);
-    try {
-      sessionStorage.setItem("dismissed_announcement_id", announcement.id);
-    } catch {
-      // Ignore storage error
-    }
+    setIsDismissing(true);
+    setTimeout(() => {
+      setIsDismissed(true);
+      try {
+        sessionStorage.setItem("dismissed_announcement_id", announcement.id);
+      } catch {
+        // Ignore storage error
+      }
+    }, 280);
   };
 
   return (
-    <div className="relative bg-gradient-to-r from-[#FD1843] via-[#e00d36] to-[#b30526] text-white px-4 py-2 text-xs sm:text-sm font-medium transition-all shadow-inner">
+    <div
+      className={`relative bg-gradient-to-r from-[#FD1843] via-[#e00d36] to-[#b30526] text-white px-4 py-2 text-xs sm:text-sm font-medium shadow-inner transition-all duration-300 ${
+        isDismissing ? "animate-notification-exit pointer-events-none" : "animate-in fade-in slide-in-from-top-2 duration-300"
+      }`}
+    >
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 flex-1 justify-center sm:justify-start">
           <span className="p-1 rounded-full bg-white/20">
@@ -84,7 +92,7 @@ export function AnnouncementBar() {
           type="button"
           onClick={handleDismiss}
           aria-label="Dismiss announcement"
-          className="p-1 rounded-md text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+          className="p-1 rounded-full text-white/80 hover:text-white hover:bg-white/20 transition-all transform hover:rotate-90 hover:scale-110 active:scale-95"
         >
           <X className="w-3.5 h-3.5" />
         </button>

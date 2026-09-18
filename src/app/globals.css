@@ -159,3 +159,71 @@ body {
   background-color: transparent !important;
   box-shadow: none !important;
 }
+
+/* Modern Popup & Notification Animations */
+@keyframes popupEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes popupExit {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(-8px);
+  }
+}
+
+@keyframes notificationSlideOut {
+  from {
+    opacity: 1;
+    max-height: 80px;
+    transform: translateY(0);
+    margin-bottom: 0;
+  }
+  to {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-10px);
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+@keyframes scanGlow {
+  0%, 100% {
+    top: 5%;
+    opacity: 0.2;
+  }
+  50% {
+    top: 90%;
+    opacity: 0.8;
+  }
+}
+
+.animate-popup-enter {
+  animation: popupEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-popup-exit {
+  animation: popupExit 0.2s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+}
+
+.animate-notification-exit {
+  animation: notificationSlideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  overflow: hidden;
+}
+
+.animate-scan-line {
+  animation: scanGlow 3s ease-in-out infinite;
+}
