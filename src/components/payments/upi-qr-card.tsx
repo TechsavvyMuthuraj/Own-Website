@@ -296,26 +296,39 @@ export function UpiQrCard({
       <form onSubmit={handleSubmit} className="w-full space-y-3 pt-2">
         <div className="text-left">
           <label className="block text-xs font-semibold text-[var(--foreground)] mb-1">
-            UPI Reference / UTR Number (Optional if already paid)
+            UTR / UPI Reference Number{" "}
+            <span className="text-[#FD1843] ml-0.5">*</span>
           </label>
           <div className="relative">
             <input
               type="text"
+              inputMode="numeric"
+              required
+              maxLength={12}
               value={utrNumber}
-              onChange={(e) => setUtrNumber(e.target.value)}
-              placeholder="e.g. 423456789012 (12 digits)"
+              onChange={(e) => setUtrNumber(e.target.value.replace(/\D/g, "").slice(0, 12))}
+              placeholder="Enter 12-digit UTR (required)"
               className="w-full px-4 py-3 rounded-2xl border border-[var(--border)] bg-[var(--background)] text-xs font-mono text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] shadow-inner"
             />
+            {utrNumber.length > 0 && (
+              <span
+                className={`absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold ${
+                  utrNumber.length === 12 ? "text-emerald-500" : "text-amber-500"
+                }`}
+              >
+                {utrNumber.length}/12
+              </span>
+            )}
           </div>
-          <p className="text-[10px] text-[var(--muted-foreground)] mt-1.5 leading-relaxed">
-            *Find the 12-digit UTR in your payment details in PhonePe, GPay, or Paytm.
+          <p className="text-[10px] text-[var(--muted-foreground)] mt-1.5">
+            Find the 12-digit UTR in your PhonePe, GPay, or Paytm transaction details after payment.
           </p>
         </div>
 
         <button
           type="submit"
-          disabled={isProcessing}
-          className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50 active:scale-[0.99]"
+          disabled={isProcessing || utrNumber.length !== 12}
+          className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99]"
         >
           {isProcessing ? (
             <>

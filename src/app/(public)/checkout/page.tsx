@@ -59,10 +59,14 @@ export default function CheckoutPage() {
       return;
     }
 
-    // Validate UTR format — must be 12 digits
+    // UTR is mandatory and must be exactly 12 digits
     const trimmedUtr = utr.trim();
-    if (trimmedUtr && !/^\d{12}$/.test(trimmedUtr)) {
-      setErrorMsg("UTR number must be exactly 12 digits. Find it in your UPI app's payment details.");
+    if (!trimmedUtr) {
+      setErrorMsg("UTR number is required. Enter the 12-digit transaction reference from your UPI app after paying.");
+      return;
+    }
+    if (!/^\d{12}$/.test(trimmedUtr)) {
+      setErrorMsg("UTR number must be exactly 12 digits (numbers only). Find it in PhonePe / GPay / Paytm transaction details.");
       return;
     }
 

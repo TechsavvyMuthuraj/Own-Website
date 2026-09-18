@@ -21,7 +21,6 @@ export async function POST(request: Request) {
     const isDesignatedAdmin = user.email && adminEmails.includes(user.email.toLowerCase());
 
     if (!isDesignatedAdmin) {
-      // Check role in profiles table
       const supabaseAdmin = createAdminClient();
       const { data: profile } = await supabaseAdmin
         .from("profiles")
@@ -39,10 +38,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing orderId" }, { status: 400 });
     }
 
-    // Validate UTR: must be 12 digits if provided
-    if (utrNumber && !/^\d{12}$/.test(utrNumber.trim())) {
+    // Validate admin UTR — must be exactly 12 digits
+    const adminUtr = (utrNumber || "").trim();
+    if (!adminUtr) {
       return NextResponse.json(
-        { error: "UTR must be exactly 12 digits" },
+        { error: "UTR number is required to verify the payment" },
+        { status: 400 }
+      );
+    }
+    if (!/^\d{12}$/.test(adminUtr)) {
+      return NextResponse.json(
+        { error: "UTR must be exactly 12 digits (numbers only)" },
         { status: 400 }
       );
     }
@@ -64,20 +70,46 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, message: "Already verified" });
     }
 
-    const paymentRef = utrNumber?.trim() || `ADMIN_VERIFIED_${Date.now()}`;
+    // 3. ── UTR MATCH CHECK ────────────────────────────────────────────────────
+    // The user-submitted UTR is stored in payment_id (set during checkout).
+    // Admin must enter the same UTR to confirm they verified the same transaction.
+    const userUtr = (order.payment_id || "").trim();
 
-    // 3. Mark order as PAID
+    if (!userUtr) {
+      // User hasn't submitted a UTR yet — admin cannot verify without it
+      return NextResponse.json(
+        {
+          error: "User has not submitted a UTR number yet. Ask the user to add their UTR first.",
+          code: "NO_USER_UTR",
+        },
+        { status: 422 }
+      );
+    }
+
+    if (adminUtr !== userUtr) {
+      return NextResponse.json(
+        {
+          error: `UTR mismatch. You entered ${adminUtr} but user submitted ${userUtr}. Enter the exact same UTR to verify.`,
+          code: "UTR_MISMATCH",
+          userUtr,
+          adminUtr,
+        },
+        { status: 409 }
+      );
+    }
+
+    // 4. UTRs match — mark order as PAID ─────────────────────────────────────
     await supabaseAdmin
       .from("orders")
       .update({
         status: "PAID",
-        payment_id: paymentRef,
+        payment_id: adminUtr,
         payment_provider: "UPI",
         updated_at: new Date().toISOString(),
       })
       .eq("id", orderId);
 
-    // 4. Update coupon usage
+    // 5. Update coupon usage
     if (order.coupon_code) {
       const { data: coupon } = await supabaseAdmin
         .from("coupons")
@@ -92,7 +124,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // 5. Grant entitlements for all items
+    // 6. Grant entitlements for all items
     if (order.items && order.items.length > 0) {
       const entitlements = order.items.map((item: any) => ({
         user_id: order.user_id,
@@ -105,7 +137,7 @@ export async function POST(request: Request) {
         .upsert(entitlements, { onConflict: "user_id,resource_id" });
     }
 
-    return NextResponse.json({ success: true, orderId: order.id });
+    return NextResponse.json({ success: true, orderId: order.id, matchedUtr: adminUtr });
   } catch (err) {
     console.error("Admin order verify error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
