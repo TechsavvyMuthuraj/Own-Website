@@ -65,7 +65,7 @@ export async function generateMetadata({
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_SITE_URL.includes("localhost")
     ? process.env.NEXT_PUBLIC_SITE_URL
-    : "https://nammatech.in";
+    : "https://www.techsavvymuthuraj.dev";
 
   const title = `${res.title} - Download Free & Verified | NammaTech`;
   const description =

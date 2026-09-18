@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_SITE_URL.includes("localhost")
     ? process.env.NEXT_PUBLIC_SITE_URL
-    : "https://nammatech.in";
+    : "https://www.techsavvymuthuraj.dev";
   const supabase = createAdminClient();
 
   const staticRoutes: MetadataRoute.Sitemap = [

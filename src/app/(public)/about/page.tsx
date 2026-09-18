@@ -23,11 +23,11 @@ const aboutJsonLd = {
     "@type": "Person",
     name: "Muthuraj C",
     jobTitle: "Founder & Lead Architect",
-    image: "https://nammatech.in/images/founder-muthuraj.png",
+    image: "https://www.techsavvymuthuraj.dev/images/founder-muthuraj.png",
     worksFor: {
       "@type": "Organization",
       name: "NammaTech",
-      url: "https://nammatech.in",
+      url: "https://www.techsavvymuthuraj.dev",
     },
   },
 };

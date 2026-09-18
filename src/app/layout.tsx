@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_SITE_URL.includes("localhost")
   ? process.env.NEXT_PUBLIC_SITE_URL
-  : "https://nammatech.in";
+  : "https://www.techsavvymuthuraj.dev";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
