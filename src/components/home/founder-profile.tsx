@@ -28,8 +28,8 @@ export function FounderProfile() {
               <div className="absolute -inset-2 bg-gradient-to-r from-amber-500/30 via-yellow-400/30 to-amber-600/30 rounded-3xl blur-xl opacity-75 group-hover:opacity-100 transition duration-500" />
 
               {/* Photo Frame Container */}
-              <div className="relative overflow-hidden rounded-2xl border-2 border-amber-400/40 bg-neutral-900 shadow-2xl transition-transform duration-500 group-hover:scale-[1.02]">
-                <div className="relative aspect-[9/14] w-full bg-amber-400">
+              <div className="relative overflow-hidden rounded-2xl border-2 border-amber-400/40 bg-[#FDE000] shadow-2xl transition-transform duration-500 group-hover:scale-[1.02]">
+                <div className="relative aspect-[9/16] w-full bg-[#FDE000]">
                   <Image
                     src="/images/founder-muthuraj.png"
                     alt="Muthuraj C - Founder & CEO of NammaTech"

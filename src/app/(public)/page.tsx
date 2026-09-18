@@ -97,7 +97,7 @@ export default async function HomePage() {
       <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-neutral-950 shadow-2xl">
           {/* Full resolution graphic banner */}
-          <div className="relative w-full aspect-[1024/286] min-h-[220px] sm:min-h-[280px]">
+          <div className="relative w-full aspect-[1024/286]">
             <Image
               src="/images/hero-clean.png"
               alt="NammaTech - Everything You Need In One Place. Founder Muthuraj"
@@ -105,7 +105,7 @@ export default async function HomePage() {
               priority
               quality={95}
               sizes="(max-width: 768px) 100vw, (max-width: 1280px) 1200px, 1280px"
-              className="object-cover object-left sm:object-center select-none"
+              className="object-cover object-center select-none"
             />
 
             {/* Desktop Interactive Search Overlay perfectly mapped to the banner's search bar */}

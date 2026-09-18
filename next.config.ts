@@ -1,6 +1,18 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "**",
+      },
+    ],
+  },
   async headers() {
     return [
       {
@@ -39,8 +51,8 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               // Fonts
               "font-src 'self' https://fonts.gstatic.com data:",
-              // Images: self, data URIs, Supabase storage, Google AdSense & doubleclick
-              "img-src 'self' data: blob: https://*.supabase.co https://*.supabase.in https://pagead2.googlesyndication.com https://*.google.com https://*.doubleclick.net https://tpc.googlesyndication.com",
+              // Images: self, data URIs, Supabase storage, Google AdSense, Unsplash & all HTTPS
+              "img-src 'self' data: blob: https: https://*.supabase.co https://*.supabase.in https://images.unsplash.com https://pagead2.googlesyndication.com https://*.google.com https://*.doubleclick.net https://tpc.googlesyndication.com",
               // Frames: Cloudflare Turnstile iframe + Google AdSense & DoubleClick
               "frame-src https://challenges.cloudflare.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.google.com https://pagead2.googlesyndication.com",
               // Connections: API calls + Supabase + Cloudflare Turnstile verify endpoint + Web3Forms + AdSense

@@ -60,13 +60,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} h-full`}>
       <head>
-        {/* Google AdSense Site Verification */}
+        {/* Google AdSense Meta Verification */}
         <meta name="google-adsense-account" content="ca-pub-1960459798233871" />
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1960459798233871"
-          crossOrigin="anonymous"
-        />
       </head>
       <body className="min-h-full flex flex-col font-sans bg-[var(--background)] text-[var(--foreground)] antialiased">
         <GoogleAdSense />
