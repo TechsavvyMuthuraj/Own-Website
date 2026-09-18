@@ -24,7 +24,7 @@ import { AdSlot } from "@/components/ads/ad-slot";
 import { getActiveAd } from "@/lib/ads";
 import { FounderProfile } from "@/components/home/founder-profile";
 
-export const revalidate = 60; // Cache revalidation every 60s
+export const revalidate = 3600; // Cache at edge for 1 hour — dramatically reduces TTFB
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -115,8 +115,8 @@ export default async function HomePage() {
               alt="NammaTech - Everything You Need In One Place. Founder Muthuraj"
               fill
               priority
-              unoptimized
-              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 1200px, 1280px"
+              sizes="(max-width: 640px) 100vw, (max-width: 1280px) 1200px, 1280px"
+              quality={85}
               className="object-cover object-center select-none"
             />
 

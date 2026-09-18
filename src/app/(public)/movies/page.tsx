@@ -78,9 +78,13 @@ export default async function MoviesPage() {
           ? parseInt(item.version, 10) || new Date(item.created_at || Date.now()).getFullYear()
           : new Date(item.created_at || Date.now()).getFullYear();
 
-        const normalBytes = item.size_bytes || 1500000000;
-        let sizeNormalStr = `${(normalBytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
-        let sizePremiumStr = `${((normalBytes * 2.8) / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+        const normalBytes = item.size_bytes || 0;
+        let sizeNormalStr = normalBytes > 0
+          ? (normalBytes >= 1073741824
+            ? `${(normalBytes / 1073741824).toFixed(1)} GB`
+            : `${Math.round(normalBytes / 1048576)} MB`)
+          : "";
+        let sizePremiumStr = "";
 
         const genres = Array.isArray(item.tags) && item.tags.length > 0
           ? item.tags.filter((t: string) => !["movie", "movies", "cinema"].includes(t.toLowerCase()))
@@ -114,15 +118,7 @@ export default async function MoviesPage() {
             };
           });
 
-        // Fallback if no explicit links in download_links table
-        if (freeLinks.length === 0) {
-          freeLinks.push({
-            title: "Standard 1080p FHD",
-            size: sizeNormalStr,
-            url: item.official_url || `/api/downloads/signed-url?resource_id=${item.id}`,
-            isVip: false,
-          });
-        }
+        // No fallback — show empty if no real links exist
 
         // Category 2: 4K VIP Premium Links
         const vipLinks: MovieDownloadLink[] = rawLinks
@@ -147,29 +143,17 @@ export default async function MoviesPage() {
             };
           });
 
-        // Fallback VIP tiers if none exist
-        if (vipLinks.length === 0) {
-          vipLinks.push(
-            {
-              title: "1080p 60fps High Bitrate",
-              size: sizePremiumStr,
-              url: "",
-              isVip: true,
-            },
-            {
-              title: "4K UHD HDR (Dolby Atmos)",
-              size: `${((normalBytes * 4.5) / (1024 * 1024 * 1024)).toFixed(1)} GB`,
-              url: "",
-              isVip: true,
-            }
-          );
-        }
+        // No VIP fallback — only show real VIP links from database
 
-        // Dynamic size range display
-        if (freeLinks.length > 1) {
+        // Dynamic size range display from real links
+        if (freeLinks.length === 1) {
+          sizeNormalStr = freeLinks[0].size;
+        } else if (freeLinks.length > 1) {
           sizeNormalStr = `${freeLinks[0].size} – ${freeLinks[freeLinks.length - 1].size}`;
         }
-        if (vipLinks.length > 1) {
+        if (vipLinks.length === 1) {
+          sizePremiumStr = vipLinks[0].size;
+        } else if (vipLinks.length > 1) {
           sizePremiumStr = `${vipLinks[0].size} – ${vipLinks[vipLinks.length - 1].size}`;
         }
 
@@ -179,14 +163,14 @@ export default async function MoviesPage() {
           year,
           genres: genres.length > 0 ? genres : ["Feature"],
           quality,
-          posterUrl: item.thumbnail_url || "/images/namma-tech-icon.svg",
-          rating: "8.5",
+          posterUrl: item.thumbnail_url || "",
+          rating: item.rating ? String(item.rating) : "",
           sizeNormal: sizeNormalStr,
           sizePremium: sizePremiumStr,
-          audio: item.platform || "Multi-Audio 5.1 Dolby",
-          normalDownloadUrl: freeLinks[0].url,
+          audio: item.platform || "",
+          normalDownloadUrl: freeLinks[0]?.url || "",
           premiumPrice: item.price > 0 ? item.price : 49,
-          description: item.short_description || item.description || "High definition verified cinema release with multi-audio support.",
+          description: item.short_description || item.description || "",
           freeLinks,
           vipLinks,
         };

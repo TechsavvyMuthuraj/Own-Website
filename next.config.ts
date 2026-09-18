@@ -3,15 +3,13 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "**",
-      },
-      {
-        protocol: "http",
-        hostname: "**",
-      },
+      { protocol: "https", hostname: "**" },
+      { protocol: "http",  hostname: "**" },
     ],
+    // Allow quality=85 for hero image; enable WebP + AVIF for ~70% smaller payloads
+    formats: ["image/avif", "image/webp"],
+    qualities: [50, 60, 70, 75, 80, 85, 90],
+    minimumCacheTTL: 86400, // 24h CDN caching for optimized images
   },
   async headers() {
     return [

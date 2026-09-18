@@ -262,15 +262,21 @@ export function MoviesClient({ movies }: MoviesClientProps) {
             >
               {/* Poster Image Container */}
               <div className="relative aspect-[16/10] w-full overflow-hidden bg-neutral-900">
-                <Image
-                  src={movie.posterUrl}
-                  alt={movie.title}
-                  fill
-                  unoptimized
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  priority={false}
-                />
+                {movie.posterUrl ? (
+                  <Image
+                    src={movie.posterUrl}
+                    alt={movie.title}
+                    fill
+                    unoptimized
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    priority={false}
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Film className="w-16 h-16 text-neutral-700" />
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
 
                 {/* Floating Badges */}
@@ -283,16 +289,21 @@ export function MoviesClient({ movies }: MoviesClientProps) {
                   </span>
                 </div>
 
-                <div className="absolute top-2.5 right-2.5 flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-black/70 text-amber-400 backdrop-blur-sm border border-amber-500/20">
-                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                  <span>{movie.rating}</span>
-                </div>
+                {/* Rating badge — only if real rating exists */}
+                {movie.rating && (
+                  <div className="absolute top-2.5 right-2.5 flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-black/70 text-amber-400 backdrop-blur-sm border border-amber-500/20">
+                    <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                    <span>{movie.rating}</span>
+                  </div>
+                )}
 
-                {/* Audio Badge at bottom of poster */}
-                <div className="absolute bottom-2 left-2.5 right-2.5 text-[10px] text-neutral-300 font-medium truncate flex items-center gap-1">
-                  <Zap className="w-3 h-3 text-amber-400 flex-shrink-0" />
-                  <span className="truncate">{movie.audio}</span>
-                </div>
+                {/* Audio Badge — only if real audio info exists */}
+                {movie.audio && (
+                  <div className="absolute bottom-2 left-2.5 right-2.5 text-[10px] text-neutral-300 font-medium truncate flex items-center gap-1">
+                    <Zap className="w-3 h-3 text-amber-400 flex-shrink-0" />
+                    <span className="truncate">{movie.audio}</span>
+                  </div>
+                )}
               </div>
 
               {/* Movie Info */}
@@ -317,17 +328,23 @@ export function MoviesClient({ movies }: MoviesClientProps) {
                   </div>
                 </div>
 
-                {/* Sizes breakdown */}
-                <div className="pt-2 border-t border-[var(--border)] grid grid-cols-2 gap-2 text-[11px]">
-                  <div className="flex items-center gap-1 text-[var(--muted-foreground)]">
-                    <HardDrive className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>Free: <strong className="text-[var(--foreground)] font-mono">{movie.sizeNormal}</strong></span>
+                {/* Sizes breakdown — only show rows that have real data */}
+                {(movie.sizeNormal || movie.sizePremium) && (
+                  <div className="pt-2 border-t border-[var(--border)] grid grid-cols-2 gap-2 text-[11px]">
+                    {movie.sizeNormal && (
+                      <div className="flex items-center gap-1 text-[var(--muted-foreground)]">
+                        <HardDrive className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>Free: <strong className="text-[var(--foreground)] font-mono">{movie.sizeNormal}</strong></span>
+                      </div>
+                    )}
+                    {movie.sizePremium && (
+                      <div className="flex items-center gap-1 text-[var(--muted-foreground)]">
+                        <Crown className="w-3.5 h-3.5 text-amber-500" />
+                        <span>VIP: <strong className="text-[var(--foreground)] font-mono">{movie.sizePremium}</strong></span>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex items-center gap-1 text-[var(--muted-foreground)]">
-                    <Crown className="w-3.5 h-3.5 text-amber-500" />
-                    <span>VIP: <strong className="text-[var(--foreground)] font-mono">{movie.sizePremium}</strong></span>
-                  </div>
-                </div>
+                )}
 
                 {/* Two Distinct Download Action Buttons */}
                 <div className="space-y-2 pt-1">

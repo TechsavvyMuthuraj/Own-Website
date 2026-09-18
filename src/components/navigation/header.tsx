@@ -46,24 +46,15 @@ export function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           {/* Brand Logo */}
           <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="relative w-9 h-9 rounded-xl overflow-hidden shadow-md group-hover:scale-105 transition-transform flex items-center justify-center">
+            <Link href="/" className="flex items-center gap-2 group" aria-label="NammaTech Home">
+              <div className="relative w-10 h-10 rounded-full overflow-hidden ring-2 ring-[var(--border)] group-hover:ring-amber-500/60 group-hover:scale-105 transition-all shadow-md flex-shrink-0">
                 <Image
-                  src="/images/namma-tech-icon.svg"
+                  src="/images/nammatech-logo.png"
                   alt="NammaTech Logo"
-                  width={36}
-                  height={36}
-                  className="w-full h-full object-contain"
+                  fill
+                  className="object-cover"
                   priority
                 />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-base tracking-tight text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">
-                  NammaTech
-                </span>
-                <span className="text-[10px] text-[var(--muted-foreground)] -mt-1 font-mono">
-                  All You Need. One Place.
-                </span>
               </div>
             </Link>
 
