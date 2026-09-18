@@ -24,8 +24,6 @@ interface DownloadUnlockExperienceProps {
 export function DownloadUnlockExperience({ resource }: DownloadUnlockExperienceProps) {
   const [step, setStep] = useState<"PREPARING" | "VERIFIED" | "READY">("PREPARING");
   const [downloadLinks, setDownloadLinks] = useState<DownloadLink[]>([]);
-  const [primarySignedUrl, setPrimarySignedUrl] = useState<string | null>(null);
-  const [loadingSignedUrl, setLoadingSignedUrl] = useState(false);
 
   useEffect(() => {
     // Genuine quick verification progression (short, responsive feedback)
@@ -59,36 +57,15 @@ export function DownloadUnlockExperience({ resource }: DownloadUnlockExperienceP
     }
   }, [resource.download_links]);
 
-  const fetchSignedUrl = async (linkId: string, r2Key?: string) => {
-    if (!r2Key) return null;
-    setLoadingSignedUrl(true);
-    try {
-      const res = await fetch("/api/downloads/signed-url", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resourceId: resource.id, linkId, r2Key }),
-      });
-      const data = await res.json();
-      if (data.signedUrl) {
-        return data.signedUrl;
-      }
-    } catch (err) {
-      console.error("Error obtaining signed URL:", err);
-    } finally {
-      setLoadingSignedUrl(false);
-    }
-    return null;
-  };
-
   return (
-    <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-12 text-center shadow-xl shadow-indigo-500/5 relative overflow-hidden">
+    <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-12 text-center shadow-xl shadow-[#FD1843]/5 relative overflow-hidden">
       {/* Background glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-[#FD1843]/15 rounded-full blur-3xl pointer-events-none" />
 
       {/* Step 1: Preparing */}
       {step === "PREPARING" && (
         <div className="flex flex-col items-center py-8 animate-in fade-in duration-300">
-          <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-4 ring-1 ring-indigo-500/20">
+          <div className="w-16 h-16 rounded-2xl bg-[#FD1843]/10 text-[#FD1843] flex items-center justify-center mb-4 ring-1 ring-[#FD1843]/20">
             <Lock className="w-8 h-8 animate-pulse" />
           </div>
           <h2 className="text-xl sm:text-2xl font-bold text-[var(--foreground)] tracking-tight mb-2">
@@ -142,40 +119,26 @@ export function DownloadUnlockExperience({ resource }: DownloadUnlockExperienceP
           {/* Download Buttons / Mirrors */}
           {downloadLinks.length > 0 ? (
             <div className="w-full max-w-md space-y-3">
-              {downloadLinks.map((link) => {
-                const isR2 = link.link_type === "R2_FILE" || !!link.r2_key;
-                const isExternal = link.link_type === "EXTERNAL";
-
-                return (
-                  <div key={link.id} className="w-full">
-                    <a
-                      href={link.url || "#"}
-                      target={isExternal ? "_blank" : undefined}
-                      rel={isExternal ? "noopener noreferrer" : undefined}
-                      onClick={async (e) => {
-                        if (isR2 && link.r2_key && !link.url) {
-                          e.preventDefault();
-                          const url = await fetchSignedUrl(link.id, link.r2_key);
-                          if (url) {
-                            window.location.href = url;
-                          }
-                        }
-                      }}
-                      className="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-semibold text-sm transition-all shadow-md shadow-indigo-500/20 group"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Download className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
-                        <span>{link.title}</span>
-                      </div>
-                      {link.size_bytes && (
-                        <span className="text-xs font-mono font-normal opacity-80">
-                          {formatBytes(link.size_bytes)}
-                        </span>
-                      )}
-                    </a>
-                  </div>
-                );
-              })}
+              {downloadLinks.map((link) => (
+                <div key={link.id} className="w-full">
+                  <a
+                    href={link.url || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-semibold text-sm transition-all shadow-md shadow-[#FD1843]/25 group"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Download className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
+                      <span>{link.title}</span>
+                    </div>
+                    {link.size_bytes && (
+                      <span className="text-xs font-mono font-normal opacity-80">
+                        {formatBytes(link.size_bytes)}
+                      </span>
+                    )}
+                  </a>
+                </div>
+              ))}
             </div>
           ) : resource.official_url ? (
             <div className="w-full max-w-md">
@@ -183,7 +146,7 @@ export function DownloadUnlockExperience({ resource }: DownloadUnlockExperienceP
                 href={resource.official_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-semibold text-sm transition-all shadow-md shadow-indigo-500/20"
+                className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-semibold text-sm transition-all shadow-md shadow-[#FD1843]/25"
               >
                 <span>Download from Official Website</span>
                 <ExternalLink className="w-4 h-4" />
@@ -201,7 +164,7 @@ export function DownloadUnlockExperience({ resource }: DownloadUnlockExperienceP
           {/* Legal / Security disclaimer */}
           <div className="mt-8 pt-6 border-t border-[var(--border)] max-w-md w-full text-[11px] text-[var(--muted-foreground)] text-left flex items-start gap-2.5">
             <FileCheck className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
-            <p leading-relaxed>
+            <p className="leading-relaxed">
               This file is distributed in accordance with its license ({resource.license || "Standard License"}). No adware, malware, or deceptive installer wrappers are bundled.
             </p>
           </div>

@@ -127,7 +127,12 @@ export async function GET() {
         last_seen_at: prof.updated_at || u.last_sign_in_at || null,
         last_sign_in_at: u.last_sign_in_at || null,
         created_at: u.created_at,
-        email_confirmed: Boolean(u.email_confirmed_at),
+        email_confirmed: Boolean(
+          u.email_confirmed_at ||
+          u.app_metadata?.is_approved ||
+          u.user_metadata?.is_approved ||
+          (u.email && adminEmails.includes(u.email.toLowerCase()))
+        ),
         email_confirmed_at: u.email_confirmed_at || null,
         orders_count: orderCountMap[u.id] || 0,
         downloads_count: downloadCountMap[u.id] || 0,

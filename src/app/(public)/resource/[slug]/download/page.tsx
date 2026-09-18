@@ -5,6 +5,8 @@ import { ChevronRight, ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import type { Resource, DownloadLink } from "@/types/database";
 import { DownloadUnlockExperience } from "./unlock-client";
+import { AdSlot } from "@/components/ads/ad-slot";
+import { getActiveAd } from "@/lib/ads";
 
 interface DownloadPageProps {
   params: Promise<{ slug: string }>;
@@ -57,10 +59,13 @@ export default async function DownloadPage({ params }: DownloadPageProps) {
     }
   }
 
+  // 3. Fetch Download Screen Ad
+  const downloadAd = await getActiveAd("DOWNLOAD_PAGE");
+
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full flex-1 flex flex-col justify-center">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full flex-1 flex flex-col justify-center space-y-6">
       {/* Breadcrumbs */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)] mb-8">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)] mb-2">
         <Link href="/" className="hover:text-[var(--foreground)]">
           Home
         </Link>
@@ -74,6 +79,13 @@ export default async function DownloadPage({ params }: DownloadPageProps) {
 
       {/* Unlock & Download Experience Client Component */}
       <DownloadUnlockExperience resource={resource} />
+
+      {/* Download Verification Ad Placement */}
+      {downloadAd && (
+        <div className="w-full">
+          <AdSlot ad={downloadAd} location="DOWNLOAD_PAGE" format="auto" />
+        </div>
+      )}
     </div>
   );
 }

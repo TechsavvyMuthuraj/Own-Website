@@ -1,27 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #FFF9FA; /* CHILL WHITE */
+  --foreground: #141113;
   
   --card: #ffffff;
-  --card-foreground: #0f172a;
-  --card-border: #e2e8f0;
+  --card-foreground: #141113;
+  --card-border: #fce2e6;
   
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
+  --popover-foreground: #141113;
   
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
+  --primary: #FD1843; /* TRUE PINK */
+  --primary-hover: #e00d36;
   --primary-foreground: #ffffff;
   
-  --secondary: #f1f5f9;
-  --secondary-foreground: #1e293b;
+  --secondary: #fff0f3;
+  --secondary-foreground: #9e0a2b;
   
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
+  --muted: #fef2f4;
+  --muted-foreground: #75686d;
   
-  --accent: #06b6d4;
+  --accent: #FD1843;
   --accent-foreground: #ffffff;
   
   --success: #10b981;
@@ -33,38 +33,38 @@
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #6366f1;
+  --border: #f7d5dc;
+  --input: #f7d5dc;
+  --ring: #FD1843;
 
-  --badge-new: #10b981;
-  --badge-updated: #06b6d4;
-  --badge-premium: #f59e0b;
-  --badge-free: #6366f1;
+  --badge-new: #FD1843;
+  --badge-updated: #ff4d6d;
+  --badge-premium: #e00d36;
+  --badge-free: #FD1843;
 }
 
 .dark {
-  --background: #090d16;
-  --foreground: #f8fafc;
+  --background: #0b0c10;
+  --foreground: #FFF9FA; /* CHILL WHITE */
   
-  --card: #0f172a;
-  --card-foreground: #f8fafc;
-  --card-border: #1e293b;
+  --card: #13141a;
+  --card-foreground: #FFF9FA;
+  --card-border: #2e1b24;
   
-  --popover: #0f172a;
-  --popover-foreground: #f8fafc;
+  --popover: #13141a;
+  --popover-foreground: #FFF9FA;
   
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
+  --primary: #FD1843; /* TRUE PINK */
+  --primary-hover: #ff385c;
   --primary-foreground: #ffffff;
   
-  --secondary: #1e293b;
-  --secondary-foreground: #e2e8f0;
+  --secondary: #21141a;
+  --secondary-foreground: #ffccd5;
   
-  --muted: #131d33;
-  --muted-foreground: #94a3b8;
+  --muted: #1c1519;
+  --muted-foreground: #a3949a;
   
-  --accent: #0891b2;
+  --accent: #FD1843;
   --accent-foreground: #ffffff;
   
   --success: #10b981;
@@ -76,14 +76,14 @@
   --destructive: #f43f5e;
   --destructive-foreground: #ffffff;
   
-  --border: #1e293b;
-  --input: #1e293b;
-  --ring: #818cf8;
+  --border: #2e1b24;
+  --input: #2e1b24;
+  --ring: #FD1843;
 
-  --badge-new: #10b981;
-  --badge-updated: #06b6d4;
-  --badge-premium: #f59e0b;
-  --badge-free: #818cf8;
+  --badge-new: #FD1843;
+  --badge-updated: #ff4d6d;
+  --badge-premium: #ff758f;
+  --badge-free: #FD1843;
 }
 
 * {
@@ -102,17 +102,17 @@ body {
 
 /* Glassmorphism utility */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  background: rgba(255, 249, 250, 0.85); /* Chill White glass */
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(253, 24, 67, 0.15);
 }
 
 .dark .glass-panel {
-  background: rgba(15, 23, 42, 0.75);
+  background: rgba(19, 20, 26, 0.8);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(253, 24, 67, 0.2);
 }
 
 /* Custom modern scrollbar */
@@ -132,13 +132,13 @@ body {
   opacity: 0.8;
 }
 
-/* Subtle glow utility */
+/* Subtle True Pink glow utility */
 .glow-primary {
-  box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.25);
+  box-shadow: 0 0 25px -5px rgba(253, 24, 67, 0.35);
 }
 
 .dark .glow-primary {
-  box-shadow: 0 0 30px -5px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 0 35px -5px rgba(253, 24, 67, 0.5);
 }
 
 /* Google Translate clean integration */

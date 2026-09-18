@@ -51,6 +51,7 @@ export default function AdminLayout({
     { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
     { href: "/admin/ads", label: "Ad Placements", icon: Sliders },
     { href: "/admin/messages", label: "Contact Inbox", icon: Mail },
+    { href: "/admin/requests", label: "Software Requests", icon: Compass },
     { href: "/admin/audit-logs", label: "Audit Logs", icon: FileText },
     { href: "/admin/settings", label: "System Settings", icon: Settings },
   ];

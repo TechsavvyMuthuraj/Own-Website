@@ -17,6 +17,7 @@ import {
 import { useCart } from "@/lib/cart/cart-store";
 import { formatCurrency } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ResourceVisual } from "@/components/resources/resource-visual";
 
 export default function CartPage() {
   const {
@@ -99,25 +100,7 @@ export default function CartPage() {
                 className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4"
               >
                 <div className="flex items-center gap-4 min-w-0">
-                  <div className="relative w-14 h-14 rounded-xl bg-[var(--secondary)] border border-[var(--border)] flex items-center justify-center overflow-hidden flex-shrink-0">
-                    {resource.thumbnail_url ? (
-                      <Image
-                        src={resource.thumbnail_url}
-                        alt={resource.title}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : resource.icon_url ? (
-                      <Image
-                        src={resource.icon_url}
-                        alt={resource.title}
-                        fill
-                        className="object-contain p-1.5"
-                      />
-                    ) : (
-                      <Layers className="w-6 h-6 text-[var(--muted-foreground)]" />
-                    )}
-                  </div>
+                  <ResourceVisual resource={resource} variant="icon" size="md" showFormatTag={false} className="!w-14 !h-14" />
 
                   <div className="min-w-0">
                     <Link

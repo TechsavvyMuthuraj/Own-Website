@@ -163,21 +163,61 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
         </div>
 
         {/* Maintenance mode toggle */}
-        <div className="p-4 rounded-2xl bg-[var(--secondary)]/60 border border-[var(--border)] flex items-center justify-between">
-          <div>
-            <h4 className="text-xs font-semibold text-[var(--foreground)]">
-              Platform Maintenance Mode
-            </h4>
-            <p className="text-[11px] text-[var(--muted-foreground)]">
-              When activated, public visitors will see a maintenance notice while admin users retain console access.
-            </p>
+        <div className={`p-4 rounded-2xl border transition-all ${
+          maintenanceMode
+            ? "bg-amber-500/10 border-amber-500/30 text-amber-900 dark:text-amber-200"
+            : "bg-[var(--secondary)]/60 border-[var(--border)]"
+        }`}>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="text-xs font-semibold text-[var(--foreground)]">
+                  Platform Maintenance Mode
+                </h4>
+                {maintenanceMode ? (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                    MAINTENANCE ACTIVE
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                    PLATFORM ONLINE
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-[var(--muted-foreground)] mt-0.5">
+                When activated, all public visitors are redirected to the maintenance page. Admin routes remain accessible.
+              </p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={maintenanceMode}
+                onChange={(e) => setMaintenanceMode(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-[var(--border)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+            </label>
           </div>
-          <input
-            type="checkbox"
-            checked={maintenanceMode}
-            onChange={(e) => setMaintenanceMode(e.target.checked)}
-            className="w-5 h-5 rounded text-amber-500 focus:ring-amber-400"
-          />
+
+          <div className="mt-3 pt-3 border-t border-[var(--border)]/60 flex items-center gap-3 text-[11px]">
+            <a
+              href="/maintenance"
+              target="_blank"
+              rel="noreferrer"
+              className="text-[var(--primary)] hover:underline font-medium"
+            >
+              View Maintenance Screen ↗
+            </a>
+            <span className="text-[var(--muted-foreground)]">•</span>
+            <a
+              href="/?admin_preview=true"
+              target="_blank"
+              rel="noreferrer"
+              className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] font-medium"
+            >
+              Preview Live Site (Admin Bypass) ↗
+            </a>
+          </div>
         </div>
       </div>
 

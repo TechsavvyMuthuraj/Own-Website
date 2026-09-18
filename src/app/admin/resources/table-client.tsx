@@ -19,6 +19,7 @@ import {
 import type { Resource, Category } from "@/types/database";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ResourceVisual } from "@/components/resources/resource-visual";
 
 interface ResourceTableClientProps {
   initialResources: Resource[];
@@ -179,11 +180,16 @@ export function ResourceTableClient({
                 {initialResources.map((res) => (
                   <tr key={res.id} className="hover:bg-[var(--secondary)]/30 transition-colors">
                     <td className="px-5 py-3.5">
-                      <div className="font-semibold text-sm text-[var(--foreground)]">
-                        {res.title}
-                      </div>
-                      <div className="font-mono text-[10px] text-[var(--muted-foreground)]">
-                        /{res.slug}
+                      <div className="flex items-center gap-3">
+                        <ResourceVisual resource={res} variant="icon" size="sm" showFormatTag={false} />
+                        <div>
+                          <div className="font-semibold text-sm text-[var(--foreground)]">
+                            {res.title}
+                          </div>
+                          <div className="font-mono text-[10px] text-[var(--muted-foreground)]">
+                            /{res.slug}
+                          </div>
+                        </div>
                       </div>
                     </td>
                     <td className="px-4 py-3.5 text-[var(--foreground)]">

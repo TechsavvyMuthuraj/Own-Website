@@ -5,6 +5,7 @@ import { Download, Layers, ShieldCheck, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ResourceVisual } from "@/components/resources/resource-visual";
 
 export default async function AccountDownloadsPage() {
   const supabase = await createClient();
@@ -50,9 +51,7 @@ export default async function AccountDownloadsPage() {
                 className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
               >
                 <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-xl bg-[var(--secondary)] border border-[var(--border)] flex items-center justify-center text-[var(--muted-foreground)] flex-shrink-0">
-                    <Layers className="w-5 h-5" />
-                  </div>
+                  <ResourceVisual resource={resource} variant="icon" size="md" showFormatTag={false} />
                   <div>
                     <h4 className="font-semibold text-sm text-[var(--foreground)]">
                       {resource.title}

@@ -57,22 +57,22 @@ export function AnnouncementBar() {
   };
 
   return (
-    <div className="relative bg-gradient-to-r from-indigo-600 via-indigo-700 to-cyan-600 text-white px-4 py-2 text-xs sm:text-sm font-medium transition-all shadow-inner">
+    <div className="relative bg-gradient-to-r from-[#FD1843] via-[#e00d36] to-[#b30526] text-white px-4 py-2 text-xs sm:text-sm font-medium transition-all shadow-inner">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 flex-1 justify-center sm:justify-start">
           <span className="p-1 rounded-full bg-white/20">
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+            <Sparkles className="w-3.5 h-3.5 text-white" />
           </span>
           <span className="truncate">{announcement.title}</span>
           {announcement.content && (
-            <span className="hidden md:inline text-white/80 font-normal">
+            <span className="hidden md:inline text-white/90 font-normal">
               - {announcement.content}
             </span>
           )}
           {announcement.cta_url && (
             <Link
               href={announcement.cta_url}
-              className="inline-flex items-center gap-1 font-semibold underline underline-offset-2 hover:text-cyan-200 transition-colors ml-1"
+              className="inline-flex items-center gap-1 font-semibold underline underline-offset-2 hover:text-pink-100 transition-colors ml-1"
             >
               <span>{announcement.cta_text || "Learn more"}</span>
               <ArrowRight className="w-3 h-3" />

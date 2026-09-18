@@ -6,8 +6,8 @@ export async function POST(request: Request) {
   try {
     const { resourceId, linkId, r2Key } = await request.json();
 
-    if (!resourceId || !r2Key) {
-      return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
+    if (!resourceId) {
+      return NextResponse.json({ error: "Missing required resourceId" }, { status: 400 });
     }
 
     const supabase = await createClient();
@@ -46,17 +46,43 @@ export async function POST(request: Request) {
       }
     }
 
-    // 3. Generate short-lived (15 minutes) signed URL
-    const signedUrl = await generateDownloadPresignedUrl(r2Key, 900);
+    // 3. Find download link directly from Supabase
+    if (linkId) {
+      const { data: link } = await supabase
+        .from("download_links")
+        .select("url, r2_key")
+        .eq("id", linkId)
+        .maybeSingle();
 
-    if (!signedUrl) {
-      return NextResponse.json(
-        { error: "Storage node temporarily unavailable. Please check back shortly." },
-        { status: 503 }
-      );
+      if (link?.url) {
+        return NextResponse.json({ signedUrl: link.url, downloadUrl: link.url });
+      }
     }
 
-    return NextResponse.json({ signedUrl });
+    // 4. Fallback if r2Key was provided
+    if (r2Key) {
+      const signedUrl = await generateDownloadPresignedUrl(r2Key, 900);
+      if (signedUrl) {
+        return NextResponse.json({ signedUrl });
+      }
+    }
+
+    // 5. If there is a primary link with url on the resource, return it
+    const { data: fallbackLinks } = await supabase
+      .from("download_links")
+      .select("url")
+      .eq("resource_id", resourceId)
+      .eq("is_active", true)
+      .limit(1);
+
+    if (fallbackLinks && fallbackLinks[0]?.url) {
+      return NextResponse.json({ signedUrl: fallbackLinks[0].url, downloadUrl: fallbackLinks[0].url });
+    }
+
+    return NextResponse.json(
+      { error: "No direct download link available for this resource." },
+      { status: 404 }
+    );
   } catch (err) {
     console.error("Signed URL generation error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

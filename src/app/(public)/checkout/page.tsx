@@ -191,7 +191,7 @@ export default function CheckoutPage() {
 
       {/* User Login Notice */}
       {!user && !authLoading && (
-        <div className="p-5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        <div className="p-5 rounded-2xl bg-[#FD1843]/10 border border-[#FD1843]/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div>
             <h4 className="text-sm font-semibold text-[var(--foreground)]">
               Account required for digital delivery
@@ -276,7 +276,7 @@ export default function CheckoutPage() {
                 <p className="font-semibold text-[var(--foreground)]">
                   Scan UPI QR & Transfer Exact Total: {formatCurrency(total)}
                 </p>
-                <div className="p-3 bg-[var(--card)] rounded-xl border border-[var(--border)] font-mono text-center text-sm font-bold text-indigo-600 dark:text-indigo-400">
+                <div className="p-3 bg-[var(--card)] rounded-xl border border-[var(--border)] font-mono text-center text-sm font-bold text-[#FD1843]">
                   upi-id@bank
                 </div>
                 <div>
@@ -336,7 +336,7 @@ export default function CheckoutPage() {
               type="button"
               onClick={handleProcessCheckout}
               disabled={isProcessing || !user || (paymentMethod === "MANUAL_UPI" && !upiReference.trim())}
-              className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-[var(--primary)] text-white font-semibold text-sm hover:bg-[var(--primary-hover)] transition-all shadow-md shadow-indigo-500/20 disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-[var(--primary)] text-white font-semibold text-sm hover:bg-[var(--primary-hover)] transition-all shadow-md shadow-[#FD1843]/25 disabled:opacity-50"
             >
               {isProcessing ? (
                 <>

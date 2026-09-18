@@ -12,6 +12,7 @@ import {
   Layers,
 } from "lucide-react";
 import type { Resource } from "@/types/database";
+import { ResourceVisual } from "@/components/resources/resource-visual";
 import {
   formatCurrency,
   formatRelativeTime,
@@ -45,34 +46,13 @@ export function ResourceCard({ resource }: ResourceCardProps) {
   };
 
   return (
-    <div className="group relative flex flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 transition-all duration-300 hover:-translate-y-1 hover:border-[var(--ring)]/50 hover:shadow-xl hover:shadow-indigo-500/5">
-      {/* Media / Thumbnail area */}
-      <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl bg-[var(--secondary)] mb-4 flex items-center justify-center">
-        {resource.thumbnail_url ? (
-          <Image
-            src={resource.thumbnail_url}
-            alt={resource.title}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        ) : resource.icon_url ? (
-          <div className="relative w-16 h-16 transition-transform duration-500 group-hover:scale-110">
-            <Image
-              src={resource.icon_url}
-              alt={resource.title}
-              fill
-              className="object-contain"
-            />
-          </div>
-        ) : (
-          <div className="w-12 h-12 rounded-xl bg-[var(--background)] flex items-center justify-center text-[var(--muted-foreground)] border border-[var(--border)]">
-            <Layers className="w-6 h-6" />
-          </div>
-        )}
+    <div className="group relative flex flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 transition-all duration-300 hover:-translate-y-1 hover:border-[var(--ring)]/50 hover:shadow-xl hover:shadow-[#FD1843]/10">
+      {/* Media / Visual Showcase area */}
+      <div className="relative mb-4">
+        <ResourceVisual resource={resource} variant="card" showFormatTag={true} />
 
         {/* Dynamic Badges */}
-        <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1.5">
+        <div className="absolute top-2.5 left-2.5 z-10 flex flex-wrap gap-1.5">
           {isNew && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-emerald-500/90 text-white backdrop-blur-md shadow-sm">
               <Sparkles className="w-3 h-3" />
@@ -80,7 +60,7 @@ export function ResourceCard({ resource }: ResourceCardProps) {
             </span>
           )}
           {isUpdated && !isNew && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-cyan-500/90 text-white backdrop-blur-md shadow-sm">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-rose-500/90 text-white backdrop-blur-md shadow-sm">
               <Clock className="w-3 h-3" />
               UPDATED
             </span>
@@ -90,19 +70,11 @@ export function ResourceCard({ resource }: ResourceCardProps) {
               PREMIUM
             </span>
           ) : (
-            <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-indigo-500/90 text-white backdrop-blur-md shadow-sm">
+            <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-[#FD1843]/90 text-white backdrop-blur-md shadow-sm">
               FREE
             </span>
           )}
         </div>
-
-        {/* Platform tag */}
-        {resource.platform && (
-          <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-[var(--background)]/85 text-[var(--foreground)] backdrop-blur-md border border-[var(--border)]">
-            {getPlatformIcon(resource.platform)}
-            <span>{resource.platform}</span>
-          </div>
-        )}
       </div>
 
       {/* Content */}

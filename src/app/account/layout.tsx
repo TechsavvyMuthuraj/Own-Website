@@ -42,7 +42,7 @@ export default function AccountLayout({
         {/* User Greeting Bar */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 rounded-3xl border border-[var(--border)] bg-[var(--card)] mb-8 shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center text-white text-xl font-bold shadow-md">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#FD1843] to-[#ff4d6d] flex items-center justify-center text-white text-xl font-bold shadow-md">
               {profile?.full_name ? profile.full_name.charAt(0).toUpperCase() : "U"}
             </div>
             <div>
@@ -51,7 +51,7 @@ export default function AccountLayout({
                   {profile?.full_name || "User Account"}
                 </h1>
                 {isAdmin && (
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#FD1843]/10 text-[#FD1843] border border-[#FD1843]/20">
                     ADMIN
                   </span>
                 )}
@@ -65,7 +65,7 @@ export default function AccountLayout({
           {isAdmin && (
             <Link
               href="/admin"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700 transition-all shadow-sm"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] transition-all shadow-sm"
             >
               <ShieldCheck className="w-4 h-4" />
               <span>Admin Console</span>

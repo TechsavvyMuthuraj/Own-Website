@@ -19,6 +19,8 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import type { Resource, Category } from "@/types/database";
 import { ResourceGrid } from "@/components/resources/resource-grid";
+import { AdSlot } from "@/components/ads/ad-slot";
+import { getActiveAd } from "@/lib/ads";
 
 export const revalidate = 60; // Cache revalidation every 60s
 
@@ -28,6 +30,7 @@ export default async function HomePage() {
   let featuredResources: Resource[] = [];
   let latestResources: Resource[] = [];
   let categories: Category[] = [];
+  const homepageAd = await getActiveAd("HOMEPAGE");
 
   try {
     // 1. Fetch Featured Resources
@@ -91,18 +94,18 @@ export default async function HomePage() {
       <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-gradient-to-b from-[var(--secondary)]/50 via-[var(--card)] to-[var(--card)] p-8 sm:p-14 text-center">
           {/* Subtle background decorative aura */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#FD1843]/15 rounded-full blur-3xl pointer-events-none" />
 
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[var(--border)] bg-[var(--background)] text-xs font-medium text-[var(--muted-foreground)] mb-6 shadow-sm">
-            <ShieldCheck className="w-3.5 h-3.5 text-cyan-500" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#FD1843]/20 bg-[var(--background)] text-xs font-medium text-[var(--muted-foreground)] mb-6 shadow-sm">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#FD1843]" />
             <span>NammaTech • Explore • Download • Upgrade • Together</span>
           </div>
 
           {/* Main Title */}
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-[var(--foreground)] tracking-tight max-w-4xl mx-auto mb-6 leading-tight">
             Discover trusted digital resources on{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-500">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FD1843] via-[#ff4d6d] to-[#ff758f]">
               NammaTech
             </span>
           </h1>
@@ -116,7 +119,7 @@ export default async function HomePage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-md mx-auto mb-10">
             <Link
               href="/explore"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[var(--primary)] text-white font-semibold text-sm hover:bg-[var(--primary-hover)] transition-all shadow-md shadow-indigo-500/20"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[var(--primary)] text-white font-semibold text-sm hover:bg-[var(--primary-hover)] transition-all shadow-md shadow-[#FD1843]/25"
             >
               <Compass className="w-4 h-4" />
               <span>Explore Resources</span>
@@ -200,6 +203,13 @@ export default async function HomePage() {
           </div>
         )}
       </section>
+
+      {/* HOMEPAGE FEATURE AD BANNER */}
+      {homepageAd && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <AdSlot ad={homepageAd} location="HOMEPAGE" format="auto" />
+        </section>
+      )}
 
       {/* 3. FEATURED RESOURCES (IF ANY PUBLISHED) */}
       {featuredResources.length > 0 && (

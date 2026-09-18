@@ -19,6 +19,7 @@ import {
   FileText,
 } from "lucide-react";
 import type { Resource, Category } from "@/types/database";
+import { ResourceVisual } from "@/components/resources/resource-visual";
 
 interface ResourceFormProps {
   categories: Category[];
@@ -58,11 +59,11 @@ export function ResourceForm({
   const [featured, setFeatured] = useState(!!initialData?.featured);
   const [hasPermission, setHasPermission] = useState(isEdit ? true : false);
 
-  // Download links state
+  // Download links state (Direct URLs saved in Supabase)
   const [downloadLinks, setDownloadLinks] = useState<any[]>(
     initialData?.download_links && initialData.download_links.length > 0
       ? initialData.download_links
-      : [{ title: "Primary Download", link_type: "PRIMARY", url: "", r2_key: "", size_bytes: "" }]
+      : [{ title: "Primary Download", link_type: "PRIMARY", url: "", size_bytes: "" }]
   );
 
   const [loading, setLoading] = useState(false);
@@ -78,7 +79,7 @@ export function ResourceForm({
   const addDownloadLink = () => {
     setDownloadLinks((prev) => [
       ...prev,
-      { title: `Mirror ${prev.length}`, link_type: "MIRROR", url: "", r2_key: "", size_bytes: "" },
+      { title: `Mirror ${prev.length}`, link_type: "MIRROR", url: "", size_bytes: "" },
     ]);
   };
 
@@ -132,7 +133,7 @@ export function ResourceForm({
       system_requirements: systemRequirements.trim() || null,
       status,
       featured,
-      download_links: downloadLinks.filter((l) => l.url || l.r2_key),
+      download_links: downloadLinks.filter((l) => l.url && l.url.trim()),
     };
 
     try {
@@ -499,43 +500,86 @@ export function ResourceForm({
 
       {/* 3. Media & Icons */}
       <div className="p-6 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm space-y-4">
-        <h3 className="text-sm font-bold text-[var(--foreground)] uppercase tracking-wider">
-          Media Assets
-        </h3>
+        <div>
+          <h3 className="text-sm font-bold text-[var(--foreground)] uppercase tracking-wider">
+            Media & Icon Assets
+          </h3>
+          <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
+            Images are optional. If left blank, a stylish modern app/file icon format will be automatically generated.
+          </p>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-medium text-[var(--foreground)] mb-1.5">
-              Thumbnail URL
+              Thumbnail URL <span className="text-[var(--muted-foreground)] font-normal">(Optional)</span>
             </label>
             <input
               type="url"
               value={thumbnailUrl}
               onChange={(e) => setThumbnailUrl(e.target.value)}
-              placeholder="https://.../thumbnail.webp"
+              placeholder="https://.../screenshot.webp (leave blank for default icon)"
               className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs text-[var(--foreground)]"
             />
           </div>
           <div>
             <label className="block text-xs font-medium text-[var(--foreground)] mb-1.5">
-              Icon URL
+              Icon URL <span className="text-[var(--muted-foreground)] font-normal">(Optional - Custom logo)</span>
             </label>
             <input
               type="url"
               value={iconUrl}
               onChange={(e) => setIconUrl(e.target.value)}
-              placeholder="https://.../icon.png"
+              placeholder="https://.../logo.png (leave blank for default icon)"
               className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs text-[var(--foreground)]"
             />
           </div>
         </div>
+
+        {/* Live Default Icon Preview */}
+        <div className="pt-4 border-t border-[var(--border)]">
+          <label className="block text-xs font-semibold text-[var(--foreground)] mb-2">
+            Live Default App/File Icon Preview
+          </label>
+          <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-2xl bg-[var(--secondary)]/40 border border-[var(--border)]">
+            <div className="w-full sm:w-48 flex-shrink-0">
+              <ResourceVisual
+                resource={{
+                  title: title || "App Title Preview",
+                  resource_type: resourceType,
+                  platform,
+                  category: categories.find((c) => c.id === categoryId),
+                  thumbnail_url: thumbnailUrl,
+                  icon_url: iconUrl,
+                }}
+                variant="card"
+                showFormatTag={true}
+              />
+            </div>
+            <div className="flex-1 text-xs text-[var(--muted-foreground)] space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="font-semibold text-[var(--foreground)]">Interactive Visual Format</span>
+              </div>
+              <p className="text-[11px] leading-relaxed">
+                This exact modern icon layout will be displayed across the homepage, category pages, search results, and detail pages. You do not need to design or upload custom banners!
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* 4. Download Links Configuration */}
+      {/* 4. Download Links Configuration (Pure Direct URLs - Supabase Stored) */}
       <div className="p-6 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-[var(--foreground)] uppercase tracking-wider">
-            Download Sources & Mirrors
-          </h3>
+          <div>
+            <h3 className="text-sm font-bold text-[var(--foreground)] uppercase tracking-wider">
+              Download Sources & Direct URLs
+            </h3>
+            <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
+              Direct download links stored safely in your Supabase database. No Cloudflare R2 storage needed!
+            </p>
+          </div>
           <button
             type="button"
             onClick={addDownloadLink}
@@ -544,6 +588,14 @@ export function ResourceForm({
             <Plus className="w-3.5 h-3.5" />
             <span>Add Mirror Link</span>
           </button>
+        </div>
+
+        {/* Info Box */}
+        <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs flex items-start gap-2.5">
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          <div className="text-[11px] leading-relaxed">
+            <span className="font-semibold">Direct Download Links (Supabase Database):</span> You can paste any direct download URL from Google Drive, Mediafire, Mega, GitHub Releases, Dropbox, or any direct server URL. Users will download directly from your provided link.
+          </div>
         </div>
 
         <div className="space-y-3">
@@ -556,40 +608,33 @@ export function ResourceForm({
                 type="text"
                 value={link.title}
                 onChange={(e) => updateDownloadLink(idx, "title", e.target.value)}
-                placeholder="Title (e.g. Primary Download)"
-                className="sm:w-48 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)]"
+                placeholder="Title (e.g. Fast Server, Google Drive)"
+                className="sm:w-48 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)]"
               />
 
               <select
                 value={link.link_type}
                 onChange={(e) => updateDownloadLink(idx, "link_type", e.target.value)}
-                className="sm:w-36 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)]"
+                className="sm:w-40 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] font-medium"
               >
-                <option value="PRIMARY">Primary Source</option>
-                <option value="MIRROR">Mirror Source</option>
-                <option value="R2_FILE">Cloudflare R2 Key</option>
-                <option value="EXTERNAL">External Mirror</option>
+                <option value="PRIMARY">Primary Download</option>
+                <option value="MIRROR">Mirror Link</option>
+                <option value="EXTERNAL">External / Official</option>
               </select>
 
               <input
-                type="text"
-                value={link.url || link.r2_key || ""}
-                onChange={(e) => {
-                  if (link.link_type === "R2_FILE") {
-                    updateDownloadLink(idx, "r2_key", e.target.value);
-                  } else {
-                    updateDownloadLink(idx, "url", e.target.value);
-                  }
-                }}
-                placeholder={link.link_type === "R2_FILE" ? "R2 Object Key (e.g. files/vlc.exe)" : "https://download.domain.com/file"}
-                className="flex-1 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] font-mono"
+                type="url"
+                value={link.url || ""}
+                onChange={(e) => updateDownloadLink(idx, "url", e.target.value)}
+                placeholder="Direct Download URL (https://drive.google.com/... or https://mediafire.com/...)"
+                className="flex-1 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] font-mono text-[var(--foreground)]"
               />
 
               {downloadLinks.length > 1 && (
                 <button
                   type="button"
                   onClick={() => removeDownloadLink(idx)}
-                  className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg"
+                  className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors flex-shrink-0"
                   aria-label="Remove link"
                 >
                   <Trash2 className="w-4 h-4" />

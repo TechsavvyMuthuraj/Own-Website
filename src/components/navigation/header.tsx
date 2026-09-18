@@ -37,6 +37,7 @@ export function Header() {
     { href: "/new-and-updated", label: "New & Updated" },
     { href: "/free", label: "Free" },
     { href: "/premium", label: "Premium" },
+    { href: "/request", label: "Request" },
   ];
 
   return (
@@ -134,7 +135,7 @@ export function Header() {
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-[var(--border)] hover:bg-[var(--secondary)] text-xs font-medium text-[var(--foreground)] transition-colors"
                 >
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center text-white text-[11px] font-bold">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#FD1843] to-[#ff4d6d] flex items-center justify-center text-white text-[11px] font-bold">
                     {profile?.full_name ? profile.full_name.charAt(0).toUpperCase() : "U"}
                   </div>
                   <span className="hidden sm:inline max-w-[100px] truncate">
@@ -155,7 +156,7 @@ export function Header() {
                         {user.email}
                       </p>
                       {isAdmin && (
-                        <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+                        <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#FD1843]/10 text-[#FD1843] border border-[#FD1843]/20">
                           ADMIN
                         </span>
                       )}
@@ -172,14 +173,14 @@ export function Header() {
                       href="/account/downloads"
                       className="flex items-center gap-2 px-3 py-2 rounded-xl text-[var(--foreground)] hover:bg-[var(--secondary)] transition-colors"
                     >
-                      <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                      <Sparkles className="w-3.5 h-3.5 text-[#FD1843]" />
                       <span>My Downloads</span>
                     </Link>
 
                     {isAdmin && (
                       <Link
                         href="/admin"
-                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-indigo-600 dark:text-indigo-400 font-semibold hover:bg-[var(--secondary)] transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-[#FD1843] font-semibold hover:bg-[var(--secondary)] transition-colors"
                       >
                         <ShieldCheck className="w-3.5 h-3.5" />
                         <span>Admin Console</span>
@@ -247,7 +248,7 @@ export function Header() {
               <Link
                 href="/admin"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="block px-3 py-2 rounded-xl text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-[var(--secondary)]"
+                className="block px-3 py-2 rounded-xl text-xs font-semibold text-[#FD1843] hover:bg-[var(--secondary)]"
               >
                 Admin Console
               </Link>

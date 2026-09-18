@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { RootProviders } from "@/components/providers/root-providers";
+import { GoogleAdSense } from "@/components/ads/google-adsense";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,8 +44,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#090d16" },
+    { media: "(prefers-color-scheme: light)", color: "#FFF9FA" },
+    { media: "(prefers-color-scheme: dark)", color: "#0B0C10" },
   ],
 };
 
@@ -56,6 +57,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} h-full`}>
       <body className="min-h-full flex flex-col font-sans bg-[var(--background)] text-[var(--foreground)] antialiased">
+        <GoogleAdSense />
         <RootProviders>{children}</RootProviders>
       </body>
     </html>

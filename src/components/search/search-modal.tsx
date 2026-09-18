@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Search, X, Loader2, ArrowRight, Layers } from "lucide-react";
 import type { Resource } from "@/types/database";
 import { createClient } from "@/lib/supabase/client";
+import { ResourceVisual } from "@/components/resources/resource-visual";
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -143,9 +144,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   className="flex items-center justify-between p-3 rounded-xl hover:bg-[var(--secondary)] transition-colors group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-[var(--secondary)] border border-[var(--border)] flex items-center justify-center text-[var(--muted-foreground)] flex-shrink-0">
-                      <Layers className="w-4 h-4" />
-                    </div>
+                    <ResourceVisual resource={res} variant="icon" size="sm" showFormatTag={false} />
                     <div>
                       <h4 className="text-sm font-medium text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors">
                         {res.title}

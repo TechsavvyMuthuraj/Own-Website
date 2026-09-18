@@ -31,6 +31,9 @@ import {
 } from "@/lib/utils";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 import { ResourceDetailActions } from "./actions-client";
+import { ResourceVisual } from "@/components/resources/resource-visual";
+import { AdSlot } from "@/components/ads/ad-slot";
+import { getActiveAd } from "@/lib/ads";
 
 interface ResourceDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -84,6 +87,12 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
     }
   }
 
+  // 3. Fetch Active Ad Placements for Sidebar and Content Bottom
+  const [sidebarAd, resourcePageAd] = await Promise.all([
+    getActiveAd("SIDEBAR"),
+    getActiveAd("RESOURCE_PAGE"),
+  ]);
+
   const isNew = isNewResource(resource.published_at || resource.created_at);
   const isUpdated = isUpdatedResource(resource.updated_at, resource.created_at);
   const isPaid = resource.access_type === "PAID";
@@ -119,26 +128,13 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
         <div className="lg:col-span-2 space-y-8">
           {/* Header Card */}
           <div className="flex flex-col sm:flex-row items-start gap-5 p-6 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
-            {/* Thumbnail or Icon */}
-            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-[var(--secondary)] border border-[var(--border)] flex items-center justify-center overflow-hidden flex-shrink-0">
-              {resource.icon_url ? (
-                <Image
-                  src={resource.icon_url}
-                  alt={resource.title}
-                  fill
-                  className="object-contain p-2"
-                />
-              ) : resource.thumbnail_url ? (
-                <Image
-                  src={resource.thumbnail_url}
-                  alt={resource.title}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <Layers className="w-10 h-10 text-[var(--muted-foreground)]" />
-              )}
-            </div>
+            {/* App / File Icon */}
+            <ResourceVisual
+              resource={resource}
+              variant="icon"
+              size="xl"
+              showFormatTag={false}
+            />
 
             {/* Title & Metadata */}
             <div className="flex-1 min-w-0">
@@ -183,8 +179,8 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
             </div>
           </div>
 
-          {/* Screenshots Gallery (if available) */}
-          {resource.images && resource.images.length > 0 && (
+          {/* Screenshots Gallery (if available) or Default App/File Showcase */}
+          {resource.images && resource.images.length > 0 ? (
             <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
               <h3 className="text-base font-bold text-[var(--foreground)] mb-4">
                 Screenshots & Preview
@@ -203,6 +199,51 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
                     />
                   </div>
                 ))}
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm overflow-hidden relative">
+              <div className="flex flex-col sm:flex-row items-center gap-6">
+                <div className="w-full sm:w-56 flex-shrink-0">
+                  <ResourceVisual resource={resource} variant="card" showFormatTag={true} />
+                </div>
+                <div className="flex-1 space-y-3 text-left w-full">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      Direct Verified Package
+                    </span>
+                    <span className="text-xs text-[var(--muted-foreground)]">
+                      Safe & Untouched
+                    </span>
+                  </div>
+                  <h4 className="text-base font-bold text-[var(--foreground)]">
+                    Official App & File Distribution
+                  </h4>
+                  <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                    This digital resource is distributed directly via authentic download URLs and mirrors with valid licensing terms. Clean of adware, malware, or deceptive wrappers.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-[var(--foreground)] pt-1">
+                    {resource.platform && (
+                      <div className="flex items-center gap-1 font-medium">
+                        <span className="text-[var(--muted-foreground)]">Platform:</span>
+                        <span>{resource.platform}</span>
+                      </div>
+                    )}
+                    {resource.version && (
+                      <div className="flex items-center gap-1 font-mono">
+                        <span className="text-[var(--muted-foreground)] font-sans">Version:</span>
+                        <span>v{resource.version}</span>
+                      </div>
+                    )}
+                    {resource.license && (
+                      <div className="flex items-center gap-1 font-medium">
+                        <span className="text-[var(--muted-foreground)]">License:</span>
+                        <span>{resource.license}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -382,9 +423,23 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
                 Distributed with permission or verified open-source/freeware license.
               </div>
             </div>
+
+            {/* Sidebar Ad Unit */}
+            {sidebarAd && (
+              <div className="pt-2">
+                <AdSlot ad={sidebarAd} location="SIDEBAR" format="rectangle" />
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Resource Bottom Ad Banner */}
+      {resourcePageAd && (
+        <div className="mt-12 w-full">
+          <AdSlot ad={resourcePageAd} location="RESOURCE_PAGE" format="auto" />
+        </div>
+      )}
 
       {/* Related Resources */}
       {relatedResources.length > 0 && (

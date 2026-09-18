@@ -21,3 +21,6 @@ export function createAdminClient() {
     },
   });
 }
+
+// Convenience proxy for singleton admin client
+export const supabaseAdmin = createAdminClient();

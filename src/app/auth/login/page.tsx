@@ -4,7 +4,7 @@ import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Lock, Mail, ArrowRight, Loader2, AlertCircle } from "lucide-react";
+import { Lock, Mail, ArrowRight, Loader2, AlertCircle, Clock, Home } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 function LoginForm() {
@@ -16,6 +16,8 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [pendingApproval, setPendingApproval] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState("");
 
   const supabase = createClient();
 
@@ -37,7 +39,6 @@ function LoginForm() {
       }
 
       if (data.user) {
-        // Check if user is an admin
         const { data: profile } = await supabase
           .from("profiles")
           .select("role")
@@ -53,8 +54,23 @@ function LoginForm() {
           profile?.role === "ADMIN" ||
           profile?.role === "SUPER_ADMIN";
 
+        // Check if the account has been approved by admin
+        const isApproved =
+          isUserAdmin ||
+          Boolean(data.user.email_confirmed_at) ||
+          data.user.app_metadata?.is_approved === true ||
+          data.user.user_metadata?.is_approved === true;
+
+        if (!isApproved) {
+          // Sign them out immediately — account not yet approved
+          await supabase.auth.signOut();
+          setPendingEmail(data.user.email || email);
+          setPendingApproval(true);
+          setLoading(false);
+          return;
+        }
+
         if (isUserAdmin) {
-          // If admin, send directly to admin console unless they explicitly targeted another page
           if (redirectUrl === "/account" || redirectUrl.startsWith("/admin")) {
             router.push("/admin");
           } else {
@@ -70,6 +86,49 @@ function LoginForm() {
       setLoading(false);
     }
   };
+
+  // Pending approval screen
+  if (pendingApproval) {
+    return (
+      <div className="w-full max-w-md mx-auto p-6 sm:p-8 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-xl text-center animate-in fade-in zoom-in-95 duration-300">
+        <div className="w-16 h-16 rounded-3xl bg-amber-500/10 text-amber-600 dark:text-amber-400 mx-auto flex items-center justify-center mb-4 border border-amber-500/20">
+          <Clock className="w-8 h-8 animate-pulse" />
+        </div>
+        <h2 className="text-xl font-bold text-[var(--foreground)] tracking-tight mb-2">
+          Account Pending Approval
+        </h2>
+        <p className="text-sm font-semibold text-amber-600 dark:text-amber-400 mb-4">
+          Waiting for admin to approve your account
+        </p>
+        <div className="p-4 rounded-2xl bg-[var(--secondary)]/70 border border-[var(--border)] text-xs text-[var(--muted-foreground)] leading-relaxed text-left space-y-2 mb-6">
+          <p>
+            Your NammaTech account for{" "}
+            <span className="font-mono font-semibold text-[var(--foreground)]">{pendingEmail}</span>{" "}
+            has been created but is waiting for administrator approval.
+          </p>
+          <p>
+            You will be able to log in once an admin confirms your account. This usually happens within 24 hours.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Link
+            href="/"
+            className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--secondary)] hover:bg-[var(--secondary)]/80 text-xs font-semibold text-[var(--foreground)] transition-colors"
+          >
+            <Home className="w-4 h-4" />
+            <span>Back to Home</span>
+          </Link>
+          <button
+            type="button"
+            onClick={() => { setPendingApproval(false); setErrorMsg(""); }}
+            className="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors py-2"
+          >
+            Try a different account
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-md mx-auto p-6 sm:p-8 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-xl">
@@ -142,7 +201,7 @@ function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[var(--primary)] text-white font-semibold text-sm hover:bg-[var(--primary-hover)] transition-all shadow-md shadow-indigo-500/20 disabled:opacity-70"
+          className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[var(--primary)] text-white font-semibold text-sm hover:bg-[var(--primary-hover)] transition-all shadow-md shadow-[#FD1843]/25 disabled:opacity-70"
         >
           {loading ? (
             <>

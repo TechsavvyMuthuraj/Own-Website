@@ -181,7 +181,7 @@ export function ResourceDetailActions({ resource }: ResourceDetailActionsProps) 
           href={resource.official_url || "#"}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 transition-all shadow-md shadow-indigo-500/20"
+          className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-[var(--primary)] text-white font-semibold text-sm hover:bg-[var(--primary-hover)] transition-all shadow-md shadow-[#FD1843]/25"
         >
           <ExternalLink className="w-4 h-4" />
           <span>Visit Official Website</span>
@@ -189,7 +189,7 @@ export function ResourceDetailActions({ resource }: ResourceDetailActionsProps) 
       ) : (
         <Link
           href={`/resource/${resource.slug}/download`}
-          className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-[var(--primary)] text-white font-semibold text-sm hover:bg-[var(--primary-hover)] transition-all shadow-md shadow-indigo-500/20"
+          className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-[var(--primary)] text-white font-semibold text-sm hover:bg-[var(--primary-hover)] transition-all shadow-md shadow-[#FD1843]/25"
         >
           <Download className="w-4 h-4" />
           <span>Get / Download</span>

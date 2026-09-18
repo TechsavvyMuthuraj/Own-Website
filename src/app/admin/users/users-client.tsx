@@ -20,6 +20,9 @@ import {
   UserCheck,
   Activity,
   Filter,
+  Trash2,
+  AlertTriangle,
+  Loader2,
 } from "lucide-react";
 
 interface AdminUser {
@@ -63,6 +66,9 @@ export function UsersClient() {
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [deletingUser, setDeletingUser] = useState<AdminUser | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const fetchUsers = async () => {
@@ -127,6 +133,82 @@ export function UsersClient() {
       }
     } catch (err: any) {
       setMessage({ type: "error", text: err?.message || "Error updating role" });
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handleConfirmDeleteUser = async () => {
+    if (!deletingUser) return;
+    setDeleteLoading(true);
+    try {
+      const res = await fetch(`/api/admin/users/${deletingUser.id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage({
+          type: "success",
+          text: `User ${deletingUser.email} has been permanently deleted.`,
+        });
+        setUsers((prev) => prev.filter((u) => u.id !== deletingUser.id));
+        setStats((prev) => ({
+          ...prev,
+          total_users: Math.max(0, prev.total_users - 1),
+          online_users: deletingUser.is_online
+            ? Math.max(0, prev.online_users - 1)
+            : prev.online_users,
+        }));
+        if (selectedUser?.id === deletingUser.id) {
+          setSelectedUser(null);
+        }
+        setIsDeleteModalOpen(false);
+        setDeletingUser(null);
+      } else {
+        setMessage({ type: "error", text: data.error || "Failed to delete user." });
+      }
+    } catch (err: any) {
+      setMessage({ type: "error", text: err?.message || "Error deleting user." });
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const handleToggleConfirm = async (userId: string, confirmed: boolean) => {
+    try {
+      setUpdatingId(userId);
+      const res = await fetch(`/api/admin/users/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirmed }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMessage({
+          type: "success",
+          text: confirmed
+            ? "User account confirmed & approved successfully!"
+            : "User confirmation revoked.",
+        });
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === userId ? { ...u, email_confirmed: confirmed } : u
+          )
+        );
+        setStats((prev) => ({
+          ...prev,
+          verified_users: confirmed
+            ? prev.verified_users + 1
+            : Math.max(0, prev.verified_users - 1),
+        }));
+        if (selectedUser?.id === userId) {
+          setSelectedUser((prev) => (prev ? { ...prev, email_confirmed: confirmed } : null));
+        }
+      } else {
+        setMessage({ type: "error", text: data.error || "Failed to update confirmation status." });
+      }
+    } catch (err: any) {
+      setMessage({ type: "error", text: err?.message || "Error updating confirmation." });
     } finally {
       setUpdatingId(null);
     }
@@ -360,7 +442,7 @@ export function UsersClient() {
                       {/* User Column */}
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-cyan-500 flex items-center justify-center text-white font-bold text-xs shadow-sm flex-shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#FD1843] to-[#ff4d6d] flex items-center justify-center text-white font-bold text-xs shadow-sm flex-shrink-0">
                             {u.full_name ? u.full_name.charAt(0).toUpperCase() : "U"}
                           </div>
                           <div className="flex flex-col min-w-0">
@@ -489,12 +571,49 @@ export function UsersClient() {
                             <option value="SUPER_ADMIN">Super Admin</option>
                           </select>
 
+                          {!u.email_confirmed ? (
+                            <button
+                              type="button"
+                              disabled={updatingId === u.id}
+                              onClick={() => handleToggleConfirm(u.id, true)}
+                              title="Confirm & Approve Account"
+                              className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 transition-all shadow-xs"
+                            >
+                              {updatingId === u.id ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <CheckCircle2 className="w-3 h-3" />
+                              )}
+                              <span>Approve</span>
+                            </button>
+                          ) : (
+                            <span
+                              title="Confirmed & Approved"
+                              className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400 px-1"
+                            >
+                              <Check className="w-3 h-3 text-emerald-500" />
+                              <span>Approved</span>
+                            </span>
+                          )}
+
                           <button
                             type="button"
                             onClick={() => setSelectedUser(u)}
                             className="px-2.5 py-1 text-[11px] font-medium rounded-lg border border-[var(--border)] hover:bg-[var(--secondary)] text-[var(--foreground)]"
                           >
                             Verify
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDeletingUser(u);
+                              setIsDeleteModalOpen(true);
+                            }}
+                            title="Delete User"
+                            className="p-1.5 rounded-lg border border-red-500/20 text-red-500 hover:bg-red-500/10 transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </td>
@@ -514,7 +633,7 @@ export function UsersClient() {
             {/* Modal Header */}
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-cyan-500 flex items-center justify-center text-white font-bold text-lg shadow-md">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#FD1843] to-[#ff4d6d] flex items-center justify-center text-white font-bold text-lg shadow-md">
                   {selectedUser.full_name ? selectedUser.full_name.charAt(0).toUpperCase() : "U"}
                 </div>
                 <div>
@@ -629,6 +748,53 @@ export function UsersClient() {
               </div>
             </div>
 
+            {/* Account Approval & Verification Status in Drawer */}
+            <div className="p-4 rounded-2xl border border-[var(--border)] bg-[var(--secondary)]/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <span className="text-[11px] font-semibold text-[var(--foreground)] block">
+                  Admin Approval Status:
+                </span>
+                <div className="flex items-center gap-1.5 mt-1">
+                  {selectedUser.email_confirmed ? (
+                    <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>Approved & Confirmed (Active)</span>
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400">
+                      <AlertCircle className="w-4 h-4 animate-pulse" />
+                      <span>Pending Admin Approval (Unconfirmed)</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {!selectedUser.email_confirmed ? (
+                <button
+                  type="button"
+                  disabled={updatingId === selectedUser.id}
+                  onClick={() => handleToggleConfirm(selectedUser.id, true)}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition-all disabled:opacity-50"
+                >
+                  {updatingId === selectedUser.id ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  )}
+                  <span>Approve & Confirm Account</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={updatingId === selectedUser.id}
+                  onClick={() => handleToggleConfirm(selectedUser.id, false)}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-semibold transition-all disabled:opacity-50"
+                >
+                  <span>Revoke Approval</span>
+                </button>
+              )}
+            </div>
+
             {/* Quick Role Actions in Drawer */}
             <div className="pt-2 border-t border-[var(--border)] flex flex-col gap-2">
               <span className="text-[11px] font-semibold text-[var(--foreground)]">
@@ -672,6 +838,99 @@ export function UsersClient() {
                   Make Super Admin
                 </button>
               </div>
+            </div>
+
+            {/* Danger Zone in Drawer */}
+            <div className="pt-3 border-t border-red-500/20 flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold text-red-600 dark:text-red-400 block">
+                  Permanently Remove User
+                </span>
+                <span className="text-[10px] text-[var(--muted-foreground)]">
+                  Deletes auth credentials, profile data, and active sessions.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setDeletingUser(selectedUser);
+                  setIsDeleteModalOpen(true);
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xs font-semibold transition-all"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete Account</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete User Confirmation Modal */}
+      {isDeleteModalOpen && deletingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md rounded-3xl border border-red-500/30 bg-[var(--card)] p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                <AlertTriangle className="w-5 h-5" />
+                <h4 className="font-bold text-sm">Confirm Permanent User Deletion</h4>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsDeleteModalOpen(false);
+                  setDeletingUser(null);
+                }}
+                className="p-1 rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs leading-relaxed space-y-1">
+              <p>
+                Are you sure you want to permanently delete user <strong>{deletingUser.email}</strong> (
+                {deletingUser.full_name || "No name"})?
+              </p>
+              <p className="text-[11px] opacity-90 font-mono">
+                UID: {deletingUser.id}
+              </p>
+            </div>
+
+            <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+              This action will remove the user from Supabase Auth and cascade delete all their profile data and access tokens. This action cannot be reversed.
+            </p>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                disabled={deleteLoading}
+                onClick={() => {
+                  setIsDeleteModalOpen(false);
+                  setDeletingUser(null);
+                }}
+                className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--secondary)] transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deleteLoading}
+                onClick={handleConfirmDeleteUser}
+                className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold transition-all shadow-sm disabled:opacity-50"
+              >
+                {deleteLoading ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Confirm Delete</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
