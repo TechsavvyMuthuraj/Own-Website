@@ -63,35 +63,35 @@ export default async function CategoriesPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
-      <div className="mb-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 w-full">
+      <div className="mb-6 sm:mb-8">
         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--primary)] mb-1">
           <Layers className="w-4 h-4" />
           <span>Classifications</span>
         </div>
-        <h1 className="text-3xl font-extrabold text-[var(--foreground)] tracking-tight">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[var(--foreground)] tracking-tight">
           Resource Categories
         </h1>
-        <p className="text-sm text-[var(--muted-foreground)] mt-1">
+        <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1">
           Explore curated open-source software, freeware, assets, and tools by category.
         </p>
       </div>
 
       {categories.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-5">
           {categories.map((cat) => (
             <Link
               key={cat.id}
               href={cat.slug === "movies" ? "/movies" : `/category/${cat.slug}`}
-              className="group flex flex-col p-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] hover:border-[var(--ring)]/50 hover:bg-[var(--secondary)]/40 transition-all shadow-sm"
+              className="group flex flex-col p-4 sm:p-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] hover:border-[var(--ring)]/50 hover:bg-[var(--secondary)]/40 transition-all shadow-xs"
             >
-              <div className="w-12 h-12 rounded-xl bg-[var(--secondary)] border border-[var(--border)] flex items-center justify-center mb-4 group-hover:scale-105 transition-transform shadow-xs">
-                {categoryIcons[cat.slug] || <Layers className="w-6 h-6 text-[var(--primary)]" />}
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[var(--secondary)] border border-[var(--border)] flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-105 transition-transform shadow-xs">
+                {categoryIcons[cat.slug] || <Layers className="w-5 h-5 sm:w-6 sm:h-6 text-[var(--primary)]" />}
               </div>
-              <h3 className="font-bold text-base text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors mb-1.5">
+              <h3 className="font-bold text-sm sm:text-base text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors mb-1">
                 {cat.name}
               </h3>
-              <p className="text-xs text-[var(--muted-foreground)] line-clamp-2 leading-relaxed mb-4 flex-1">
+              <p className="text-xs text-[var(--muted-foreground)] line-clamp-2 leading-relaxed mb-3 sm:mb-4 flex-1">
                 {cat.description || "Discover verified resources in this category."}
               </p>
               <div className="flex items-center gap-1 text-xs font-semibold text-[var(--primary)] group-hover:translate-x-0.5 transition-transform">

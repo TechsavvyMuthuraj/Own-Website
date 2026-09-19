@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, ChevronRight, Layers, Filter } from "lucide-react";
+import { ArrowLeft, ChevronRight, Layers, Filter, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import type { Resource, Category } from "@/types/database";
 import { ResourceGrid } from "@/components/resources/resource-grid";
@@ -91,18 +91,27 @@ export default async function CategoryDetailPage({
 
   const supabase = await createClient();
 
-  // 1. Fetch Category
-  const { data: categoryData, error: catError } = await supabase
-    .from("categories")
-    .select("*")
-    .eq("slug", slug)
-    .single();
+  // 1. Fetch current Category and all sibling categories
+  const [catRes, allCatsRes] = await Promise.all([
+    supabase
+      .from("categories")
+      .select("*")
+      .eq("slug", slug)
+      .single(),
+    supabase
+      .from("categories")
+      .select("*")
+      .eq("is_active", true)
+      .neq("slug", "movies")
+      .order("sort_order", { ascending: true }),
+  ]);
 
-  if (catError || !categoryData) {
+  if (catRes.error || !catRes.data) {
     notFound();
   }
 
-  const category = categoryData as Category;
+  const category = catRes.data as Category;
+  const siblingCategories = (allCatsRes.data || []) as Category[];
 
   // 2. Fetch Resources in this category
   let query = supabase
@@ -129,59 +138,102 @@ export default async function CategoryDetailPage({
   })) as Resource[];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 w-full">
       {/* Breadcrumbs */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)] mb-6">
-        <Link href="/" className="hover:text-[var(--foreground)]">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)] mb-5 overflow-x-auto scrollbar-none">
+        <Link href="/" className="hover:text-[var(--foreground)] shrink-0">
           Home
         </Link>
-        <ChevronRight className="w-3.5 h-3.5" />
-        <Link href="/categories" className="hover:text-[var(--foreground)]">
+        <ChevronRight className="w-3.5 h-3.5 shrink-0" />
+        <Link href="/categories" className="hover:text-[var(--foreground)] shrink-0">
           Categories
         </Link>
-        <ChevronRight className="w-3.5 h-3.5" />
+        <ChevronRight className="w-3.5 h-3.5 shrink-0" />
         <span className="text-[var(--foreground)] font-medium truncate">
           {category.name}
         </span>
       </nav>
 
       {/* Category Header Banner */}
-      <div className="p-6 sm:p-8 rounded-3xl border border-[var(--border)] bg-gradient-to-r from-[var(--secondary)]/60 to-[var(--card)] mb-8">
+      <div className="p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-[var(--border)] bg-gradient-to-r from-[var(--secondary)]/60 to-[var(--card)] mb-6 sm:mb-8 shadow-xs">
         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[var(--primary)] mb-2">
           <Layers className="w-4 h-4" />
           <span>Category Directory</span>
         </div>
-        <h1 className="text-2xl sm:text-4xl font-extrabold text-[var(--foreground)] tracking-tight mb-2">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[var(--foreground)] tracking-tight mb-2">
           {category.name}
         </h1>
-        <p className="text-sm text-[var(--muted-foreground)] max-w-2xl leading-relaxed">
-          {category.description || `Browse verified releases and files in ${category.name}.`}
+        <p className="text-xs sm:text-sm text-[var(--muted-foreground)] max-w-2xl leading-relaxed">
+          {category.description || `Browse verified releases, tools, and files in ${category.name}.`}
         </p>
 
-        {/* Sort Controls */}
-        <div className="flex items-center gap-2 mt-6 pt-4 border-t border-[var(--border)] text-xs text-[var(--muted-foreground)]">
-          <Filter className="w-3.5 h-3.5" />
-          <span>Sort by:</span>
-          <Link
-            href={`/category/${slug}?sort=newest`}
-            className={`font-medium ${currentSort === "newest" ? "text-[var(--primary)] underline font-semibold" : "hover:text-[var(--foreground)]"}`}
-          >
-            Newest
-          </Link>
-          <span>•</span>
-          <Link
-            href={`/category/${slug}?sort=updated`}
-            className={`font-medium ${currentSort === "updated" ? "text-[var(--primary)] underline font-semibold" : "hover:text-[var(--foreground)]"}`}
-          >
-            Recently Updated
-          </Link>
-          <span>•</span>
-          <Link
-            href={`/category/${slug}?sort=price_low`}
-            className={`font-medium ${currentSort === "price_low" ? "text-[var(--primary)] underline font-semibold" : "hover:text-[var(--foreground)]"}`}
-          >
-            Price: Low to High
-          </Link>
+        {/* Quick Sibling Category Switcher on Mobile & Desktop */}
+        {siblingCategories.length > 0 && (
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-3.5 mt-4 border-t border-[var(--border)]/70 scrollbar-none overscroll-x-contain -mx-1 px-1">
+            <Link
+              href="/explore"
+              className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-[var(--secondary)] hover:bg-[var(--secondary)]/80 text-[var(--foreground)] border border-[var(--border)] transition-colors"
+            >
+              <Sparkles className="w-3 h-3 text-[var(--primary)]" />
+              <span>All Catalog</span>
+            </Link>
+            {siblingCategories.map((c) => {
+              const isCurrent = c.slug === slug;
+              return (
+                <Link
+                  key={c.id}
+                  href={`/category/${c.slug}`}
+                  className={`shrink-0 px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                    isCurrent
+                      ? "bg-[var(--primary)] text-white shadow-xs"
+                      : "bg-[var(--card)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-[var(--border)]"
+                  }`}
+                >
+                  {c.name}
+                </Link>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Sort Controls: Mobile-Friendly Flex Wrap */}
+        <div className="flex flex-wrap items-center justify-between gap-2 mt-4 pt-3.5 border-t border-[var(--border)]/70 text-xs text-[var(--muted-foreground)]">
+          <div className="flex items-center gap-1.5">
+            <Filter className="w-3.5 h-3.5 text-[var(--primary)]" />
+            <span className="font-medium">Sort by:</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Link
+              href={`/category/${slug}?sort=newest`}
+              className={`shrink-0 px-2.5 py-1 rounded-lg font-medium transition-colors ${
+                currentSort === "newest"
+                  ? "bg-[var(--primary)] text-white font-semibold shadow-xs"
+                  : "bg-[var(--secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              Newest
+            </Link>
+            <Link
+              href={`/category/${slug}?sort=updated`}
+              className={`shrink-0 px-2.5 py-1 rounded-lg font-medium transition-colors ${
+                currentSort === "updated"
+                  ? "bg-[var(--primary)] text-white font-semibold shadow-xs"
+                  : "bg-[var(--secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              Updated
+            </Link>
+            <Link
+              href={`/category/${slug}?sort=price_low`}
+              className={`shrink-0 px-2.5 py-1 rounded-lg font-medium transition-colors ${
+                currentSort === "price_low"
+                  ? "bg-[var(--primary)] text-white font-semibold shadow-xs"
+                  : "bg-[var(--secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              Price
+            </Link>
+          </div>
         </div>
       </div>
 
