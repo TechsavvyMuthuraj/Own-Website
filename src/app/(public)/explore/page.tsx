@@ -215,11 +215,10 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
           <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1.5 pt-0.5 scrollbar-none overscroll-x-contain touch-pan-x -mx-1 px-1">
             <Link
               href={`/explore?category=all&access=${currentAccess}&platform=${currentPlatform}&sort=${currentSort}`}
-              className={`shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 sm:py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all select-none ${
-                currentCategory === "all"
+              className={`shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 sm:py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all select-none ${currentCategory === "all"
                   ? "bg-[var(--primary)] text-white shadow-md shadow-[#FD1843]/20 ring-1 ring-[var(--primary)]"
                   : "bg-[var(--secondary)] text-[var(--foreground)] hover:bg-[var(--secondary)]/80 border border-[var(--border)]/70"
-              }`}
+                }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>All Categories</span>
@@ -230,11 +229,10 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
                 <Link
                   key={cat.id}
                   href={`/explore?category=${cat.slug}&access=${currentAccess}&platform=${currentPlatform}&sort=${currentSort}`}
-                  className={`shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 sm:py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all select-none ${
-                    isSelected
+                  className={`shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 sm:py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all select-none ${isSelected
                       ? "bg-[var(--primary)] text-white shadow-md shadow-[#FD1843]/20 ring-1 ring-[var(--primary)]"
                       : "bg-[var(--secondary)] text-[var(--foreground)] hover:bg-[var(--secondary)]/80 border border-[var(--border)]/70"
-                  }`}
+                    }`}
                 >
                   {getCategoryIcon(cat.slug)}
                   <span>{cat.name}</span>
@@ -251,31 +249,28 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
             <div className="grid grid-cols-3 sm:flex items-center gap-1 bg-[var(--secondary)]/80 p-1 rounded-xl w-full sm:w-auto">
               <Link
                 href={`/explore?category=${currentCategory}&access=all&platform=${currentPlatform}&sort=${currentSort}`}
-                className={`flex items-center justify-center px-3 py-1.5 rounded-lg font-medium text-center transition-all ${
-                  currentAccess === "all"
+                className={`flex items-center justify-center px-3 py-1.5 rounded-lg font-medium text-center transition-all ${currentAccess === "all"
                     ? "bg-[var(--card)] text-[var(--foreground)] font-semibold shadow-xs"
                     : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-                }`}
+                  }`}
               >
                 All Access
               </Link>
               <Link
                 href={`/explore?category=${currentCategory}&access=free&platform=${currentPlatform}&sort=${currentSort}`}
-                className={`flex items-center justify-center px-3 py-1.5 rounded-lg font-medium text-center transition-all ${
-                  currentAccess === "free"
+                className={`flex items-center justify-center px-3 py-1.5 rounded-lg font-medium text-center transition-all ${currentAccess === "free"
                     ? "bg-[var(--card)] text-emerald-600 dark:text-emerald-400 font-semibold shadow-xs"
                     : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-                }`}
+                  }`}
               >
                 Free
               </Link>
               <Link
                 href={`/explore?category=${currentCategory}&access=paid&platform=${currentPlatform}&sort=${currentSort}`}
-                className={`flex items-center justify-center px-3 py-1.5 rounded-lg font-medium text-center transition-all ${
-                  currentAccess === "paid"
+                className={`flex items-center justify-center px-3 py-1.5 rounded-lg font-medium text-center transition-all ${currentAccess === "paid"
                     ? "bg-[var(--card)] text-amber-600 dark:text-amber-400 font-semibold shadow-xs"
                     : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-                }`}
+                  }`}
               >
                 Premium
               </Link>
@@ -292,11 +287,10 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
                   <Link
                     key={p.value}
                     href={`/explore?category=${currentCategory}&access=${currentAccess}&platform=${p.value}&sort=${currentSort}`}
-                    className={`shrink-0 px-2.5 py-1 rounded-lg border text-xs whitespace-nowrap transition-colors ${
-                      isSelected
+                    className={`shrink-0 px-2.5 py-1 rounded-lg border text-xs whitespace-nowrap transition-colors ${isSelected
                         ? "bg-[var(--secondary)] text-[var(--foreground)] font-semibold border-[var(--primary)]/60 shadow-xs"
                         : "border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--secondary)]/50"
-                    }`}
+                      }`}
                   >
                     {p.label}
                   </Link>
@@ -314,33 +308,30 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
             <div className="flex items-center gap-1.5">
               <Link
                 href={`/explore?category=${currentCategory}&access=${currentAccess}&platform=${currentPlatform}&sort=newest`}
-                className={`px-2 py-0.5 rounded-md font-medium text-xs transition-colors ${
-                  currentSort === "newest"
+                className={`px-2 py-0.5 rounded-md font-medium text-xs transition-colors ${currentSort === "newest"
                     ? "text-[var(--primary)] bg-[var(--primary)]/10 font-bold"
                     : "hover:text-[var(--foreground)]"
-                }`}
+                  }`}
               >
                 Newest
               </Link>
               <span className="text-[var(--border)]">•</span>
               <Link
                 href={`/explore?category=${currentCategory}&access=${currentAccess}&platform=${currentPlatform}&sort=updated`}
-                className={`px-2 py-0.5 rounded-md font-medium text-xs transition-colors ${
-                  currentSort === "updated"
+                className={`px-2 py-0.5 rounded-md font-medium text-xs transition-colors ${currentSort === "updated"
                     ? "text-[var(--primary)] bg-[var(--primary)]/10 font-bold"
                     : "hover:text-[var(--foreground)]"
-                }`}
+                  }`}
               >
                 Updated
               </Link>
               <span className="text-[var(--border)]">•</span>
               <Link
                 href={`/explore?category=${currentCategory}&access=${currentAccess}&platform=${currentPlatform}&sort=price_low`}
-                className={`px-2 py-0.5 rounded-md font-medium text-xs transition-colors ${
-                  currentSort === "price_low"
+                className={`px-2 py-0.5 rounded-md font-medium text-xs transition-colors ${currentSort === "price_low"
                     ? "text-[var(--primary)] bg-[var(--primary)]/10 font-bold"
                     : "hover:text-[var(--foreground)]"
-                }`}
+                  }`}
               >
                 Price
               </Link>

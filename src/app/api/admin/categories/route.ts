@@ -137,3 +137,56 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+export async function PATCH(request: Request) {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile || (profile.role !== "ADMIN" && profile.role !== "SUPER_ADMIN")) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const items = body.items as Array<{ id: string; sort_order: number }>;
+
+    if (!Array.isArray(items) || items.length === 0) {
+      return NextResponse.json({ error: "Items array is required" }, { status: 400 });
+    }
+
+    const supabaseAdmin = createAdminClient();
+
+    const updates = items.map((item) =>
+      supabaseAdmin
+        .from("categories")
+        .update({
+          sort_order: Number(item.sort_order),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", item.id)
+    );
+
+    const results = await Promise.all(updates);
+    const errorResult = results.find((r) => r.error);
+
+    if (errorResult && errorResult.error) {
+      return NextResponse.json({ error: errorResult.error.message }, { status: 400 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}

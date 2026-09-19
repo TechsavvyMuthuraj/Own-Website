@@ -1,8 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Edit2, Layers, Loader2, Check, AlertCircle, X } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Edit2,
+  Layers,
+  Loader2,
+  Check,
+  AlertCircle,
+  X,
+  GripVertical,
+  ChevronUp,
+  ChevronDown,
+  ArrowUpDown,
+} from "lucide-react";
 import type { Category } from "@/types/database";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useToast } from "@/components/ui/toast";
@@ -14,6 +27,17 @@ interface CategoriesClientProps {
 export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
   const router = useRouter();
   const { showToast, confirm } = useToast();
+
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
+
+  // Synchronize with server data when refreshed
+  useEffect(() => {
+    setCategories(initialCategories);
+  }, [initialCategories]);
+
   const [showAddForm, setShowAddForm] = useState(false);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -59,6 +83,76 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
     setEditErrorMsg("");
   };
 
+  // ── Drag and Drop Reordering Handler ──
+  const persistOrder = async (updatedList: Category[]) => {
+    setIsSavingOrder(true);
+    try {
+      const res = await fetch("/api/admin/categories", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: updatedList.map((c) => ({
+            id: c.id,
+            sort_order: c.sort_order,
+          })),
+        }),
+      });
+
+      if (res.ok) {
+        showToast({
+          type: "success",
+          title: "Order Updated",
+          message: "Category order saved successfully.",
+        });
+        router.refresh();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showToast({
+          type: "error",
+          title: "Reorder Failed",
+          message: err.error || "Could not save category order.",
+        });
+        setCategories(initialCategories);
+      }
+    } catch {
+      showToast({
+        type: "error",
+        title: "Network Error",
+        message: "Failed to connect to server.",
+      });
+      setCategories(initialCategories);
+    } finally {
+      setIsSavingOrder(false);
+    }
+  };
+
+  const handleDragReorder = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || toIndex >= categories.length) return;
+
+    const copy = [...categories];
+    const [moved] = copy.splice(fromIndex, 1);
+    copy.splice(toIndex, 0, moved);
+
+    // Resequence sort_order starting at 1
+    const resequenced = copy.map((cat, idx) => ({
+      ...cat,
+      sort_order: idx + 1,
+    }));
+
+    setCategories(resequenced);
+    persistOrder(resequenced);
+  };
+
+  const handleMoveUp = (index: number) => {
+    if (index <= 0) return;
+    handleDragReorder(index, index - 1);
+  };
+
+  const handleMoveDown = (index: number) => {
+    if (index >= categories.length - 1) return;
+    handleDragReorder(index, index + 1);
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !slug.trim()) return;
@@ -74,7 +168,7 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
           name: name.trim(),
           slug: slug.trim(),
           description: description.trim() || null,
-          sort_order: Number(sortOrder) || 0,
+          sort_order: Number(sortOrder) || categories.length + 1,
           is_active: isActive,
         }),
       });
@@ -191,7 +285,23 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
+      {/* Top Action Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        {/* Reordering helper note */}
+        <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
+          <ArrowUpDown className="w-4 h-4 text-[var(--primary)]" />
+          <span>
+            Drag rows using the <strong className="text-[var(--foreground)]">⠿</strong> handle or use{" "}
+            <strong className="text-[var(--foreground)]">↑ ↓</strong> arrows to change order.
+          </span>
+          {isSavingOrder && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-[var(--primary)] font-semibold animate-pulse ml-2">
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <span>Saving order...</span>
+            </span>
+          )}
+        </div>
+
         <button
           type="button"
           onClick={() => setShowAddForm(!showAddForm)}
@@ -292,71 +402,153 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
         </form>
       )}
 
-      {initialCategories.length > 0 ? (
+      {categories.length > 0 ? (
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] overflow-hidden shadow-sm">
           <table className="w-full text-left text-xs">
             <thead className="bg-[var(--secondary)]/60 text-[var(--muted-foreground)] uppercase font-semibold border-b border-[var(--border)]">
               <tr>
+                <th className="w-16 px-3 py-3.5 text-center">Order</th>
                 <th className="px-5 py-3.5">Name</th>
                 <th className="px-4 py-3.5">Slug</th>
-                <th className="px-4 py-3.5">Sort</th>
+                <th className="px-4 py-3.5">Sort #</th>
                 <th className="px-4 py-3.5">Status</th>
                 <th className="px-5 py-3.5 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)]">
-              {initialCategories.map((cat) => (
-                <tr key={cat.id} className="hover:bg-[var(--secondary)]/30 transition-colors">
-                  <td className="px-5 py-3.5 font-semibold text-[var(--foreground)]">
-                    <div>{cat.name}</div>
-                    {cat.description && (
-                      <div className="text-[11px] text-[var(--muted-foreground)] line-clamp-1">
-                        {cat.description}
+              {categories.map((cat, idx) => {
+                const isDragging = draggedIndex === idx;
+                const isOver = dragOverIndex === idx && draggedIndex !== idx;
+
+                return (
+                  <tr
+                    key={cat.id}
+                    draggable={true}
+                    onDragStart={(e) => {
+                      setDraggedIndex(idx);
+                      e.dataTransfer.effectAllowed = "move";
+                      e.dataTransfer.setData("text/plain", String(idx));
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = "move";
+                      if (dragOverIndex !== idx) {
+                        setDragOverIndex(idx);
+                      }
+                    }}
+                    onDragEnter={(e) => {
+                      e.preventDefault();
+                      setDragOverIndex(idx);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (draggedIndex !== null && draggedIndex !== idx) {
+                        handleDragReorder(draggedIndex, idx);
+                      }
+                      setDraggedIndex(null);
+                      setDragOverIndex(null);
+                    }}
+                    onDragEnd={() => {
+                      setDraggedIndex(null);
+                      setDragOverIndex(null);
+                    }}
+                    className={`transition-all select-none ${
+                      isDragging
+                        ? "opacity-30 bg-[var(--secondary)]"
+                        : "hover:bg-[var(--secondary)]/30"
+                    } ${
+                      isOver
+                        ? "border-t-2 border-[var(--primary)] bg-[var(--primary)]/10"
+                        : ""
+                    }`}
+                  >
+                    {/* Drag Handle & Up/Down Arrows */}
+                    <td className="px-3 py-3 text-center align-middle">
+                      <div className="flex items-center justify-center gap-1">
+                        <span
+                          className="cursor-grab active:cursor-grabbing p-1 rounded-md text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--secondary)] transition-colors"
+                          title="Drag to reorder"
+                        >
+                          <GripVertical className="w-4 h-4" />
+                        </span>
+                        <div className="flex flex-col">
+                          <button
+                            type="button"
+                            disabled={idx === 0 || isSavingOrder}
+                            onClick={() => handleMoveUp(idx)}
+                            className="p-0.5 rounded hover:bg-[var(--secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] disabled:opacity-20 disabled:hover:bg-transparent transition-colors"
+                            title="Move category up"
+                          >
+                            <ChevronUp className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={idx === categories.length - 1 || isSavingOrder}
+                            onClick={() => handleMoveDown(idx)}
+                            className="p-0.5 rounded hover:bg-[var(--secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] disabled:opacity-20 disabled:hover:bg-transparent transition-colors"
+                            title="Move category down"
+                          >
+                            <ChevronDown className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
-                    )}
-                  </td>
-                  <td className="px-4 py-3.5 font-mono text-[var(--muted-foreground)]">
-                    /{cat.slug}
-                  </td>
-                  <td className="px-4 py-3.5 font-mono">{cat.sort_order}</td>
-                  <td className="px-4 py-3.5">
-                    {cat.is_active ? (
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600">
-                        ACTIVE
+                    </td>
+
+                    <td className="px-5 py-3.5 font-semibold text-[var(--foreground)]">
+                      <div>{cat.name}</div>
+                      {cat.description && (
+                        <div className="text-[11px] text-[var(--muted-foreground)] line-clamp-1 font-normal">
+                          {cat.description}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-4 py-3.5 font-mono text-[var(--muted-foreground)]">
+                      /{cat.slug}
+                    </td>
+                    <td className="px-4 py-3.5 font-mono">
+                      <span className="px-2 py-0.5 rounded-md bg-[var(--secondary)] text-[11px] font-semibold text-[var(--foreground)]">
+                        {cat.sort_order}
                       </span>
-                    ) : (
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-500/10 text-slate-500">
-                        DISABLED
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3.5 text-right">
-                    <div className="inline-flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => openEditModal(cat)}
-                        className="p-1.5 text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--secondary)] rounded-lg transition-colors"
-                        title="Edit category"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(cat.id, cat.name)}
-                        disabled={deletingId === cat.id}
-                        className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                        title="Delete category"
-                      >
-                        {deletingId === cat.id ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-3.5 h-3.5" />
-                        )}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-4 py-3.5">
+                      {cat.is_active ? (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600">
+                          ACTIVE
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-500/10 text-slate-500">
+                          DISABLED
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-5 py-3.5 text-right">
+                      <div className="inline-flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => openEditModal(cat)}
+                          className="p-1.5 text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--secondary)] rounded-lg transition-colors"
+                          title="Edit category"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(cat.id, cat.name)}
+                          disabled={deletingId === cat.id}
+                          className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                          title="Delete category"
+                        >
+                          {deletingId === cat.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

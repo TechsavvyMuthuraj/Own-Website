@@ -89,13 +89,14 @@ export default function AdminLayout({
         {/* Brand Header */}
         <div className="p-5 border-b border-[var(--border)] flex items-center justify-between">
           <Link href="/admin" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl overflow-hidden flex items-center justify-center shadow-md flex-shrink-0">
+            <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center shadow-md flex-shrink-0 ring-1 ring-[var(--border)]">
               <Image
-                src="/images/namma-tech-icon.svg"
+                src="/images/nammatech-logo.png"
                 alt="NammaTech Logo"
                 width={32}
                 height={32}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
+                priority
               />
             </div>
             <div>
