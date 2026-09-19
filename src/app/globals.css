@@ -1,53 +1,57 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@custom-variant dark (&:where(.dark, .dark *));
 
 html {
   scroll-behavior: smooth;
 }
 
-:root {
-  --background: #0b0c10;
-  --foreground: #FFF9FA;
+/* Light Theme Variables (Default / .light / [data-theme="light"]) */
+:root, [data-theme="light"], .light {
+  --background: #f8fafc;
+  --foreground: #09090b;
   
-  --card: #13141a;
-  --card-foreground: #FFF9FA;
-  --card-border: #26211a;
+  --card: #ffffff;
+  --card-foreground: #09090b;
+  --card-border: #e2e8f0;
   
-  --popover: #13141a;
-  --popover-foreground: #FFF9FA;
+  --popover: #ffffff;
+  --popover-foreground: #09090b;
   
-  --primary: #F59E0B; /* AMBER GOLD */
-  --primary-hover: #D97706;
-  --primary-foreground: #0b0c10;
+  --primary: #d97706; /* Rich Amber */
+  --primary-hover: #b45309;
+  --primary-foreground: #ffffff;
   
-  --secondary: #1F1914;
-  --secondary-foreground: #FDE68A;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
   
-  --muted: #181920;
-  --muted-foreground: #A1A1AA;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
   
-  --accent: #F59E0B;
-  --accent-foreground: #0b0c10;
+  --accent: #f59e0b;
+  --accent-foreground: #09090b;
   
-  --success: #10b981;
+  --success: #059669;
   --success-foreground: #ffffff;
   
-  --warning: #f59e0b;
+  --warning: #d97706;
   --warning-foreground: #ffffff;
   
-  --destructive: #ef4444;
+  --destructive: #dc2626;
   --destructive-foreground: #ffffff;
   
-  --border: #26231E;
-  --input: #26231E;
-  --ring: #F59E0B;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #f59e0b;
 
-  --badge-new: #10b981;
-  --badge-updated: #3b82f6;
-  --badge-premium: #F59E0B;
-  --badge-free: #10b981;
+  --badge-new: #059669;
+  --badge-updated: #2563eb;
+  --badge-premium: #d97706;
+  --badge-free: #059669;
 }
 
-.dark {
+/* Dark Theme Variables (.dark / [data-theme="dark"]) */
+.dark, [data-theme="dark"] {
   --background: #0b0c10;
   --foreground: #FFF9FA;
   
@@ -58,7 +62,7 @@ html {
   --popover: #13141a;
   --popover-foreground: #FFF9FA;
   
-  --primary: #F59E0B; /* AMBER GOLD */
+  --primary: #F59E0B; /* Amber Gold */
   --primary-hover: #D97706;
   --primary-foreground: #0b0c10;
   
@@ -106,10 +110,10 @@ body {
 
 /* Glassmorphism utility */
 .glass-panel {
-  background: rgba(19, 20, 26, 0.85);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(226, 232, 240, 0.8);
 }
 
 .dark .glass-panel {

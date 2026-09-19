@@ -31,6 +31,7 @@ import {
 } from "@/lib/utils";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 import { ResourceDetailActions } from "./actions-client";
+import { DownloadLinksClient } from "./download-links-client";
 import { ResourceVisual } from "@/components/resources/resource-visual";
 import { AdSlot } from "@/components/ads/ad-slot";
 import { getActiveAd } from "@/lib/ads";
@@ -376,6 +377,11 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
                 ))}
               </div>
             </div>
+          )}
+
+          {/* Download Links — copy/paste with multiple mirrors */}
+          {resource.download_links && resource.download_links.length > 0 && (
+            <DownloadLinksClient links={resource.download_links} />
           )}
 
           {/* Changelog / Version History (if available) */}

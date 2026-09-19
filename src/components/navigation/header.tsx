@@ -36,11 +36,11 @@ export function Header() {
 
   const navLinks = [
     { href: "/", label: "Home" },
-    { href: "/articles", label: "Articles" },
-    { href: "/categories", label: "Categories" },
     { href: "/movies", label: "Movies" },
-    { href: "/new-and-updated", label: "New & Updated" },
+    { href: "/categories", label: "Categories" },
     { href: "/free", label: "Free" },
+    { href: "/new-and-updated", label: "New & Updated" },
+    { href: "/articles", label: "Articles" },
     { href: "/premium", label: "Premium" },
     { href: "/request", label: "Request" },
   ];

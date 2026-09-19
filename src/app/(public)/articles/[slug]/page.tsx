@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Article } from "@/types/database";
-import { Newspaper, Calendar, Clock, Tag, ArrowLeft, Sparkles, Share2 } from "lucide-react";
+import { Newspaper, Calendar, Clock, Tag, ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import { AdSlot } from "@/components/ads/ad-slot";
 
@@ -53,10 +53,11 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
 
   const { data: article } = await supabase
     .from("articles")
-    .select("*")
+    .select("*, author:profiles(id, full_name, avatar_url)")
     .eq("slug", slug)
     .eq("status", "PUBLISHED")
     .maybeSingle();
+
 
   if (!article) notFound();
 
@@ -78,12 +79,12 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-xs text-neutral-400">
-          <Link href="/" className="hover:text-amber-400 transition-colors">Home</Link>
+        <nav className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
+          <Link href="/" className="hover:text-amber-500 transition-colors">Home</Link>
           <span>/</span>
-          <Link href="/articles" className="hover:text-amber-400 transition-colors">Articles</Link>
+          <Link href="/articles" className="hover:text-amber-500 transition-colors">Articles</Link>
           <span>/</span>
-          <span className="text-white truncate max-w-[240px] font-semibold">{a.title}</span>
+          <span className="text-[var(--foreground)] truncate max-w-[240px] font-semibold">{a.title}</span>
         </nav>
 
         {/* Hero thumbnail */}
@@ -95,14 +96,14 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
         )}
 
         {/* Article header card */}
-        <header className="rounded-3xl border border-neutral-800 bg-neutral-900/60 backdrop-blur-md p-6 sm:p-8 space-y-4 shadow-xl">
+        <header className="rounded-3xl border border-[var(--border)] bg-[var(--card)] backdrop-blur-md p-6 sm:p-8 space-y-4 shadow-xl">
           {a.tags && a.tags.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {a.tags.map((t) => (
                 <Link
                   key={t}
                   href={`/articles?tag=${encodeURIComponent(t)}`}
-                  className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-semibold border border-amber-500/20 hover:bg-amber-500/20 transition-colors"
+                  className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 text-xs font-semibold border border-amber-500/20 hover:bg-amber-500/20 transition-colors"
                 >
                   <Tag className="w-3 h-3 inline mr-1" />{t}
                 </Link>
@@ -110,28 +111,28 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
             </div>
           )}
 
-          <h1 className="text-2xl sm:text-4xl font-black text-white leading-tight tracking-tight">
+          <h1 className="text-2xl sm:text-4xl font-black text-[var(--foreground)] leading-tight tracking-tight">
             {a.title}
           </h1>
 
           {a.excerpt && (
-            <p className="text-sm sm:text-base text-neutral-300 leading-relaxed font-medium">
+            <p className="text-sm sm:text-base text-[var(--muted-foreground)] leading-relaxed font-medium">
               {a.excerpt}
             </p>
           )}
 
-          <div className="flex flex-wrap items-center gap-4 text-xs text-neutral-400 border-t border-neutral-800 pt-4">
+          <div className="flex flex-wrap items-center gap-4 text-xs text-[var(--muted-foreground)] border-t border-[var(--border)] pt-4">
             <span className="flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-amber-400" />
+              <Calendar className="w-3.5 h-3.5 text-amber-500" />
               {formatDate(a.published_at || a.created_at)}
             </span>
             <span className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-amber-400" />
+              <Clock className="w-3.5 h-3.5 text-amber-500" />
               {estimateReadTime(a.content)}
             </span>
             <span className="flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              NammaTech Editorial
+              <span className="w-3.5 h-3.5 text-amber-500 font-bold">✍</span>
+              <span className="font-semibold text-[var(--foreground)]">{a.author?.full_name || "NammaTech"}</span>
             </span>
           </div>
         </header>
@@ -140,13 +141,31 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
         <AdSlot location="RESOURCE_PAGE" format="fluid" slotId="7836943657" />
 
         {/* Article Content */}
-        <article className="rounded-3xl border border-neutral-800/80 bg-neutral-900/50 backdrop-blur-md p-6 sm:p-10 shadow-xl">
+        <article className="rounded-3xl border border-[var(--border)] bg-[var(--card)] backdrop-blur-md p-6 sm:p-10 shadow-xl">
           {a.content ? (
-            <div className="text-sm sm:text-base text-neutral-200 leading-relaxed space-y-6 whitespace-pre-wrap font-sans">
-              {a.content}
-            </div>
+            a.content.trim().startsWith("<") ? (
+              <div
+                className="prose dark:prose-invert prose-sm sm:prose-base max-w-none
+                  prose-headings:text-[var(--foreground)] prose-headings:font-bold
+                  prose-p:text-[var(--foreground)]/85 prose-p:leading-relaxed
+                  prose-a:text-amber-500 prose-a:no-underline hover:prose-a:underline
+                  prose-strong:text-[var(--foreground)] prose-em:text-[var(--muted-foreground)]
+                  prose-code:text-amber-500 prose-code:bg-[var(--secondary)] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:before:content-none prose-code:after:content-none
+                  prose-pre:bg-[var(--secondary)] prose-pre:border prose-pre:border-[var(--border)] prose-pre:rounded-2xl
+                  prose-blockquote:border-amber-500 prose-blockquote:bg-amber-500/5 prose-blockquote:rounded-r-xl prose-blockquote:text-[var(--muted-foreground)]
+                  prose-img:rounded-2xl prose-img:shadow-xl
+                  prose-ul:text-[var(--foreground)]/85 prose-ol:text-[var(--foreground)]/85
+                  prose-li:text-[var(--foreground)]/85
+                  prose-hr:border-[var(--border)]"
+                dangerouslySetInnerHTML={{ __html: a.content }}
+              />
+            ) : (
+              <div className="text-sm sm:text-base text-[var(--foreground)]/85 leading-relaxed space-y-6 whitespace-pre-wrap font-sans">
+                {a.content}
+              </div>
+            )
           ) : (
-            <div className="p-12 rounded-2xl border border-dashed border-neutral-800 text-center text-sm text-neutral-400">
+            <div className="p-12 rounded-2xl border border-dashed border-[var(--border)] text-center text-sm text-[var(--muted-foreground)]">
               Content is being finalized by the editorial team. Check back soon!
             </div>
           )}
@@ -158,8 +177,8 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
         {/* Related Articles */}
         {related && related.length > 0 && (
           <section className="space-y-4 pt-4">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <Newspaper className="w-4 h-4 text-amber-400" />
+            <h2 className="text-lg font-bold text-[var(--foreground)] flex items-center gap-2">
+              <Newspaper className="w-4 h-4 text-amber-500" />
               More from NammaTech Journal
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
@@ -167,7 +186,7 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
                 <Link
                   key={r.id}
                   href={`/articles/${r.slug}`}
-                  className="group flex flex-col rounded-2xl border border-neutral-800 bg-neutral-900/60 backdrop-blur-md overflow-hidden hover:border-amber-500/40 hover:shadow-xl transition-all"
+                  className="group flex flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] backdrop-blur-md overflow-hidden hover:border-amber-500/40 hover:shadow-xl transition-all"
                 >
                   {r.thumbnail_url ? (
                     <div className="aspect-video overflow-hidden bg-neutral-950">
@@ -179,15 +198,15 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
                       />
                     </div>
                   ) : (
-                    <div className="aspect-video bg-neutral-800 flex items-center justify-center">
-                      <Newspaper className="w-8 h-8 text-neutral-600" />
+                    <div className="aspect-video bg-[var(--secondary)] flex items-center justify-center">
+                      <Newspaper className="w-8 h-8 text-[var(--muted-foreground)]" />
                     </div>
                   )}
                   <div className="p-4 flex-1 flex flex-col justify-between">
-                    <h3 className="text-xs font-bold text-white group-hover:text-amber-400 transition-colors line-clamp-2 leading-snug">
+                    <h3 className="text-xs font-bold text-[var(--foreground)] group-hover:text-amber-500 transition-colors line-clamp-2 leading-snug">
                       {r.title}
                     </h3>
-                    <span className="text-[10px] text-neutral-400 pt-2 block">
+                    <span className="text-[10px] text-[var(--muted-foreground)] pt-2 block">
                       {formatDate(r.published_at)}
                     </span>
                   </div>
@@ -198,10 +217,10 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
         )}
 
         {/* Back navigation button */}
-        <div className="pt-4 border-t border-neutral-800">
+        <div className="pt-4 border-t border-[var(--border)]">
           <Link
             href="/articles"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-neutral-700 bg-neutral-900 hover:bg-neutral-800 text-xs font-bold text-white hover:text-amber-400 transition-all shadow-md"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--secondary)] text-xs font-bold text-[var(--foreground)] hover:text-amber-500 transition-all shadow-sm"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             Back to All Articles

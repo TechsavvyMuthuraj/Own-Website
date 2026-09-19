@@ -12,6 +12,12 @@ import {
   ArrowRight,
   ShieldCheck,
   Megaphone,
+  Home,
+  Image,
+  Star,
+  Newspaper,
+  LayoutGrid,
+  Edit3,
 } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -234,6 +240,119 @@ export default async function AdminDashboardPage() {
             </p>
           </div>
         )}
+      </div>
+      {/* HOMEPAGE QUICK-EDIT PANEL */}
+      <div className="rounded-3xl border border-amber-500/25 bg-gradient-to-br from-amber-500/5 via-[var(--card)] to-[var(--card)] p-6 shadow-sm space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20">
+              <Home className="w-4 h-4 text-amber-400" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-[var(--foreground)] uppercase tracking-wider">
+                Homepage Quick Edit
+              </h3>
+              <p className="text-[11px] text-[var(--muted-foreground)] mt-0.5">
+                Edit what visitors see on the public homepage
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/admin/homepage"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 text-neutral-950 text-xs font-bold hover:bg-amber-400 transition-colors shadow-sm"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>Open Homepage Editor</span>
+            </Link>
+            <Link
+              href="/"
+              target="_blank"
+              className="text-xs font-semibold text-amber-500 hover:underline flex items-center gap-1"
+            >
+              <ArrowRight className="w-3 h-3" />
+              Preview Site
+            </Link>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <Link
+            href="/admin/homepage"
+            className="flex items-center gap-3 p-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/15 transition-all group"
+          >
+            <div className="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+              <Home className="w-4 h-4 text-amber-500" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-[var(--foreground)] group-hover:text-amber-500 transition-colors">Hero &amp; Sections</p>
+              <p className="text-[10px] text-[var(--muted-foreground)]">Edit banners, titles, founder bio</p>
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/categories"
+            className="flex items-center gap-3 p-4 rounded-2xl border border-[var(--border)] bg-[var(--secondary)]/40 hover:bg-[var(--secondary)] hover:border-blue-500/30 transition-all group"
+          >
+            <div className="w-8 h-8 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+              <LayoutGrid className="w-4 h-4 text-blue-400" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-[var(--foreground)] group-hover:text-blue-400 transition-colors">Category Grid</p>
+              <p className="text-[10px] text-[var(--muted-foreground)]">Reorder &amp; manage categories</p>
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/announcements"
+            className="flex items-center gap-3 p-4 rounded-2xl border border-[var(--border)] bg-[var(--secondary)]/40 hover:bg-[var(--secondary)] hover:border-emerald-500/30 transition-all group"
+          >
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+              <Megaphone className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-[var(--foreground)] group-hover:text-emerald-400 transition-colors">Announcements</p>
+              <p className="text-[10px] text-[var(--muted-foreground)]">Top bar &amp; homepage banners</p>
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/articles"
+            className="flex items-center gap-3 p-4 rounded-2xl border border-[var(--border)] bg-[var(--secondary)]/40 hover:bg-[var(--secondary)] hover:border-purple-500/30 transition-all group"
+          >
+            <div className="w-8 h-8 rounded-xl bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+              <Newspaper className="w-4 h-4 text-purple-400" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-[var(--foreground)] group-hover:text-purple-400 transition-colors">Articles &amp; News</p>
+              <p className="text-[10px] text-[var(--muted-foreground)]">Publish and manage articles</p>
+            </div>
+          </Link>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          <Link
+            href="/admin/settings"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--secondary)] text-xs font-medium text-[var(--foreground)] transition-colors"
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            Site Settings &amp; SEO
+          </Link>
+          <Link
+            href="/admin/ads"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--secondary)] text-xs font-medium text-[var(--foreground)] transition-colors"
+          >
+            <Image className="w-3.5 h-3.5" />
+            Ad Placements
+          </Link>
+          <Link
+            href="/admin/resources/new"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] transition-all shadow-sm ml-auto"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Add New Resource
+          </Link>
+        </div>
       </div>
     </div>
   );

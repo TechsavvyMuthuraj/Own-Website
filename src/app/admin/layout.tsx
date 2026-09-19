@@ -24,6 +24,7 @@ import {
   ExternalLink,
   Film,
   Newspaper,
+  Home,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -45,6 +46,7 @@ export default function AdminLayout({
 
   const navItems = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/admin/homepage", label: "Homepage Editor", icon: Home },
     { href: "/admin/resources", label: "Resources", icon: Package },
     { href: "/admin/movies", label: "Movies & Cinema", icon: Film },
     { href: "/admin/articles", label: "Articles & News", icon: Newspaper },

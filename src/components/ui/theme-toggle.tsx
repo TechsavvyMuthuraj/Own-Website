@@ -24,15 +24,16 @@ export function ThemeToggle() {
     );
   }
 
-  const isDark = resolvedTheme === "dark";
+  const isDark = resolvedTheme ? resolvedTheme === "dark" : theme === "dark";
 
   return (
     <button
       type="button"
       id="theme-toggle-btn"
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      aria-label="Toggle theme"
-      className="w-9 h-9 rounded-lg border border-[var(--border)] hover:bg-[var(--secondary)] flex items-center justify-center text-[var(--foreground)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      className="w-9 h-9 rounded-xl border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--secondary)] flex items-center justify-center text-[var(--foreground)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--ring)] shadow-xs cursor-pointer"
     >
       {isDark ? (
         <Sun className="w-4 h-4 text-amber-400 transition-transform hover:rotate-45" />

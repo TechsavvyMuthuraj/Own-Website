@@ -121,7 +121,7 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
             </h1>
 
             <p className="text-sm sm:text-base text-neutral-300 leading-relaxed max-w-2xl">
-              In-depth software tutorials, cinema releases, security deep dives, and expert commentary curated by Muthuraj and the NammaTech community.
+              In-depth software tutorials, cinema releases, security deep dives, and expert commentary curated by the NammaTech editorial team.
             </p>
 
             {/* Quick Tag Filter Bar */}
@@ -161,8 +161,8 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
       {!tag && featuredArticles.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full space-y-5">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-amber-400" />
-            <h2 className="text-xl font-bold text-white tracking-tight">Featured Highlights</h2>
+            <Sparkles className="w-4 h-4 text-amber-500" />
+            <h2 className="text-xl font-bold text-[var(--foreground)] tracking-tight">Featured Highlights</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -170,7 +170,7 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
               <Link
                 key={article.id}
                 href={`/articles/${article.slug}`}
-                className="group flex flex-col rounded-2xl border border-amber-500/30 bg-neutral-900/80 backdrop-blur-md overflow-hidden hover:border-amber-400 hover:shadow-2xl hover:shadow-amber-500/10 hover:-translate-y-1.5 transition-all duration-300"
+                className="group flex flex-col rounded-2xl border border-amber-500/30 bg-[var(--card)] backdrop-blur-md overflow-hidden hover:border-amber-500 hover:shadow-2xl hover:shadow-amber-500/10 hover:-translate-y-1.5 transition-all duration-300"
               >
                 {article.thumbnail_url ? (
                   <div className="relative aspect-video w-full overflow-hidden bg-neutral-950">
@@ -186,8 +186,8 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
                     </div>
                   </div>
                 ) : (
-                  <div className="aspect-video bg-gradient-to-br from-amber-500/20 via-neutral-900 to-neutral-950 flex items-center justify-center">
-                    <BookOpen className="w-12 h-12 text-amber-400/40" />
+                  <div className="aspect-video bg-gradient-to-br from-amber-500/20 via-[var(--secondary)] to-[var(--card)] flex items-center justify-center">
+                    <BookOpen className="w-12 h-12 text-amber-500/50" />
                   </div>
                 )}
 
@@ -196,29 +196,29 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
                     {article.tags?.slice(0, 2).map((t) => (
                       <span
                         key={t}
-                        className="px-2 py-0.5 rounded-full bg-neutral-800 text-[10px] font-semibold text-neutral-300 border border-neutral-700"
+                        className="px-2 py-0.5 rounded-full bg-[var(--secondary)] text-[10px] font-semibold text-[var(--foreground)] border border-[var(--border)]"
                       >
                         #{t}
                       </span>
                     ))}
                   </div>
 
-                  <h3 className="text-base font-bold text-white group-hover:text-amber-400 transition-colors line-clamp-2 leading-snug">
+                  <h3 className="text-base font-bold text-[var(--foreground)] group-hover:text-amber-500 transition-colors line-clamp-2 leading-snug">
                     {article.title}
                   </h3>
 
                   {article.excerpt && (
-                    <p className="text-xs text-neutral-400 line-clamp-2 leading-relaxed flex-1">
+                    <p className="text-xs text-[var(--muted-foreground)] line-clamp-2 leading-relaxed flex-1">
                       {article.excerpt}
                     </p>
                   )}
 
-                  <div className="flex items-center justify-between text-[11px] text-neutral-400 pt-2 border-t border-neutral-800/80 mt-auto">
+                  <div className="flex items-center justify-between text-[11px] text-[var(--muted-foreground)] pt-2 border-t border-[var(--border)] mt-auto">
                     <span className="flex items-center gap-1.5">
-                      <Calendar className="w-3 h-3 text-amber-400/80" />
+                      <Calendar className="w-3 h-3 text-amber-500" />
                       {formatDate(article.published_at || article.created_at)}
                     </span>
-                    <span className="flex items-center gap-1 text-amber-400 font-semibold group-hover:translate-x-0.5 transition-transform">
+                    <span className="flex items-center gap-1 text-amber-500 font-semibold group-hover:translate-x-0.5 transition-transform">
                       <span>Read Story</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </span>
@@ -234,8 +234,8 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Newspaper className="w-5 h-5 text-amber-400" />
-            <h2 className="text-xl font-bold text-white tracking-tight">
+            <Newspaper className="w-5 h-5 text-amber-500" />
+            <h2 className="text-xl font-bold text-[var(--foreground)] tracking-tight">
               {tag ? `Articles Tagged #${tag}` : "Latest Publications"}
             </h2>
           </div>
@@ -243,7 +243,7 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
           {tag && (
             <Link
               href="/articles"
-              className="text-xs text-amber-400 hover:text-amber-300 font-semibold underline"
+              className="text-xs text-amber-500 hover:text-amber-400 font-semibold underline"
             >
               Clear Filter
             </Link>
@@ -256,7 +256,7 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
               <Link
                 key={article.id}
                 href={`/articles/${article.slug}`}
-                className="group flex flex-col rounded-2xl border border-neutral-800/80 bg-neutral-900/60 backdrop-blur-md overflow-hidden hover:border-amber-500/40 hover:shadow-xl hover:shadow-amber-500/5 hover:-translate-y-1 transition-all duration-300"
+                className="group flex flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] backdrop-blur-md overflow-hidden hover:border-amber-500/40 hover:shadow-xl hover:shadow-amber-500/5 hover:-translate-y-1 transition-all duration-300"
               >
                 {article.thumbnail_url ? (
                   <div className="relative aspect-video w-full overflow-hidden bg-neutral-950">
@@ -267,8 +267,8 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
                     />
                   </div>
                 ) : (
-                  <div className="aspect-video bg-gradient-to-br from-neutral-800 to-neutral-950 flex items-center justify-center">
-                    <Newspaper className="w-10 h-10 text-neutral-600" />
+                  <div className="aspect-video bg-[var(--secondary)] flex items-center justify-center">
+                    <Newspaper className="w-10 h-10 text-[var(--muted-foreground)]" />
                   </div>
                 )}
 
@@ -278,7 +278,7 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
                       {article.tags.slice(0, 2).map((t) => (
                         <span
                           key={t}
-                          className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-[10px] font-semibold border border-amber-500/20"
+                          className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 text-[10px] font-semibold border border-amber-500/20"
                         >
                           <Tag className="w-2.5 h-2.5 inline mr-0.5" />
                           {t}
@@ -287,22 +287,22 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
                     </div>
                   )}
 
-                  <h3 className="text-sm font-bold text-white group-hover:text-amber-400 transition-colors line-clamp-2 leading-snug flex-1">
+                  <h3 className="text-sm font-bold text-[var(--foreground)] group-hover:text-amber-500 transition-colors line-clamp-2 leading-snug flex-1">
                     {article.title}
                   </h3>
 
                   {article.excerpt && (
-                    <p className="text-xs text-neutral-400 line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-[var(--muted-foreground)] line-clamp-2 leading-relaxed">
                       {article.excerpt}
                     </p>
                   )}
 
-                  <div className="flex items-center justify-between text-[10px] text-neutral-400 pt-2 border-t border-neutral-800/80 mt-auto">
+                  <div className="flex items-center justify-between text-[10px] text-[var(--muted-foreground)] pt-2 border-t border-[var(--border)] mt-auto">
                     <span className="flex items-center gap-1.5">
-                      <Calendar className="w-3 h-3 text-neutral-400" />
+                      <Calendar className="w-3 h-3 text-[var(--muted-foreground)]" />
                       {formatDate(article.published_at || article.created_at)}
                     </span>
-                    <span className="flex items-center gap-1 text-amber-400 font-semibold group-hover:translate-x-0.5 transition-transform">
+                    <span className="flex items-center gap-1 text-amber-500 font-semibold group-hover:translate-x-0.5 transition-transform">
                       <span>Read article</span>
                       <ArrowRight className="w-3 h-3" />
                     </span>
@@ -312,20 +312,20 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
             ))}
           </div>
         ) : (
-          <div className="p-16 rounded-3xl border border-neutral-800 bg-neutral-900/50 backdrop-blur-md text-center space-y-4 shadow-xl">
-            <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto text-amber-400">
+          <div className="p-16 rounded-3xl border border-[var(--border)] bg-[var(--card)] backdrop-blur-md text-center space-y-4 shadow-xl">
+            <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto text-amber-500">
               <Newspaper className="w-8 h-8" />
             </div>
-            <h3 className="text-base font-bold text-white">
+            <h3 className="text-base font-bold text-[var(--foreground)]">
               {tag ? `No articles tagged #${tag} yet` : "No Articles Published Yet"}
             </h3>
-            <p className="text-xs text-neutral-400 max-w-md mx-auto leading-relaxed">
+            <p className="text-xs text-[var(--muted-foreground)] max-w-md mx-auto leading-relaxed">
               New deep dives, tutorials, and cinema news are in development. Check back soon or visit our{" "}
-              <Link href="/movies" className="text-amber-400 hover:underline">
+              <Link href="/movies" className="text-amber-500 hover:underline">
                 Cinema Zone
               </Link>{" "}
               or{" "}
-              <Link href="/" className="text-amber-400 hover:underline">
+              <Link href="/" className="text-amber-500 hover:underline">
                 Software Hub
               </Link>
               .

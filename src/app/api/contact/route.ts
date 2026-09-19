@@ -1,8 +1,7 @@
-import { NextResponse, NextRequest } from "next/server";
+﻿import { NextResponse, NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 // In-memory rate limiting (resets on cold-start / serverless spin-up)
-// For production, use Redis/Upstash. This guards against burst spam.
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute window
 const RATE_LIMIT_MAX = 3; // max 3 submissions per IP per minute
@@ -49,7 +48,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
     }
 
-    const { name, email, subject, message, turnstileToken } = body;
+    const { name, email, subject, message } = body;
 
     // ── Field validation ──────────────────────────────────────────────────────
     if (!name?.trim()) {
@@ -64,70 +63,6 @@ export async function POST(request: NextRequest) {
     if (!message?.trim() || message.trim().length < 10) {
       return NextResponse.json(
         { error: "Message must be at least 10 characters." },
-        { status: 400 }
-      );
-    }
-    if (!turnstileToken) {
-      return NextResponse.json(
-        { error: "Security verification (Turnstile) token is missing. Please reload the page." },
-        { status: 400 }
-      );
-    }
-
-    // ── Cloudflare Turnstile server-side verification ─────────────────────────
-    const turnstileSecretKey = process.env.TURNSTILE_SECRET_KEY;
-    if (!turnstileSecretKey) {
-      console.error("[Contact] TURNSTILE_SECRET_KEY is not configured.");
-      return NextResponse.json(
-        { error: "Server configuration error. Please contact support." },
-        { status: 500 }
-      );
-    }
-
-    const turnstileVerifyRes = await fetch(
-      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          secret: turnstileSecretKey,
-          response: turnstileToken,
-          // Optionally include IP for stricter verification
-          remoteip: ipKey !== "unknown" ? ipKey : "",
-        }),
-      }
-    );
-
-    if (!turnstileVerifyRes.ok) {
-      console.error("[Contact] Turnstile verify request failed:", turnstileVerifyRes.status);
-      return NextResponse.json(
-        { error: "Failed to verify security challenge. Please try again." },
-        { status: 502 }
-      );
-    }
-
-    const turnstileData = await turnstileVerifyRes.json();
-
-    if (!turnstileData.success) {
-      const codes: string[] = turnstileData["error-codes"] || [];
-      console.warn("[Contact] Turnstile failed:", codes);
-
-      // Provide specific messages for common error codes
-      if (codes.includes("timeout-or-duplicate")) {
-        return NextResponse.json(
-          { error: "Security challenge expired or already used. Please refresh the page and try again.", turnstileExpired: true },
-          { status: 400 }
-        );
-      }
-      if (codes.includes("invalid-input-response")) {
-        return NextResponse.json(
-          { error: "Invalid security token. Please reload the page." },
-          { status: 400 }
-        );
-      }
-
-      return NextResponse.json(
-        { error: "Security verification failed. Please try again.", turnstileError: true },
         { status: 400 }
       );
     }
@@ -148,9 +83,7 @@ export async function POST(request: NextRequest) {
     formPayload.append("from_name", "NammaTech Website");
     formPayload.append("name", name.trim());
     formPayload.append("email", email.trim());
-    // Rewrite subject field as the user's subject in the body so the email subject stays consistent
     formPayload.append("message", `Subject: ${subject.trim()}\n\n${message.trim()}`);
-    // Disable Web3Forms' built-in redirect — we handle success on the client
     formPayload.append("redirect", "false");
 
     const web3Res = await fetch("https://api.web3forms.com/submit", {
@@ -189,3 +122,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "An unexpected error occurred. Please try again." }, { status: 500 });
   }
 }
+

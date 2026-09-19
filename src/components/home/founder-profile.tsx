@@ -12,7 +12,19 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-export function FounderProfile() {
+export function FounderProfile({ settings }: { settings?: Record<string, any> }) {
+  if (settings && settings.show_founder === false) {
+    return null;
+  }
+
+  const name = settings?.founder_name || "Muthuraj C";
+  const title = settings?.founder_title || "Founder & Chief Executive Officer";
+  const role = settings?.founder_role || "Lead Software Architect • Digital Creator • Tech Entrepreneur";
+  const bio = settings?.founder_bio || "Muthuraj C is a dedicated software developer, digital architect, and tech creator behind Techsavvy Muthuraj and NammaTech. Driven by a mission to build transparent, high-speed, and secure digital infrastructure, he engineered NammaTech to give developers, students, and digital creators direct access to verified software, open-source tools, developer utilities, and cinema media — zero deceptive ads, zero mock data, and 100% community-first trust.";
+  const imageUrl = settings?.founder_image_url || "/images/founder-muthuraj.png";
+  const instagramUrl = settings?.founder_instagram || "https://www.instagram.com/techiemuthuraj/";
+  const youtubeUrl = settings?.founder_youtube || "https://www.youtube.com/@techiemuthuraj/";
+
   return (
     <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
       <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 p-6 sm:p-10 lg:p-12 shadow-2xl">
@@ -31,8 +43,8 @@ export function FounderProfile() {
               <div className="relative overflow-hidden rounded-2xl border-2 border-amber-400/40 bg-[#FDE000] shadow-2xl transition-transform duration-500 group-hover:scale-[1.02]">
                 <div className="relative aspect-[9/16] w-full bg-[#FDE000]">
                   <Image
-                    src="/images/founder-muthuraj.png"
-                    alt="Muthuraj C - Founder & CEO of NammaTech"
+                    src={imageUrl}
+                    alt={`${name} - ${title}`}
                     fill
                     sizes="(max-width: 640px) 280px, (max-width: 1024px) 340px, 400px"
                     className="object-cover object-center"
@@ -53,23 +65,21 @@ export function FounderProfile() {
             <div className="space-y-2">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider">
                 <Crown className="w-3.5 h-3.5" />
-                <span>Founder & Chief Executive Officer</span>
+                <span>{title}</span>
               </div>
 
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
-                Muthuraj C
+                {name}
               </h2>
 
               <p className="text-sm sm:text-base font-semibold text-amber-400">
-                Lead Software Architect • Digital Creator • Tech Entrepreneur
+                {role}
               </p>
             </div>
 
             {/* Description */}
             <p className="text-sm sm:text-base text-neutral-300 leading-relaxed">
-              Muthuraj C is a dedicated software developer, digital architect, and tech creator behind{" "}
-              <strong className="text-white">Techsavvy Muthuraj</strong> and{" "}
-              <strong className="text-amber-400">NammaTech</strong>. Driven by a mission to build transparent, high-speed, and secure digital infrastructure, he engineered NammaTech to give developers, students, and digital creators direct access to verified software, open-source tools, developer utilities, and cinema media — zero deceptive ads, zero mock data, and 100% community-first trust.
+              {bio}
             </p>
 
             {/* Feature Badges */}
@@ -96,12 +106,11 @@ export function FounderProfile() {
             <div className="pt-2 flex flex-wrap items-center gap-3.5">
               {/* Instagram Button */}
               <a
-                href="https://www.instagram.com/techiemuthuraj/"
+                href={instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group relative inline-flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#FCB045] text-white font-bold text-xs shadow-lg shadow-rose-500/20 hover:brightness-110 active:scale-95 transition-all cursor-pointer"
               >
-                {/* Instagram Camera Icon */}
                 <svg
                   className="w-4 h-4 fill-current"
                   viewBox="0 0 24 24"
@@ -115,12 +124,11 @@ export function FounderProfile() {
 
               {/* YouTube Button */}
               <a
-                href="https://www.youtube.com/@techiemuthuraj/"
+                href={youtubeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group relative inline-flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-[#FF0000] hover:bg-[#E60000] text-white font-bold text-xs shadow-lg shadow-red-600/20 active:scale-95 transition-all cursor-pointer"
               >
-                {/* YouTube Play Icon */}
                 <svg
                   className="w-4 h-4 fill-current"
                   viewBox="0 0 24 24"
