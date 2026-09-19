@@ -383,7 +383,7 @@ export function MoviesClient({ movies }: MoviesClientProps) {
                         </span>
                       )}
                       <span className="font-extrabold font-mono text-xs">
-                        ₹{movie.premiumPrice}
+                        {movie.premiumPrice <= 0 ? "FREE" : `₹${movie.premiumPrice}`}
                       </span>
                       {movie.hasDiscount && movie.discountPct && movie.discountPct > 0 && (
                         <span className="px-1.5 py-0.2 rounded bg-neutral-950 text-amber-400 text-[9px] font-black uppercase">
@@ -655,52 +655,139 @@ export function MoviesClient({ movies }: MoviesClientProps) {
               </div>
             )}
 
-            {/* UPI QR & Direct Pay */}
-            <div className="border-t border-[var(--border)] pt-3">
-              <UpiQrCard
-                amount={activePremiumMovie.premiumPrice}
-                orderNumber={`MOV-${Date.now().toString().slice(-6)}`}
-                upiId="muthurajc@slc"
-                isProcessing={isSubmittingUtr}
-                onConfirmPayment={async (utr) => {
-                  setIsSubmittingUtr(true);
-                  try {
-                    const res = await fetch("/api/checkout/verify", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        utr_number: utr,
-                        order_number: `MOV-${Date.now().toString().slice(-6)}`,
-                        amount: activePremiumMovie.premiumPrice,
-                        items: [
-                          {
-                            title: activePremiumMovie.title,
-                            price: activePremiumMovie.premiumPrice,
-                            type: "MOVIE_VIP",
-                          },
-                        ],
-                      }),
-                    });
+            {/* If 100% Discount / Free VIP (₹0): Direct Instant Downloads (NO Payment Verification Needed) */}
+            {activePremiumMovie.premiumPrice <= 0 ? (
+              <div className="space-y-3 border-t border-[var(--border)] pt-3">
+                <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-1">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500 text-neutral-950 font-black text-[10px] uppercase">
+                    🎉 100% Free VIP Unlocked
+                  </div>
+                  <h5 className="text-sm font-bold text-[var(--foreground)]">
+                    No Payment Needed — Download Instantly!
+                  </h5>
+                  <p className="text-[11px] text-[var(--muted-foreground)]">
+                    Special 100% discount offer active. Click your preferred 4K master size below to start your high-speed download directly.
+                  </p>
+                </div>
 
-                    showToast({
-                      type: "success",
-                      title: "Payment Submitted! 🚀",
-                      message: `UTR ${utr} recorded for ${activePremiumMovie.title}. Admin will verify and activate your 4K link immediately!`,
-                      duration: 8000,
-                    });
-                    setActivePremiumMovie(null);
-                  } catch (err: any) {
-                    showToast({
-                      type: "error",
-                      title: "Submission Error",
-                      message: err?.message || "Failed to submit payment details",
-                    });
-                  } finally {
-                    setIsSubmittingUtr(false);
-                  }
-                }}
-              />
-            </div>
+                <div className="space-y-2">
+                  {activePremiumMovie.vipLinks && activePremiumMovie.vipLinks.length > 0 ? (
+                    activePremiumMovie.vipLinks.map((link, idx) => (
+                      <a
+                        key={idx}
+                        href={link.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-amber-500/15 border border-amber-500/40 hover:border-amber-500 hover:bg-amber-500/25 transition-all shadow-sm group cursor-pointer"
+                        onClick={() => {
+                          if (activePremiumMovie.id) {
+                            fetch("/api/downloads/record", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ resourceId: activePremiumMovie.id }),
+                            }).catch(() => {});
+                          }
+                          showToast({
+                            type: "success",
+                            title: "Download Started! 🚀",
+                            message: `Starting 4K VIP download: ${link.title} (${link.size})!`,
+                          });
+                        }}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <div className="p-2 rounded-xl bg-amber-500 text-neutral-950 shadow-xs group-hover:scale-105 transition-transform">
+                            <Download className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <h6 className="text-xs font-bold text-[var(--foreground)] group-hover:text-amber-500 transition-colors flex items-center gap-1">
+                              <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                              {link.title}
+                            </h6>
+                            <span className="text-[10px] text-emerald-500 font-semibold">
+                              Direct 4K VIP High Speed Mirror (Free)
+                            </span>
+                          </div>
+                        </div>
+                        <span className="px-3 py-1.5 rounded-xl text-xs font-mono font-black bg-amber-500 text-neutral-950 shadow-sm flex-shrink-0">
+                          {link.size}
+                        </span>
+                      </a>
+                    ))
+                  ) : (
+                    <a
+                      href={activePremiumMovie.normalDownloadUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center justify-center gap-2 w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-neutral-950 text-xs font-bold hover:brightness-110 shadow-lg shadow-amber-500/20 transition-all"
+                      onClick={() => {
+                        if (activePremiumMovie.id) {
+                          fetch("/api/downloads/record", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ resourceId: activePremiumMovie.id }),
+                          }).catch(() => {});
+                        }
+                        showToast({
+                          type: "success",
+                          title: "Download Started! 🚀",
+                          message: `Downloading ${activePremiumMovie.title}!`,
+                        });
+                      }}
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>Click to Download VIP 4K ({activePremiumMovie.sizePremium || "Direct Link"})</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            ) : (
+              /* Regular Paid VIP Flow with UPI QR */
+              <div className="border-t border-[var(--border)] pt-3">
+                <UpiQrCard
+                  amount={activePremiumMovie.premiumPrice}
+                  orderNumber={`MOV-${Date.now().toString().slice(-6)}`}
+                  upiId="muthurajc@slc"
+                  isProcessing={isSubmittingUtr}
+                  onConfirmPayment={async (utr) => {
+                    setIsSubmittingUtr(true);
+                    try {
+                      const res = await fetch("/api/checkout/verify", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          utr_number: utr,
+                          order_number: `MOV-${Date.now().toString().slice(-6)}`,
+                          amount: activePremiumMovie.premiumPrice,
+                          items: [
+                            {
+                              title: activePremiumMovie.title,
+                              price: activePremiumMovie.premiumPrice,
+                              type: "MOVIE_VIP",
+                            },
+                          ],
+                        }),
+                      });
+
+                      showToast({
+                        type: "success",
+                        title: "Payment Submitted! 🚀",
+                        message: `UTR ${utr} recorded for ${activePremiumMovie.title}. Admin will verify and activate your 4K link immediately!`,
+                        duration: 8000,
+                      });
+                      setActivePremiumMovie(null);
+                    } catch (err: any) {
+                      showToast({
+                        type: "error",
+                        title: "Submission Error",
+                        message: err?.message || "Failed to submit payment details",
+                      });
+                    } finally {
+                      setIsSubmittingUtr(false);
+                    }
+                  }}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}

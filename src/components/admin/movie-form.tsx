@@ -896,6 +896,7 @@ export function MovieForm({
                       Presets:
                     </span>
                     {[
+                      { label: "100% Free (₹0)", price: 0 },
                       { label: "₹1 Deal", price: 1 },
                       { label: "₹49 Deal", price: 49 },
                       { label: "50% OFF", price: Math.max(1, Math.round(vipRegularPrice * 0.5)) },
