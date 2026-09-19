@@ -184,8 +184,6 @@ export function MovieForm({
   const [vipOfferPrice, setVipOfferPrice] = useState<number>(
     initialData?.sale_price !== null && initialData?.sale_price !== undefined
       ? initialData.sale_price
-      : initialData?.price !== undefined && initialData.price > 0
-      ? initialData.price
       : 1
   );
 
@@ -811,8 +809,8 @@ export function MovieForm({
                   onClick={() => {
                     if (!hasVipDiscount) {
                       setHasVipDiscount(true);
-                      if (vipRegularPrice <= vipOfferPrice) {
-                        setVipRegularPrice(99);
+                      if (vipOfferPrice >= vipRegularPrice) {
+                        setVipOfferPrice(1);
                       }
                     } else {
                       setHasVipDiscount(false);

@@ -72,7 +72,10 @@ export async function PUT(
       resource_type: body.resource_type || "DOWNLOAD",
       access_type: body.access_type || "FREE",
       price: body.price !== undefined ? Number(body.price) : 0,
-      sale_price: body.sale_price ? Number(body.sale_price) : null,
+      sale_price:
+        body.sale_price !== null && body.sale_price !== undefined
+          ? Number(body.sale_price)
+          : null,
       platform: body.platform || null,
       version: body.version || null,
       version_code: body.version_code ? Number(body.version_code) : null,
