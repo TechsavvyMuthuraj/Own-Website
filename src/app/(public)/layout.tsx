@@ -1,41 +1,60 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Header } from "@/components/navigation/header";
 import { Footer } from "@/components/navigation/footer";
 import { AnnouncementBar } from "@/components/announcements/announcement-bar";
 import { AdSlot } from "@/components/ads/ad-slot";
 import { getActiveAd } from "@/lib/ads";
-
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AdminMaintenanceBanner } from "@/components/admin/admin-maintenance-banner";
+import { TopLoader } from "@/components/navigation/top-loader";
+
+// In-memory 30s cache to avoid blocking database queries on every navigation click
+let cachedMaintenance: { value: boolean; expiresAt: number } | null = null;
+
+async function checkMaintenanceMode(): Promise<boolean> {
+  const now = Date.now();
+  if (cachedMaintenance && cachedMaintenance.expiresAt > now) {
+    return cachedMaintenance.value;
+  }
+  try {
+    const supabaseAdmin = createAdminClient();
+    const { data } = await supabaseAdmin
+      .from("site_settings")
+      .select("value")
+      .eq("key", "maintenance_mode")
+      .single();
+    let isMaintenanceActive = false;
+    if (data?.value) {
+      try {
+        const parsed = typeof data.value === "string" ? JSON.parse(data.value) : data.value;
+        isMaintenanceActive = parsed === true || parsed === "true";
+      } catch {
+        isMaintenanceActive = data.value === "true";
+      }
+    }
+    cachedMaintenance = { value: isMaintenanceActive, expiresAt: now + 30000 };
+    return isMaintenanceActive;
+  } catch {
+    return false;
+  }
+}
 
 export default async function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabaseAdmin = createAdminClient();
-  const [headerAd, footerAd, { data: settingsData }] = await Promise.all([
+  const [headerAd, footerAd, isMaintenanceActive] = await Promise.all([
     getActiveAd("HEADER"),
     getActiveAd("FOOTER"),
-    supabaseAdmin
-      .from("site_settings")
-      .select("value")
-      .eq("key", "maintenance_mode")
-      .single(),
+    checkMaintenanceMode(),
   ]);
-
-  let isMaintenanceActive = false;
-  if (settingsData?.value) {
-    try {
-      const parsed = typeof settingsData.value === "string" ? JSON.parse(settingsData.value) : settingsData.value;
-      isMaintenanceActive = parsed === true || parsed === "true";
-    } catch {
-      isMaintenanceActive = settingsData.value === "true";
-    }
-  }
 
   return (
     <div className="flex flex-col min-h-screen">
+      <Suspense fallback={null}>
+        <TopLoader />
+      </Suspense>
       <AdminMaintenanceBanner isMaintenanceActive={isMaintenanceActive} />
       <AnnouncementBar />
       <Header />

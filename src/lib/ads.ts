@@ -2,26 +2,71 @@ import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { AdPlacement } from "@/types/database";
 
-const areAdsGloballyEnabled = cache(async (): Promise<boolean> => {
+let cachedAdsSettings: {
+  adsEnabled: boolean;
+  autoAds: boolean;
+  expiresAt: number;
+} | null = null;
+
+export function invalidateAdsCache() {
+  cachedAdsSettings = null;
+}
+
+export const getAdsGlobalSettings = async (): Promise<{
+  adsEnabled: boolean;
+  autoAds: boolean;
+}> => {
+  const now = Date.now();
+  if (cachedAdsSettings && cachedAdsSettings.expiresAt > now) {
+    return {
+      adsEnabled: cachedAdsSettings.adsEnabled,
+      autoAds: cachedAdsSettings.autoAds,
+    };
+  }
+
   try {
     const supabase = await createClient();
-    const { data: globalSetting } = await supabase
+    const { data } = await supabase
       .from("site_settings")
-      .select("value")
-      .eq("key", "ads_enabled")
-      .single();
+      .select("key, value")
+      .in("key", ["ads_enabled", "adsense_auto_ads"]);
 
-    if (globalSetting) {
-      const isEnabled =
-        typeof globalSetting.value === "string"
-          ? JSON.parse(globalSetting.value)
-          : globalSetting.value;
-      if (isEnabled === false) return false;
+    let adsEnabled = true;
+    let autoAds = true;
+
+    if (data) {
+      for (const row of data) {
+        let val = row.value;
+        if (typeof val === "string") {
+          try {
+            val = JSON.parse(val);
+          } catch {
+            val = val === "true";
+          }
+        }
+        if (row.key === "ads_enabled") {
+          adsEnabled = val !== false;
+        } else if (row.key === "adsense_auto_ads") {
+          autoAds = val !== false;
+        }
+      }
     }
-    return true;
+
+    cachedAdsSettings = {
+      adsEnabled,
+      autoAds,
+      expiresAt: now + 15000,
+    };
+
+    return { adsEnabled, autoAds };
   } catch {
-    return true;
+    return { adsEnabled: true, autoAds: true };
   }
+};
+
+export const areAdsGloballyEnabled = cache(async (): Promise<boolean> => {
+  const settings = await getAdsGlobalSettings();
+  return settings.adsEnabled;
 });
 
 /**

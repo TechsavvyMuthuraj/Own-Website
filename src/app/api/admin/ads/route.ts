@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { invalidateAdsCache } from "@/lib/ads";
 
 // Helper to verify admin identity (via designated email or DB profile role)
 async function verifyAdmin() {
@@ -187,6 +188,7 @@ export async function POST(request: Request) {
           updated_at: new Date().toISOString(),
         });
       }
+      invalidateAdsCache();
       return NextResponse.json({ success: true });
     }
 

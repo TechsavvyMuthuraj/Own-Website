@@ -2,6 +2,7 @@
 
 import React from "react";
 import Script from "next/script";
+import { useAds } from "@/components/providers/ads-provider";
 
 interface GoogleAdSenseProps {
   clientId?: string;
@@ -12,12 +13,20 @@ export function GoogleAdSense({
   clientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || "ca-pub-1960459798233871",
   autoAds = true,
 }: GoogleAdSenseProps) {
+  const { adsEnabled, autoAds: globalAutoAds } = useAds();
+
+  // If ads are globally disabled, do not load Google AdSense script at all
+  if (!adsEnabled) {
+    return null;
+  }
+
   if (!clientId || clientId.includes("XXXX")) {
     return null;
   }
 
   // Ensure format is ca-pub-XXXXXXXXXXXXXXXX
   const formattedClientId = clientId.startsWith("ca-") ? clientId : `ca-${clientId}`;
+  const effectiveAutoAds = autoAds && globalAutoAds;
 
   return (
     <Script
@@ -27,7 +36,7 @@ export function GoogleAdSense({
       crossOrigin="anonymous"
       strategy="lazyOnload"
       data-ad-client={formattedClientId}
-      {...(autoAds ? {} : { "data-ad-frequency-hint": "30s" })}
+      {...(effectiveAutoAds ? {} : { "data-ad-frequency-hint": "30s" })}
     />
   );
 }

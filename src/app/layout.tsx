@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { RootProviders } from "@/components/providers/root-providers";
 import { GoogleAdSense } from "@/components/ads/google-adsense";
+import { getAdsGlobalSettings } from "@/lib/ads";
+import { AdsProvider } from "@/components/providers/ads-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,7 +24,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     template: "%s | NammaTech",
-    default: "NammaTech - Verified Digital Resources, Software & Cinema Hub",
+    default: "NammaTech - Movies, APKs, Software, AI Tools & Downloads",
   },
   description:
     "Explore and download verified open-source software, freeware utilities, Android APKs, developer tools, UI templates, and 4K cinema releases. Fast, secure, and 100% verified.",
@@ -139,11 +141,13 @@ const jsonLdWebsiteAndOrg = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { adsEnabled, autoAds } = await getAdsGlobalSettings();
+
   return (
     <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} h-full`}>
       <head>
@@ -158,8 +162,10 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col font-sans bg-[var(--background)] text-[var(--foreground)] antialiased">
-        <GoogleAdSense />
-        <RootProviders>{children}</RootProviders>
+        <AdsProvider adsEnabled={adsEnabled} autoAds={autoAds}>
+          <GoogleAdSense autoAds={autoAds} />
+          <RootProviders>{children}</RootProviders>
+        </AdsProvider>
       </body>
     </html>
   );

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import type { AdPlacement } from "@/types/database";
+import { useAds } from "@/components/providers/ads-provider";
 
 declare global {
   interface Window {
@@ -28,18 +29,29 @@ export function AdSlot({
 }: AdSlotProps) {
   const adRef = useRef<HTMLModElement | null>(null);
   const pushedRef = useRef(false);
+  const { adsEnabled } = useAds();
 
   const clientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || "ca-pub-1960459798233871";
   const formattedClientId = clientId.startsWith("ca-") ? clientId : `ca-${clientId}`;
 
-  // If ad is explicitly provided and inactive, render nothing
+  // 1. If ads are globally disabled from admin console, render absolutely nothing
+  if (!adsEnabled) {
+    return null;
+  }
+
+  // 2. If ad prop is explicitly null (e.g. getActiveAd returned null or placement inactive), render nothing
+  if (ad === null) {
+    return null;
+  }
+
+  // 3. If ad is explicitly provided and inactive, render nothing
   if (ad && !ad.is_active) {
     return null;
   }
 
   // Push AdSense unit once mounted and visible
   useEffect(() => {
-    // Only push if using AdSense and haven't pushed yet
+    if (!adsEnabled) return;
     if (pushedRef.current) return;
 
     if (typeof window !== "undefined" && adRef.current) {
@@ -51,7 +63,7 @@ export function AdSlot({
         // Suppress AdSense duplicate push or blocker errors
       }
     }
-  }, [ad]);
+  }, [ad, adsEnabled]);
 
   // Dimension presets to prevent Layout Shift (CLS)
   const minHeightClass = {

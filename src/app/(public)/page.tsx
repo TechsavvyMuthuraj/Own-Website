@@ -24,6 +24,14 @@ import { AdSlot } from "@/components/ads/ad-slot";
 import { getActiveAd } from "@/lib/ads";
 import { FounderProfile } from "@/components/home/founder-profile";
 
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: {
+    absolute: "NammaTech - Movies, APKs, Software, AI Tools & Downloads",
+  },
+};
+
 export const revalidate = 3600; // Cache at edge for 1 hour — dramatically reduces TTFB
 
 export default async function HomePage() {
@@ -33,14 +41,16 @@ export default async function HomePage() {
   let latestResources: Resource[] = [];
   let categories: Category[] = [];
   let homepageAd: any = null;
+  let inFeedAd: any = null;
 
   try {
     const CARD_FIELDS =
       "id, title, slug, short_description, thumbnail_url, icon_url, resource_type, access_type, price, sale_price, currency, platform, version, status, featured, tags, created_at, updated_at, published_at, category_id, category:categories(id, name, slug, icon)";
 
     // Concurrent queries in parallel for ultra-fast rendering speed
-    const [adResult, featuredResult, latestResult, categoriesResult] = await Promise.all([
+    const [adResult, inFeedAdResult, featuredResult, latestResult, categoriesResult] = await Promise.all([
       getActiveAd("HOMEPAGE"),
+      getActiveAd("IN_FEED"),
       supabase
         .from("resources")
         .select(CARD_FIELDS)
@@ -63,6 +73,7 @@ export default async function HomePage() {
     ]);
 
     homepageAd = adResult;
+    inFeedAd = inFeedAdResult;
 
     const isMovie = (item: any) => {
       if (item.category?.slug === "movies") return true;
@@ -123,14 +134,14 @@ export default async function HomePage() {
               className="object-cover object-center select-none"
             />
 
-            {/* Desktop Interactive Search Overlay perfectly centered in visible area */}
+            {/* Desktop Interactive Search Overlay positioned at reference x: 17.2%, y: 89.5% */}
             <div
               className="hidden md:flex flex-col justify-center absolute z-10"
               style={{
-                left: "5%",
-                top: "52%",
+                left: "17.2%",
+                top: "89.5%",
                 transform: "translateY(-50%)",
-                width: "43%",
+                width: "36%",
               }}
             >
               <form
@@ -257,17 +268,10 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* HOMEPAGE FEATURE AD BANNER (from DB) */}
+      {/* HOMEPAGE FEATURE AD BANNER */}
       {homepageAd && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <AdSlot ad={homepageAd} location="HOMEPAGE" format="auto" />
-        </section>
-      )}
-
-      {/* ADSENSE AUTORELAXED */}
-      {!homepageAd && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <AdSlot location="HOMEPAGE" format="auto" slotId="2029994396" />
         </section>
       )}
 
@@ -320,10 +324,12 @@ export default async function HomePage() {
         />
       </section>
 
-      {/* BETWEEN LATEST AND FOUNDER */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <AdSlot location="IN_FEED" format="auto" slotId="6779758190" showLabel={false} />
-      </section>
+      {/* IN-FEED AD BANNER */}
+      {inFeedAd && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <AdSlot ad={inFeedAd} location="IN_FEED" format="auto" showLabel={false} />
+        </section>
+      )}
 
       {/* 5. FOUNDER & LEAD DEVELOPER PROFILE */}
       <FounderProfile />

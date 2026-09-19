@@ -63,7 +63,7 @@ export function Header() {
               </div>
             </Link>
 
-            {/* Desktop Navigation */}
+            {/* Desktop Navigation with Instant Route Prefetching */}
             <nav className="hidden lg:flex items-center gap-1">
               {navLinks.map((link) => {
                 const isActive = pathname === link.href;
@@ -71,6 +71,7 @@ export function Header() {
                   <Link
                     key={link.href}
                     href={link.href}
+                    prefetch={true}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                       isActive
                         ? "bg-[var(--secondary)] text-[var(--primary)] font-semibold"
@@ -227,6 +228,7 @@ export function Header() {
               <Link
                 key={link.href}
                 href={link.href}
+                prefetch={true}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`block px-3 py-2 rounded-xl text-xs font-medium ${
                   pathname === link.href
