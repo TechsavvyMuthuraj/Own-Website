@@ -13,6 +13,7 @@ import {
   HardDrive,
   FileCheck,
   AlertCircle,
+  Copy,
 } from "lucide-react";
 import type { Resource, DownloadLink } from "@/types/database";
 import { formatBytes } from "@/lib/utils";
@@ -24,6 +25,20 @@ interface DownloadUnlockExperienceProps {
 export function DownloadUnlockExperience({ resource }: DownloadUnlockExperienceProps) {
   const [step, setStep] = useState<"PREPARING" | "VERIFIED" | "READY">("PREPARING");
   const [downloadLinks, setDownloadLinks] = useState<DownloadLink[]>([]);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopyLink = async (url?: string | null, id?: string) => {
+    if (!url || url === "#") return;
+    try {
+      await navigator.clipboard.writeText(url);
+      if (id) {
+        setCopiedId(id);
+        setTimeout(() => setCopiedId(null), 2000);
+      }
+    } catch {
+      // Ignore
+    }
+  };
 
   useEffect(() => {
     // Genuine quick verification progression (short, responsive feedback)
@@ -120,23 +135,42 @@ export function DownloadUnlockExperience({ resource }: DownloadUnlockExperienceP
           {downloadLinks.length > 0 ? (
             <div className="w-full max-w-md space-y-3">
               {downloadLinks.map((link) => (
-                <div key={link.id} className="w-full">
+                <div key={link.id} className="w-full flex items-center gap-2">
                   <a
                     href={link.url || "#"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-semibold text-sm transition-all shadow-md shadow-[#FD1843]/25 group"
+                    className="flex-1 flex items-center justify-between px-5 py-3.5 rounded-2xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-semibold text-sm transition-all shadow-md shadow-[#FD1843]/25 group min-w-0"
                   >
-                    <div className="flex items-center gap-2.5">
-                      <Download className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
-                      <span>{link.title}</span>
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Download className="w-4 h-4 group-hover:translate-y-0.5 transition-transform flex-shrink-0" />
+                      <span className="truncate">{link.title}</span>
                     </div>
                     {link.size_bytes && (
-                      <span className="text-xs font-mono font-normal opacity-80">
+                      <span className="text-xs font-mono font-normal opacity-80 ml-2 flex-shrink-0">
                         {formatBytes(link.size_bytes)}
                       </span>
                     )}
                   </a>
+                  {link.url && link.url !== "#" && (
+                    <button
+                      type="button"
+                      onClick={() => handleCopyLink(link.url, link.id)}
+                      className={`p-3.5 rounded-2xl border transition-all flex-shrink-0 cursor-pointer ${
+                        copiedId === link.id
+                          ? "bg-emerald-500 text-white border-emerald-500 shadow-sm"
+                          : "bg-[var(--secondary)] text-[var(--foreground)] border-[var(--border)] hover:border-[#FD1843]"
+                      }`}
+                      title="Copy download link"
+                      aria-label="Copy download link"
+                    >
+                      {copiedId === link.id ? (
+                        <CheckCircle2 className="w-4 h-4" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </button>
+                  )}
                 </div>
               ))}
             </div>

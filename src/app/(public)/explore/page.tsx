@@ -33,6 +33,11 @@ export const metadata: Metadata = {
   },
 };
 
+export const revalidate = 60;
+
+const CARD_FIELDS =
+  "id, title, slug, short_description, thumbnail_url, icon_url, resource_type, access_type, price, sale_price, currency, platform, version, status, featured, tags, created_at, updated_at, published_at, category_id, category:categories(id, name, slug, icon)";
+
 interface ExplorePageProps {
   searchParams: Promise<{
     category?: string;
@@ -41,8 +46,6 @@ interface ExplorePageProps {
     sort?: string;
   }>;
 }
-
-export const revalidate = 60;
 
 const getCategoryIcon = (slug: string) => {
   switch (slug) {
@@ -85,7 +88,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
     // 1. Fetch Categories for filter pills
     const { data: catData } = await supabase
       .from("categories")
-      .select("*")
+      .select("id, name, slug, icon, description, sort_order, is_active")
       .eq("is_active", true)
       .order("sort_order", { ascending: true });
 
@@ -99,7 +102,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
     // 2. Build filtered resource query
     let query = supabase
       .from("resources")
-      .select("*, category:categories(*)")
+      .select(CARD_FIELDS)
       .eq("status", "PUBLISHED");
 
     // Category filter

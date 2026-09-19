@@ -34,10 +34,8 @@ export function FounderProfile() {
                     src="/images/founder-muthuraj.png"
                     alt="Muthuraj C - Founder & CEO of NammaTech"
                     fill
-                    unoptimized
                     sizes="(max-width: 640px) 280px, (max-width: 1024px) 340px, 400px"
                     className="object-cover object-center"
-                    priority
                   />
                 </div>
 

@@ -62,6 +62,11 @@ export function Footer() {
             </h4>
             <ul className="space-y-2 text-xs text-[var(--muted-foreground)]">
               <li>
+                <Link href="/articles" className="hover:text-[var(--primary)] transition-colors">
+                  Articles & News
+                </Link>
+              </li>
+              <li>
                 <Link href="/explore" className="hover:text-[var(--primary)] transition-colors">
                   All Resources
                 </Link>

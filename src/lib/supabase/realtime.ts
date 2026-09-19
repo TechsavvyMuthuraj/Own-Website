@@ -10,7 +10,7 @@ export function subscribeToTable(
     .on(
       "postgres_changes",
       { event: "*", schema: "public", table: tableName },
-      (payload) => {
+      (payload: any) => {
         onPayload(payload);
       }
     )

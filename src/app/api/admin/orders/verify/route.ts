@@ -38,17 +38,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing orderId" }, { status: 400 });
     }
 
-    // Validate admin UTR — must be exactly 12 digits
+    // Validate admin UTR — must be non-empty
     const adminUtr = (utrNumber || "").trim();
     if (!adminUtr) {
       return NextResponse.json(
-        { error: "UTR number is required to verify the payment" },
-        { status: 400 }
-      );
-    }
-    if (!/^\d{12}$/.test(adminUtr)) {
-      return NextResponse.json(
-        { error: "UTR must be exactly 12 digits (numbers only)" },
+        { error: "UTR/reference number is required to verify the payment" },
         { status: 400 }
       );
     }

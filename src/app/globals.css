@@ -231,3 +231,22 @@ body {
 .animate-scan-line {
   animation: scanGlow 3s ease-in-out infinite;
 }
+
+/* ══════════════════════════════════════════════════════════════════ */
+/* Modern Text Selection & Selectability (Desktop & Mobile) */
+/* ══════════════════════════════════════════════════════════════════ */
+::selection {
+  background-color: rgba(245, 158, 11, 0.35);
+  color: inherit;
+}
+
+::-moz-selection {
+  background-color: rgba(245, 158, 11, 0.35);
+  color: inherit;
+}
+
+/* Ensure effortless text selection across content elements */
+p, h1, h2, h3, h4, h5, h6, span, li, blockquote, code, pre, input, textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}

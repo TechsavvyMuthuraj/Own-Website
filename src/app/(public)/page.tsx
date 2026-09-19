@@ -35,25 +35,28 @@ export default async function HomePage() {
   let homepageAd: any = null;
 
   try {
+    const CARD_FIELDS =
+      "id, title, slug, short_description, thumbnail_url, icon_url, resource_type, access_type, price, sale_price, currency, platform, version, status, featured, tags, created_at, updated_at, published_at, category_id, category:categories(id, name, slug, icon)";
+
     // Concurrent queries in parallel for ultra-fast rendering speed
     const [adResult, featuredResult, latestResult, categoriesResult] = await Promise.all([
       getActiveAd("HOMEPAGE"),
       supabase
         .from("resources")
-        .select("*, category:categories(*)")
+        .select(CARD_FIELDS)
         .eq("status", "PUBLISHED")
         .eq("featured", true)
         .order("published_at", { ascending: false })
         .limit(4),
       supabase
         .from("resources")
-        .select("*, category:categories(*)")
+        .select(CARD_FIELDS)
         .eq("status", "PUBLISHED")
         .order("published_at", { ascending: false })
         .limit(8),
       supabase
         .from("categories")
-        .select("*")
+        .select("id, name, slug, icon, description, sort_order, is_active")
         .eq("is_active", true)
         .order("sort_order", { ascending: true })
         .limit(8),
@@ -109,46 +112,50 @@ export default async function HomePage() {
       <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-neutral-950 shadow-2xl">
           {/* Full resolution graphic banner */}
-          <div className="relative w-full aspect-[2172/724]">
+          <div className="relative w-full aspect-[1983/793]">
             <Image
               src="/images/hero-clean.png"
               alt="NammaTech - Everything You Need In One Place. Founder Muthuraj"
               fill
               priority
+              unoptimized
               sizes="(max-width: 640px) 100vw, (max-width: 1280px) 1200px, 1280px"
-              quality={85}
               className="object-cover object-center select-none"
             />
 
-            {/* Desktop Interactive Search Overlay perfectly mapped to the banner's search bar */}
-            <form
-              action="/search"
-              method="GET"
-              className="hidden md:flex items-center absolute"
+            {/* Desktop Interactive Search Overlay perfectly centered in visible area */}
+            <div
+              className="hidden md:flex flex-col justify-center absolute z-10"
               style={{
-                left: "3.5%",
-                top: "60.5%",
-                width: "41.5%",
-                height: "10%",
+                left: "5%",
+                top: "52%",
+                transform: "translateY(-50%)",
+                width: "43%",
               }}
             >
-              <div className="relative w-full h-full flex items-center">
-                <input
-                  type="text"
-                  name="q"
-                  placeholder="Search software, tools, games, templates..."
-                  aria-label="Search resources"
-                  className="w-full h-full pl-10 pr-24 rounded-full bg-black/40 hover:bg-black/60 focus:bg-neutral-900/95 text-white placeholder-neutral-400 text-xs font-medium border border-amber-500/30 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500/40 transition-all shadow-inner backdrop-blur-sm"
-                />
-                <Search className="absolute left-3.5 w-3.5 h-3.5 text-neutral-400 pointer-events-none" />
-                <button
-                  type="submit"
-                  className="absolute right-1 px-4 py-1.5 rounded-full bg-amber-400 hover:bg-amber-300 text-neutral-950 text-xs font-bold transition-all shadow-md active:scale-95 cursor-pointer"
-                >
-                  Search
-                </button>
-              </div>
-            </form>
+              <form
+                action="/search"
+                method="GET"
+                className="relative flex items-center w-full"
+              >
+                <div className="relative w-full flex items-center shadow-2xl">
+                  <input
+                    type="text"
+                    name="q"
+                    placeholder="Search software, movies, tools, APKs, templates..."
+                    aria-label="Search resources"
+                    className="w-full py-3.5 pl-12 pr-28 rounded-full bg-black/70 hover:bg-black/85 focus:bg-neutral-950 text-white placeholder-neutral-300 text-xs sm:text-sm font-medium border-2 border-amber-500/50 focus:border-amber-400 focus:outline-none focus:ring-4 focus:ring-amber-500/30 transition-all backdrop-blur-md"
+                  />
+                  <Search className="absolute left-4 w-4 h-4 text-amber-400 pointer-events-none" />
+                  <button
+                    type="submit"
+                    className="absolute right-1.5 px-6 py-2 rounded-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:brightness-110 text-neutral-950 text-xs font-black transition-all shadow-lg shadow-amber-500/30 active:scale-95 cursor-pointer"
+                  >
+                    Search
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
 
           {/* Mobile-Friendly Search Bar Below Graphic */}
@@ -250,10 +257,17 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* HOMEPAGE FEATURE AD BANNER */}
+      {/* HOMEPAGE FEATURE AD BANNER (from DB) */}
       {homepageAd && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <AdSlot ad={homepageAd} location="HOMEPAGE" format="auto" />
+        </section>
+      )}
+
+      {/* ADSENSE AUTORELAXED */}
+      {!homepageAd && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <AdSlot location="HOMEPAGE" format="auto" slotId="2029994396" />
         </section>
       )}
 
@@ -304,6 +318,11 @@ export default async function HomePage() {
           emptyActionText="Explore Categories"
           emptyActionHref="/categories"
         />
+      </section>
+
+      {/* BETWEEN LATEST AND FOUNDER */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <AdSlot location="IN_FEED" format="auto" slotId="6779758190" showLabel={false} />
       </section>
 
       {/* 5. FOUNDER & LEAD DEVELOPER PROFILE */}

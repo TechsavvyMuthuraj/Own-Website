@@ -245,3 +245,24 @@ export interface SiteSetting {
   value: string | number | boolean | Record<string, unknown>;
   updated_at: string;
 }
+
+export type ArticleStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
+
+export interface Article {
+  id: string;
+  title: string;
+  slug: string;
+  content: string | null;
+  excerpt: string | null;
+  thumbnail_url: string | null;
+  author_id: string | null;
+  status: ArticleStatus;
+  tags: string[] | null;
+  views_count: number;
+  featured: boolean;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joins
+  author?: Profile | null;
+}

@@ -204,19 +204,19 @@ export function PaymentsClient({
   const handleVerifyPending = (order: any) => {
     const utr = order.payment_id?.trim() || "";
 
-    if (!utr || !/^\d{12}$/.test(utr)) {
+    if (!utr) {
       showToast({
         type: "error",
-        title: "Missing 12-Digit UTR",
-        message: "Order has no valid 12-digit UTR submitted by the customer.",
+        title: "No UTR Submitted",
+        message: "Customer has not submitted a UTR/transaction number yet. Ask them to pay and submit their UTR.",
       });
       return;
     }
 
     confirm({
-      title: `Confirm Payment for Order #${order.order_number}?`,
-      message: `UTR Number: ${utr}\nAmount: ${formatCurrency(order.total, order.currency)}\nCustomer: ${order.user?.email || "User"}\n\nThis will mark the payment as PAID and unlock digital downloads.`,
-      confirmText: "Verify & Mark Paid",
+      title: `Verify Payment for Order #${order.order_number}?`,
+      message: `UTR / Reference: ${utr}\nAmount: ${formatCurrency(order.total, order.currency)}\nCustomer: ${order.user?.email || "User"}\n\nThis will mark as PAID and instantly unlock 4K VIP downloads for the customer.`,
+      confirmText: "✅ Verify & Approve",
       variant: "primary",
       onConfirm: async () => {
         setVerifyingOrderId(order.id);
@@ -231,7 +231,7 @@ export function PaymentsClient({
             showToast({
               type: "success",
               title: "Payment Verified! 🎉",
-              message: `Order #${order.order_number} marked as PAID.`,
+              message: `Order #${order.order_number} marked as PAID. VIP access unlocked!`,
             });
             setOrders((prev) =>
               prev.map((o) =>

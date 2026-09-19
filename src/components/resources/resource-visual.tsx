@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import {
   Smartphone,
@@ -234,7 +232,6 @@ export function ResourceVisual({
   className = "",
   showFormatTag = true,
 }: ResourceVisualProps) {
-  const [imageError, setImageError] = useState(false);
   const config = getVisualConfig(
     resource.platform,
     resource.category?.name,
@@ -273,13 +270,12 @@ export function ResourceVisual({
           }}
         />
 
-        {resource.icon_url && !imageError ? (
+        {resource.icon_url ? (
           <Image
             src={resource.icon_url}
             alt={resource.title}
             fill
             className="object-contain p-1.5"
-            onError={() => setImageError(true)}
           />
         ) : (
           <div
@@ -294,8 +290,8 @@ export function ResourceVisual({
     );
   }
 
-  // If user provided a thumbnail_url and no error, show image
-  if (resource.thumbnail_url && !imageError) {
+  // If user provided a thumbnail_url, show image
+  if (resource.thumbnail_url) {
     return (
       <div className={`relative aspect-[16/10] w-full overflow-hidden rounded-xl bg-[var(--secondary)] ${className}`}>
         <Image
@@ -304,7 +300,6 @@ export function ResourceVisual({
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
-          onError={() => setImageError(true)}
         />
       </div>
     );
@@ -348,13 +343,12 @@ export function ResourceVisual({
         >
           {/* Inner card surface */}
           <div className="relative w-full h-full rounded-[20px] sm:rounded-[24px] bg-[#0B0C10]/80 backdrop-blur-md flex flex-col items-center justify-center p-3 overflow-hidden border border-white/15">
-            {resource.icon_url && !imageError ? (
+            {resource.icon_url ? (
               <Image
                 src={resource.icon_url}
                 alt={resource.title}
                 fill
                 className="object-contain p-2.5"
-                onError={() => setImageError(true)}
               />
             ) : (
               <>

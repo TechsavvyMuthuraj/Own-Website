@@ -32,68 +32,47 @@ export default async function AdminDashboardPage() {
   let recentAuditLogs: any[] = [];
 
   try {
-    // 1. Resources count
-    const { count: resCount } = await supabase
-      .from("resources")
-      .select("*", { count: "exact", head: true });
-    totalResources = resCount || 0;
+    // Execute all dashboard metrics and audit logs concurrently in parallel
+    const [
+      resCountRes,
+      pubCountRes,
+      usrCountRes,
+      ordCountRes,
+      paidCountRes,
+      pendCountRes,
+      dlCountRes,
+      revenueRes,
+      logsRes,
+    ] = await Promise.all([
+      supabase.from("resources").select("*", { count: "exact", head: true }),
+      supabase.from("resources").select("*", { count: "exact", head: true }).eq("status", "PUBLISHED"),
+      supabase.from("profiles").select("*", { count: "exact", head: true }),
+      supabase.from("orders").select("*", { count: "exact", head: true }),
+      supabase.from("orders").select("*", { count: "exact", head: true }).eq("status", "PAID"),
+      supabase.from("orders").select("*", { count: "exact", head: true }).eq("status", "PENDING"),
+      supabase.from("downloads").select("*", { count: "exact", head: true }),
+      supabase.from("orders").select("total").eq("status", "PAID"),
+      supabase
+        .from("audit_logs")
+        .select("id, action, entity_type, entity_id, created_at")
+        .order("created_at", { ascending: false })
+        .limit(6),
+    ]);
 
-    // 2. Published resources count
-    const { count: pubCount } = await supabase
-      .from("resources")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "PUBLISHED");
-    publishedResources = pubCount || 0;
+    totalResources = resCountRes.count || 0;
+    publishedResources = pubCountRes.count || 0;
+    totalUsers = usrCountRes.count || 0;
+    totalOrders = ordCountRes.count || 0;
+    paidOrders = paidCountRes.count || 0;
+    pendingOrders = pendCountRes.count || 0;
+    totalDownloads = dlCountRes.count || 0;
 
-    // 3. Users count
-    const { count: usrCount } = await supabase
-      .from("profiles")
-      .select("*", { count: "exact", head: true });
-    totalUsers = usrCount || 0;
-
-    // 4. Orders counts
-    const { count: ordCount } = await supabase
-      .from("orders")
-      .select("*", { count: "exact", head: true });
-    totalOrders = ordCount || 0;
-
-    const { count: paidCount } = await supabase
-      .from("orders")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "PAID");
-    paidOrders = paidCount || 0;
-
-    const { count: pendCount } = await supabase
-      .from("orders")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "PENDING");
-    pendingOrders = pendCount || 0;
-
-    // 5. Total Downloads count
-    const { count: dlCount } = await supabase
-      .from("downloads")
-      .select("*", { count: "exact", head: true });
-    totalDownloads = dlCount || 0;
-
-    // 6. Revenue from verified paid orders
-    const { data: revenueData } = await supabase
-      .from("orders")
-      .select("total")
-      .eq("status", "PAID");
-
-    if (revenueData) {
-      totalRevenue = revenueData.reduce((sum, o) => sum + Number(o.total || 0), 0);
+    if (revenueRes.data) {
+      totalRevenue = revenueRes.data.reduce((sum, o) => sum + Number(o.total || 0), 0);
     }
 
-    // 7. Recent Audit Logs
-    const { data: logs } = await supabase
-      .from("audit_logs")
-      .select("*, admin:profiles(full_name, email)")
-      .order("created_at", { ascending: false })
-      .limit(6);
-
-    if (logs) {
-      recentAuditLogs = logs;
+    if (logsRes.data) {
+      recentAuditLogs = logsRes.data;
     }
   } catch (err) {
     console.error("Error loading admin metrics:", err);

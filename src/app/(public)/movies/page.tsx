@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   },
 };
 
-export const revalidate = 0; // Always fresh real database queries
+export const revalidate = 60; // Cache at edge for 60 seconds
 
 export default async function MoviesPage() {
   const supabase = await createClient();
@@ -50,12 +50,15 @@ export default async function MoviesPage() {
       .from("categories")
       .select("id")
       .eq("slug", "movies")
-      .single();
+      .maybeSingle();
 
     // 2. Query real database resources for movies with their size-based download links
+    const MOVIE_FIELDS =
+      "id, title, slug, version, created_at, size_bytes, tags, price, sale_price, description, short_description, developer, features, platform, thumbnail_url, changelog, download_links(id, title, link_type, url, size_bytes, is_active)";
+
     let query = supabase
       .from("resources")
-      .select("*, category:categories(*), download_links(*)")
+      .select(MOVIE_FIELDS)
       .eq("status", "PUBLISHED");
 
     if (movieCategory?.id) {
@@ -70,7 +73,7 @@ export default async function MoviesPage() {
 
     const { data } = await query
       .order("published_at", { ascending: false })
-      .limit(50);
+      .limit(30);
 
     if (data && data.length > 0) {
       dbMovies = (data as any[]).map((item: any) => {
@@ -86,9 +89,9 @@ export default async function MoviesPage() {
           : "";
         let sizePremiumStr = "";
 
-        const genres = Array.isArray(item.tags) && item.tags.length > 0
-          ? item.tags.filter((t: string) => !["movie", "movies", "cinema"].includes(t.toLowerCase()))
-          : ["Cinema", "Feature"];
+        const genres = Array.isArray(item.tags)
+          ? item.tags.filter((t: string) => !["movie", "movies", "cinema", "4k uhd", "1080p fhd", "720p hd", "4k hdr dolby"].includes(t.toLowerCase()))
+          : [];
 
         const quality = item.price > 0 ? "4K UHD" : "1080p FHD";
 
@@ -118,8 +121,6 @@ export default async function MoviesPage() {
             };
           });
 
-        // No fallback — show empty if no real links exist
-
         // Category 2: 4K VIP Premium Links
         const vipLinks: MovieDownloadLink[] = rawLinks
           .filter((l) => l.link_type === "MIRROR")
@@ -143,8 +144,6 @@ export default async function MoviesPage() {
             };
           });
 
-        // No VIP fallback — only show real VIP links from database
-
         // Dynamic size range display from real links
         if (freeLinks.length === 1) {
           sizeNormalStr = freeLinks[0].size;
@@ -157,34 +156,39 @@ export default async function MoviesPage() {
           sizePremiumStr = `${vipLinks[0].size} – ${vipLinks[vipLinks.length - 1].size}`;
         }
 
-        const regularPrice = item.price > 0 ? item.price : 99;
+        const regularPrice = item.price !== null && item.price !== undefined ? Number(item.price) : 0;
         const hasDiscount =
           item.sale_price !== null &&
           item.sale_price !== undefined &&
-          item.sale_price < regularPrice;
-        const offerPrice = hasDiscount ? item.sale_price : regularPrice;
-        const discountPct = hasDiscount
-          ? Math.round(((regularPrice - offerPrice) / regularPrice) * 100)
-          : 0;
+          Number(item.sale_price) < regularPrice;
+        const offerPrice = hasDiscount ? Number(item.sale_price) : regularPrice;
+        const discountPct =
+          hasDiscount && regularPrice > 0
+            ? Math.round(((regularPrice - offerPrice) / regularPrice) * 100)
+            : 0;
 
         return {
           id: item.id,
           title: item.title,
+          slug: item.slug || "",
           year,
-          genres: genres.length > 0 ? genres : ["Feature"],
+          genres,
           quality,
           posterUrl: item.thumbnail_url || "",
-          rating: item.rating ? String(item.rating) : "",
+          rating: "",
           sizeNormal: sizeNormalStr,
           sizePremium: sizePremiumStr,
           audio: item.platform || "",
+          cast: item.developer || "",
+          trailerUrl: item.changelog || "",
           normalDownloadUrl: freeLinks[0]?.url || "",
           premiumPrice: offerPrice,
           regularPrice,
           hasDiscount,
           discountPct,
           description: item.short_description || item.description || "",
-          screenshots: Array.isArray(item.features) ? item.features : [],
+          shortDescription: item.short_description || "",
+          screenshots: Array.isArray(item.features) ? item.features.filter(Boolean) : [],
           freeLinks,
           vipLinks,
         };

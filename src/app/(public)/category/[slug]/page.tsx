@@ -1,7 +1,23 @@
-import React from "react";
+import React, { cache } from "react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, ChevronRight, Layers, Filter, Sparkles } from "lucide-react";
+import {
+  Layers,
+  ChevronRight,
+  Folder,
+  ArrowUpDown,
+  Smartphone,
+  Monitor,
+  Code,
+  Cpu,
+  FileText,
+  Shapes,
+  GraduationCap,
+  Globe,
+  Film,
+  Filter,
+  Sparkles,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import type { Resource, Category } from "@/types/database";
 import { ResourceGrid } from "@/components/resources/resource-grid";
@@ -15,6 +31,21 @@ interface CategoryDetailPageProps {
 
 export const revalidate = 60;
 
+const CARD_FIELDS =
+  "id, title, slug, short_description, thumbnail_url, icon_url, resource_type, access_type, price, sale_price, currency, platform, version, status, featured, tags, created_at, updated_at, published_at, category_id, category:categories(id, name, slug, icon)";
+
+const getCategoryBySlug = cache(async (slug: string): Promise<Category | null> => {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("categories")
+    .select("id, name, slug, icon, description, sort_order, is_active")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return data as Category;
+});
+
 export async function generateMetadata({
   params,
 }: CategoryDetailPageProps): Promise<Metadata> {
@@ -25,12 +56,7 @@ export async function generateMetadata({
     };
   }
 
-  const supabase = await createClient();
-  const { data: cat } = await supabase
-    .from("categories")
-    .select("name, description, slug")
-    .eq("slug", slug)
-    .maybeSingle();
+  const cat = await getCategoryBySlug(slug);
 
   if (!cat) {
     return {
@@ -91,32 +117,27 @@ export default async function CategoryDetailPage({
 
   const supabase = await createClient();
 
-  // 1. Fetch current Category and all sibling categories
-  const [catRes, allCatsRes] = await Promise.all([
+  // 1. Fetch current Category and all sibling categories concurrently
+  const [category, allCatsRes] = await Promise.all([
+    getCategoryBySlug(slug),
     supabase
       .from("categories")
-      .select("*")
-      .eq("slug", slug)
-      .single(),
-    supabase
-      .from("categories")
-      .select("*")
+      .select("id, name, slug, icon, sort_order, is_active")
       .eq("is_active", true)
       .neq("slug", "movies")
       .order("sort_order", { ascending: true }),
   ]);
 
-  if (catRes.error || !catRes.data) {
+  if (!category) {
     notFound();
   }
 
-  const category = catRes.data as Category;
   const siblingCategories = (allCatsRes.data || []) as Category[];
 
-  // 2. Fetch Resources in this category
+  // 2. Fetch Resources in this category with optimized column projection
   let query = supabase
     .from("resources")
-    .select("*, category:categories(*)")
+    .select(CARD_FIELDS)
     .eq("category_id", category.id)
     .eq("status", "PUBLISHED");
 
@@ -130,7 +151,7 @@ export default async function CategoryDetailPage({
     query = query.order("published_at", { ascending: false });
   }
 
-  const { data: resourcesData } = await query.limit(36);
+  const { data: resourcesData } = await query.limit(24);
 
   const resources = (resourcesData || []).map((item: any) => ({
     ...item,

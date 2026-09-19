@@ -108,19 +108,21 @@ export async function PUT(
       return NextResponse.json({ error: updateError.message }, { status: 400 });
     }
 
-    // Replace download links if provided
-    if (body.download_links && Array.isArray(body.download_links)) {
+    // Replace download links if provided (including empty array to delete all options)
+    if (body.download_links !== undefined && Array.isArray(body.download_links)) {
       await supabaseAdmin.from("download_links").delete().eq("resource_id", id);
-      const links = body.download_links.map((link: any, idx: number) => ({
-        resource_id: id,
-        title: link.title || "Primary Download",
-        link_type: link.link_type || "PRIMARY",
-        url: link.url || null,
-        r2_key: link.r2_key || null,
-        size_bytes: link.size_bytes ? Number(link.size_bytes) : null,
-        is_active: link.is_active !== false,
-        sort_order: idx,
-      }));
+      const links = body.download_links
+        .filter((l: any) => l && (l.url || l.title))
+        .map((link: any, idx: number) => ({
+          resource_id: id,
+          title: link.title || "Primary Download",
+          link_type: link.link_type || "PRIMARY",
+          url: link.url || "",
+          r2_key: link.r2_key || null,
+          size_bytes: link.size_bytes ? Number(link.size_bytes) : null,
+          is_active: link.is_active !== false,
+          sort_order: idx,
+        }));
       if (links.length > 0) {
         await supabaseAdmin.from("download_links").insert(links);
       }

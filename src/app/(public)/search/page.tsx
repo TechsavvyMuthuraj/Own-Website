@@ -35,13 +35,16 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   if (searchQuery) {
     try {
+      const CARD_FIELDS =
+        "id, title, slug, short_description, thumbnail_url, icon_url, resource_type, access_type, price, sale_price, currency, platform, version, status, featured, tags, created_at, updated_at, published_at, category_id, category:categories(id, name, slug, icon)";
+
       const { data, error } = await supabase
         .from("resources")
-        .select("*, category:categories(*)")
+        .select(CARD_FIELDS)
         .eq("status", "PUBLISHED")
         .or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%,developer.ilike.%${searchQuery}%,platform.ilike.%${searchQuery}%`)
         .order("published_at", { ascending: false })
-        .limit(36);
+        .limit(24);
 
       if (!error && data) {
         results = (data as unknown[]).map((item: any) => ({

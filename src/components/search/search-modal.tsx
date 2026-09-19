@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Search, X, Loader2, ArrowRight, Layers } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import type { Resource } from "@/types/database";
 import { createClient } from "@/lib/supabase/client";
 import { ResourceVisual } from "@/components/resources/resource-visual";
@@ -14,8 +15,7 @@ interface SearchModalProps {
 
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Resource[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
@@ -37,7 +37,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     } else {
       document.body.style.overflow = "unset";
       setQuery("");
-      setResults([]);
+      setDebouncedQuery("");
     }
   }, [isOpen]);
 
@@ -46,9 +46,6 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         if (isOpen) handleAnimatedClose();
-        else {
-          // Open handled by parent or custom event
-        }
       }
       if (e.key === "Escape" && isOpen) {
         handleAnimatedClose();
@@ -58,44 +55,36 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen]);
 
-  // Debounced search query
+  // Debounce user keystrokes
   useEffect(() => {
-    if (!query.trim()) {
-      setResults([]);
-      setLoading(false);
-      return;
-    }
+    const handler = setTimeout(() => {
+      setDebouncedQuery(query.trim());
+    }, 220);
+    return () => clearTimeout(handler);
+  }, [query]);
 
-    const timer = setTimeout(async () => {
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from("resources")
-          .select("id, title, slug, short_description, thumbnail_url, access_type, price, platform, category:categories(name)")
-          .eq("status", "PUBLISHED")
-          .ilike("title", `%${query.trim()}%`)
-          .limit(8);
+  // TanStack Query with client-side caching
+  const { data: results = [], isFetching: loading } = useQuery<Resource[]>({
+    queryKey: ["search-modal", debouncedQuery],
+    queryFn: async () => {
+      if (!debouncedQuery) return [];
+      const { data, error } = await supabase
+        .from("resources")
+        .select("id, title, slug, short_description, thumbnail_url, access_type, price, platform, category:categories(name)")
+        .eq("status", "PUBLISHED")
+        .ilike("title", `%${debouncedQuery}%`)
+        .limit(8);
 
-        if (!error && data) {
-          // Flatten Supabase array/object category relation
-          const formatted = (data as unknown[]).map((item: any) => ({
-            ...item,
-            category: Array.isArray(item.category) ? item.category[0] : item.category,
-          })) as Resource[];
-          setResults(formatted);
-        } else {
-          setResults([]);
-        }
-      } catch (err) {
-        console.error("Search failed:", err);
-        setResults([]);
-      } finally {
-        setLoading(false);
-      }
-    }, 250);
+      if (error || !data) return [];
 
-    return () => clearTimeout(timer);
-  }, [query, supabase]);
+      return (data as unknown[]).map((item: any) => ({
+        ...item,
+        category: Array.isArray(item.category) ? item.category[0] : item.category,
+      })) as Resource[];
+    },
+    enabled: debouncedQuery.length > 0,
+    staleTime: 5 * 60 * 1000, // Retain search queries in client memory for 5 minutes
+  });
 
   if (!isOpen) return null;
 

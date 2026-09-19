@@ -38,7 +38,7 @@ export default async function CategoriesPage() {
   try {
     const { data } = await supabase
       .from("categories")
-      .select("*")
+      .select("id, name, slug, icon, description, sort_order, is_active")
       .eq("is_active", true)
       .order("sort_order", { ascending: true });
 

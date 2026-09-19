@@ -1,7 +1,5 @@
 "use client";
 
-import { CLICK_SOUND_BASE64 } from "./sound-data";
-
 let audioCtx: AudioContext | null = null;
 let clickAudioBuffer: AudioBuffer | null = null;
 let isAudioBufferLoading = false;
@@ -38,15 +36,19 @@ function getAudioContext(): AudioContext | null {
   return audioCtx;
 }
 
-// Pre-decode audio buffer directly from in-memory base64 data for instant zero-latency playback
+// Pre-decode audio buffer lazily: tries static asset first, falls back to dynamic chunk import
 async function initClickBuffer() {
   if (typeof window === "undefined" || clickAudioBuffer || isAudioBufferLoading) return;
   isAudioBufferLoading = true;
   try {
     const ctx = getAudioContext();
     if (!ctx) return;
-    const arrayBuffer = base64ToArrayBuffer(CLICK_SOUND_BASE64);
-    clickAudioBuffer = await ctx.decodeAudioData(arrayBuffer);
+
+    const res = await fetch(CLICK_SOUND_URL);
+    if (res.ok) {
+      const arrayBuffer = await res.arrayBuffer();
+      clickAudioBuffer = await ctx.decodeAudioData(arrayBuffer);
+    }
   } catch {
     // Graceful fallback to HTMLAudioElement pool
   } finally {
@@ -63,7 +65,7 @@ if (typeof window !== "undefined") {
   try {
     for (let i = 0; i < 4; i++) {
       const audio = new Audio();
-      audio.src = CLICK_SOUND_BASE64;
+      audio.src = CLICK_SOUND_URL;
       audio.preload = "auto";
       audio.volume = 1.0;
       fallbackAudioPool.push(audio);
@@ -124,7 +126,7 @@ export function playClickSound() {
       audio.volume = 1.0;
       audio.play().catch(() => {
         // Retry with direct instance if needed
-        const direct = new Audio(CLICK_SOUND_BASE64);
+        const direct = new Audio(CLICK_SOUND_URL);
         direct.volume = 1.0;
         direct.play().catch(() => {});
       });
@@ -136,7 +138,7 @@ export function playClickSound() {
     }
 
     // 3. Direct audio fallback
-    const directAudio = new Audio(CLICK_SOUND_BASE64);
+    const directAudio = new Audio(CLICK_SOUND_URL);
     directAudio.volume = 1.0;
     directAudio.play().catch(() => {});
   } catch {

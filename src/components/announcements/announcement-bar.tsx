@@ -1,46 +1,44 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { X, Sparkles, ArrowRight } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import type { Announcement } from "@/types/database";
 import { createClient } from "@/lib/supabase/client";
 
 export function AnnouncementBar() {
-  const [announcement, setAnnouncement] = useState<Announcement | null>(null);
   const [isDismissed, setIsDismissed] = useState(false);
   const supabase = createClient();
 
-  useEffect(() => {
-    async function loadActiveAnnouncement() {
-      try {
-        const { data, error } = await supabase
-          .from("announcements")
-          .select("*")
-          .eq("is_active", true)
-          .eq("location", "TOP_BAR")
-          .order("priority", { ascending: false })
-          .limit(1)
-          .maybeSingle();
+  const { data: announcement } = useQuery<Announcement | null>({
+    queryKey: ["active-announcement-top-bar"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("announcements")
+        .select("id, title, content, cta_text, cta_url, start_date, end_date, is_active, location")
+        .eq("is_active", true)
+        .eq("location", "TOP_BAR")
+        .order("priority", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-        if (!error && data) {
-          const now = new Date();
-          if (data.start_date && new Date(data.start_date) > now) return;
-          if (data.end_date && new Date(data.end_date) < now) return;
+      if (error || !data) return null;
 
-          // Check if dismissed in sessionStorage
-          const dismissedId = sessionStorage.getItem("dismissed_announcement_id");
-          if (dismissedId !== data.id) {
-            setAnnouncement(data as Announcement);
-          }
-        }
-      } catch (e) {
-        console.error("Error checking announcements:", e);
+      const now = new Date();
+      if (data.start_date && new Date(data.start_date) > now) return null;
+      if (data.end_date && new Date(data.end_date) < now) return null;
+
+      // Check if dismissed in sessionStorage
+      if (typeof window !== "undefined") {
+        const dismissedId = sessionStorage.getItem("dismissed_announcement_id");
+        if (dismissedId === data.id) return null;
       }
-    }
 
-    loadActiveAnnouncement();
-  }, [supabase]);
+      return data as Announcement;
+    },
+    staleTime: 5 * 60 * 1000, // Retain announcement cache for 5 minutes across page navigations
+  });
 
   const [isDismissing, setIsDismissing] = useState(false);
 

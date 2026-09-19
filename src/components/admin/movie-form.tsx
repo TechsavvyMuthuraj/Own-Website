@@ -28,6 +28,7 @@ import {
   Camera,
   Link2,
   Copy,
+  ClipboardPaste,
 } from "lucide-react";
 import type { Resource } from "@/types/database";
 
@@ -35,6 +36,10 @@ import type { Resource } from "@/types/database";
 export function sanitizeImageUrl(input: string): string {
   if (!input) return "";
   let clean = input.trim();
+
+  // If BBCode: [img]url[/img]
+  const bbMatch = clean.match(/\[img\](.*?)\[\/img\]/i);
+  if (bbMatch) clean = bbMatch[1].trim();
 
   // If HTML img tag: <img ... src="url" ...>
   const imgTagMatch = clean.match(/<img[^>]+src=["']([^"']+)["']/i);
@@ -56,230 +61,29 @@ export function sanitizeImageUrl(input: string): string {
     }
   }
 
-  // Strip leading or trailing quotes
-  clean = clean.replace(/^["'`]|["'`]$/g, "").trim();
+  // Google Drive preview link: https://drive.google.com/file/d/FILE_ID/view...
+  const gDriveMatch = clean.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/i);
+  if (gDriveMatch && gDriveMatch[1]) {
+    clean = `https://drive.google.com/uc?export=view&id=${gDriveMatch[1]}`;
+  }
+
+  // Strip leading or trailing quotes, brackets or whitespace
+  clean = clean.replace(/^[<"'`]|["'`>]$/g, "").trim();
   return clean;
 }
 
-// Intelligent raw text parser for release threads (TamilMV, TamilBlasters, IMDb, etc.)
-export function parseRawMovieDetails(raw: string) {
-  const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-  const result: {
-    title?: string;
-    year?: number;
-    cast?: string;
-    director?: string;
-    audio?: string;
-    genres?: string[];
-    rating?: string;
-    quality?: string;
-    synopsis?: string;
-    posterUrl?: string;
-    screenshots?: string[];
-    freeLinks?: SizeLinkItem[];
-    vipLinks?: SizeLinkItem[];
-  } = {};
-
-  const screenshots: string[] = [];
-  const freeLinks: SizeLinkItem[] = [];
-  const vipLinks: SizeLinkItem[] = [];
-
-  // Extract all URLs
-  const allUrls: string[] = [];
-  const urlRegex = /(https?:\/\/[^\s"'<>]+)/gi;
-  let matchUrl;
-  while ((matchUrl = urlRegex.exec(raw)) !== null) {
-    allUrls.push(matchUrl[1]);
+// Universal YouTube embed URL extractor (supports watch, embed, shorts, youtu.be)
+export function getYoutubeEmbedUrl(url?: string | null): string | null {
+  if (!url) return null;
+  const clean = url.trim();
+  const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+  const match = clean.match(regExp);
+  if (match && match[1]) {
+    return `https://www.youtube-nocookie.com/embed/${match[1]}?autoplay=0&rel=0`;
   }
-
-  // Separate image URLs from download URLs
-  const imageUrls: string[] = [];
-  const downloadUrls: string[] = [];
-
-  for (const rawUrl of allUrls) {
-    const cleanUrl = sanitizeImageUrl(rawUrl);
-    if (
-      cleanUrl.match(/\.(jpg|jpeg|png|webp|avif|gif)(\?.*)?$/i) ||
-      cleanUrl.includes("pixelbb.com/images/") ||
-      cleanUrl.includes("postimg.cc/") ||
-      cleanUrl.includes("ibb.co/") ||
-      cleanUrl.includes("imgur.com/") ||
-      cleanUrl.includes("images.unsplash.com")
-    ) {
-      if (!imageUrls.includes(cleanUrl)) imageUrls.push(cleanUrl);
-    } else {
-      if (!downloadUrls.includes(cleanUrl)) downloadUrls.push(cleanUrl);
-    }
-  }
-
-  // 1. Poster & Screenshots from imageUrls
-  if (imageUrls.length > 0) {
-    result.posterUrl = imageUrls[0];
-    if (imageUrls.length > 1) {
-      result.screenshots = imageUrls.slice(1);
-    }
-  }
-
-  const posterLine = lines.find((l) => /^poster\s*[:=-]/i.test(l));
-  if (posterLine) {
-    const m = posterLine.match(/(https?:\/\/[^\s"'<>]+)/i);
-    if (m) result.posterUrl = sanitizeImageUrl(m[1]);
-  }
-
-  const screenIdx = lines.findIndex((l) => /screenshot|sample frame/i.test(l));
-  if (screenIdx !== -1) {
-    for (let i = screenIdx + 1; i < lines.length && i < screenIdx + 15; i++) {
-      const line = lines[i];
-      if (/download|link|torrent|size/i.test(line) && !line.includes("http")) break;
-      const m = line.match(/(https?:\/\/[^\s"'<>]+)/gi);
-      if (m) {
-        m.forEach((u) => {
-          const cu = sanitizeImageUrl(u);
-          if (!screenshots.includes(cu) && cu !== result.posterUrl) {
-            screenshots.push(cu);
-          }
-        });
-      }
-    }
-    if (screenshots.length > 0) {
-      result.screenshots = screenshots;
-    }
-  }
-
-  // 2. Title & Year
-  let rawTitle = "";
-  const titleLine = lines.find((l) => /^(?:title|movie name|movie|film name|film)\s*[:=-]/i.test(l));
-  if (titleLine) {
-    rawTitle = titleLine.replace(/^(?:title|movie name|movie|film name|film)\s*[:=-]\s*/i, "").trim();
-  } else if (lines.length > 0) {
-    rawTitle = lines[0];
-  }
-
-  if (rawTitle) {
-    const yearMatch = rawTitle.match(/\b(19\d\d|20\d\d)\b/);
-    if (yearMatch) {
-      result.year = parseInt(yearMatch[1], 10);
-    }
-
-    let cleanTitle = rawTitle
-      .replace(/[\(\[]?(?:19\d\d|20\d\d)[\)\]]?/g, "")
-      .replace(/\b(?:Tamil|Telugu|Hindi|Malayalam|Kannada|English)\b/gi, "")
-      .replace(/\b(?:HQ|HDRip|WEB-DL|WEBRip|DVDRip|BRRip|BDRip|BluRay|HD|FHD|UHD|4K|1080p|720p|480p|2160p)\b/gi, "")
-      .replace(/\b(?:HEVC|x265|x264|H\.264|AVC|DDP?|DD\+|5\.1|Atmos|AAC|MP3|2\.0|ESubs?|Subtitles?|192Kbps|384Kbps|640Kbps)\b/gi, "")
-      .replace(/\b\d+(?:\.\d+)?\s*(?:GB|MB)\b/gi, "")
-      .replace(/[-–—•|:\[\]\(\)]+/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-
-    if (cleanTitle) {
-      result.title = result.year ? `${cleanTitle} (${result.year})` : cleanTitle;
-    }
-  }
-
-  // 3. Director
-  const dirLine = lines.find((l) => /^(?:director|directed by|dir)\s*[:=-]/i.test(l));
-  let director = "";
-  if (dirLine) {
-    director = dirLine.replace(/^(?:director|directed by|dir)\s*[:=-]\s*/i, "").trim();
-    result.director = director;
-  }
-
-  // 4. Star Cast
-  const castLine = lines.find((l) => /^(?:star cast|cast|starring|actors|stars)\s*[:=-]/i.test(l));
-  if (castLine) {
-    const cast = castLine.replace(/^(?:star cast|cast|starring|actors|stars)\s*[:=-]\s*/i, "").trim();
-    result.cast = director ? `${cast} • Dir: ${director}` : cast;
-  } else if (director) {
-    result.cast = `Dir: ${director}`;
-  }
-
-  // 5. Audio
-  const audioLine = lines.find((l) => /^(?:audio|language|sound|audio tracks)\s*[:=-]/i.test(l));
-  if (audioLine) {
-    result.audio = audioLine.replace(/^(?:audio|language|sound|audio tracks)\s*[:=-]\s*/i, "").trim();
-  } else {
-    const langs: string[] = [];
-    if (/\btamil\b/i.test(raw)) langs.push("Tamil");
-    if (/\btelugu\b/i.test(raw)) langs.push("Telugu");
-    if (/\bhindi\b/i.test(raw)) langs.push("Hindi");
-    if (/\bmalayalam\b/i.test(raw)) langs.push("Malayalam");
-    if (/\bkannada\b/i.test(raw)) langs.push("Kannada");
-    if (/\benglish\b/i.test(raw)) langs.push("English");
-
-    const sound = /\b(?:atmos|5\.1|dd\+|dolby)\b/i.test(raw)
-      ? "5.1 Dolby Atmos"
-      : "Original Audio";
-    if (langs.length > 0) {
-      result.audio = `${langs.join(", ")} • ${sound}`;
-    }
-  }
-
-  // 6. Genres
-  const genresFound: string[] = [];
-  const genreLine = lines.find((l) => /^(?:genre|genres|category)\s*[:=-]/i.test(l));
-  const textToScanForGenres = genreLine ? genreLine : raw;
-  for (const g of POPULAR_GENRES) {
-    const regex = new RegExp(`\\b${g}\\b`, "i");
-    if (regex.test(textToScanForGenres)) {
-      genresFound.push(g);
-    }
-  }
-  if (genresFound.length > 0) {
-    result.genres = genresFound;
-  }
-
-  // 7. Rating
-  const ratingMatch = raw.match(/(?:imdb|rating|score)\s*[:=-]?\s*(\d+(?:\.\d+)?)/i);
-  if (ratingMatch) {
-    result.rating = ratingMatch[1];
-  }
-
-  // 8. Quality
-  if (/\b(?:4k|2160p|uhd|hdr)\b/i.test(raw)) {
-    result.quality = "4K UHD";
-  } else if (/\b(?:1080p|fhd)\b/i.test(raw)) {
-    result.quality = "1080p FHD";
-  } else if (/\b(?:720p|hd)\b/i.test(raw)) {
-    result.quality = "720p HD";
-  }
-
-  // 9. Synopsis / Plot
-  const plotMatch = raw.match(/(?:plot|synopsis|story|storyline|description)\s*[:=-]\s*([\s\S]*?)(?=(?:\n\s*(?:poster|screenshot|download|screen|cast|genre)|$))/i);
-  if (plotMatch && plotMatch[1].trim()) {
-    result.synopsis = plotMatch[1].trim().replace(/\s+/g, " ");
-  }
-
-  // 10. Download Links Pairing
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const urlMatch = line.match(/(https?:\/\/[^\s"'<>]+)/i);
-    if (!urlMatch) continue;
-
-    const u = urlMatch[1];
-    if (imageUrls.includes(sanitizeImageUrl(u))) continue;
-
-    const context = `${lines[i - 2] || ""} ${lines[i - 1] || ""} ${line}`.toLowerCase();
-    const sizeMatch = context.match(/(\d+(?:\.\d+)?\s*(?:gb|mb))/i);
-    const size = sizeMatch ? sizeMatch[1].toUpperCase() : "1.4 GB";
-
-    const isVip = /4k|2160p|uhd|hevc.*high|remux|hdr/i.test(context);
-    if (isVip) {
-      const label = /hdr/i.test(context) ? "4K UHD HDR (Dolby Atmos)" : `4K SDR 2160p Option ${vipLinks.length + 1}`;
-      vipLinks.push({ label, size, url: u });
-    } else {
-      let label = "1080p FHD";
-      if (/720p/i.test(context)) label = `720p HD Option ${freeLinks.length + 1}`;
-      else if (/1080p/i.test(context)) label = `1080p FHD Option ${freeLinks.length + 1}`;
-      else label = `Standard Option ${freeLinks.length + 1}`;
-      freeLinks.push({ label, size, url: u });
-    }
-  }
-
-  if (freeLinks.length > 0) result.freeLinks = freeLinks;
-  if (vipLinks.length > 0) result.vipLinks = vipLinks;
-
-  return result;
+  return null;
 }
+
 
 interface MovieFormProps {
   initialData?: Resource;
@@ -373,50 +177,23 @@ export function MovieForm({
     }
   }
 
-  // If no links existed, check official_url as initial free link
-  if (parsedFreeLinks.length === 0 && initialData?.official_url) {
-    parsedFreeLinks.push({
-      label: "1080p FHD",
-      size: "1.4 GB",
-      url: initialData.official_url,
-    });
-  }
+  // Defaults if completely fresh (empty if no links exist in database)
+  const initialFreeLinks: SizeLinkItem[] = parsedFreeLinks;
+  const initialVipLinks: SizeLinkItem[] = parsedVipLinks;
 
-  // Defaults if completely fresh
-  const initialFreeLinks: SizeLinkItem[] =
-    parsedFreeLinks.length > 0
-      ? parsedFreeLinks
-      : [
-          { label: "720p HD", size: "700 MB", url: "" },
-          { label: "1080p FHD", size: "1.4 GB", url: "" },
-        ];
-
-  const initialVipLinks: SizeLinkItem[] =
-    parsedVipLinks.length > 0
-      ? parsedVipLinks
-      : [
-          { label: "1080p 60fps High Bitrate", size: "3.9 GB", url: "" },
-          { label: "4K UHD HDR (Dolby Atmos)", size: "6.5 GB", url: "" },
-        ];
-
-  // ── Form State ──
+  // ── Form State (All clean, no fake placeholder data) ──
   const [title, setTitle] = useState(initialData?.title || "");
   const [slug, setSlug] = useState(initialData?.slug || "");
   const [year, setYear] = useState<number>(existingYear);
   const [quality, setQuality] = useState<string>(existingQuality);
-  const [rating, setRating] = useState<string>("8.5");
-  const [starCast, setStarCast] = useState(
-    initialData?.developer || "Thalapathy Vijay, Prashanth, Prabhu Deva • Dir. Venkat Prabhu"
-  );
-  const [audio, setAudio] = useState(
-    initialData?.platform || "Multi-Audio (Tamil, Telugu, Hindi) • 5.1 Dolby Atmos"
-  );
+  const [rating, setRating] = useState<string>(initialData?.license || "");
+  const [starCast, setStarCast] = useState(initialData?.developer || "");
+  const [audio, setAudio] = useState(initialData?.platform || "");
   const [genres, setGenres] = useState<string[]>(
-    existingGenres.length > 0 ? existingGenres : ["Action", "Thriller"]
+    existingGenres.length > 0 && isEdit ? existingGenres : []
   );
-  const [posterUrl, setPosterUrl] = useState(
-    initialData?.thumbnail_url || "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=800&q=80"
-  );
+  const [posterUrl, setPosterUrl] = useState(initialData?.thumbnail_url || "");
+  const [trailerUrl, setTrailerUrl] = useState(initialData?.changelog || "");
 
   // Two Categories of Size-Based Download Links
   const [freeLinks, setFreeLinks] = useState<SizeLinkItem[]>(initialFreeLinks);
@@ -438,7 +215,7 @@ export function MovieForm({
   const [vipOfferPrice, setVipOfferPrice] = useState<number>(
     initialData?.sale_price !== null && initialData?.sale_price !== undefined
       ? initialData.sale_price
-      : 1
+      : 0
   );
 
   const discountPct =
@@ -447,12 +224,10 @@ export function MovieForm({
       : 0;
 
   const [shortDescription, setShortDescription] = useState(
-    initialData?.short_description ||
-      "Pristine cinema release featuring full cast multi-language dubs and ultra high definition audio."
+    initialData?.short_description || ""
   );
   const [description, setDescription] = useState(
-    initialData?.description ||
-      "High-speed verified cinema release with multi-audio Dolby Atmos channels and pristine master video encoding."
+    initialData?.description || ""
   );
   const [status, setStatus] = useState<"PUBLISHED" | "DRAFT">(
     (initialData?.status as any) === "DRAFT" ? "DRAFT" : "PUBLISHED"
@@ -466,10 +241,33 @@ export function MovieForm({
   const [newScreenshotText, setNewScreenshotText] = useState("");
   const [posterError, setPosterError] = useState(false);
 
-  // Smart Raw Input State
-  const [rawInput, setRawInput] = useState("");
-  const [showRawBox, setShowRawBox] = useState(true);
-  const [rawSuccessMsg, setRawSuccessMsg] = useState("");
+  // One-tap Clipboard Helpers for Desktop & Mobile
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const pasteTo = async (setter: (val: string) => void) => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text && text.trim()) {
+        setter(text.trim());
+      }
+    } catch {
+      // Browser permission prompt or unsupported
+    }
+  };
+
+  const copyVal = async (text: string, key?: string) => {
+    try {
+      if (text) {
+        await navigator.clipboard.writeText(text);
+        if (key) {
+          setCopiedKey(key);
+          setTimeout(() => setCopiedKey(null), 2000);
+        }
+      }
+    } catch {
+      // Fallback
+    }
+  };
 
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -496,79 +294,12 @@ export function MovieForm({
     }
   };
 
-  // Smart Auto-Fill Handler
-  const handleAutoFillFromRaw = () => {
-    if (!rawInput.trim()) return;
-    const parsed = parseRawMovieDetails(rawInput);
-    let count = 0;
-
-    if (parsed.title) {
-      setTitle(parsed.title);
-      setSlug(
-        parsed.title
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/(^-|-$)/g, "")
-      );
-      count++;
-    }
-    if (parsed.year) {
-      setYear(parsed.year);
-      count++;
-    }
-    if (parsed.cast) {
-      setStarCast(parsed.cast);
-      count++;
-    }
-    if (parsed.audio) {
-      setAudio(parsed.audio);
-      count++;
-    }
-    if (parsed.genres && parsed.genres.length > 0) {
-      setGenres(parsed.genres);
-      count++;
-    }
-    if (parsed.rating) {
-      setRating(parsed.rating);
-      count++;
-    }
-    if (parsed.quality) {
-      setQuality(parsed.quality);
-      count++;
-    }
-    if (parsed.synopsis) {
-      setShortDescription(parsed.synopsis.slice(0, 160));
-      setDescription(parsed.synopsis);
-      count++;
-    }
-    if (parsed.posterUrl) {
-      setPosterUrl(sanitizeImageUrl(parsed.posterUrl));
-      setPosterError(false);
-      count++;
-    }
-    if (parsed.screenshots && parsed.screenshots.length > 0) {
-      setScreenshots((prev) => Array.from(new Set([...prev, ...parsed.screenshots!])));
-      count++;
-    }
-    if (parsed.freeLinks && parsed.freeLinks.length > 0) {
-      setFreeLinks(parsed.freeLinks);
-      count++;
-    }
-    if (parsed.vipLinks && parsed.vipLinks.length > 0) {
-      setVipLinks(parsed.vipLinks);
-      count++;
-    }
-
-    setRawSuccessMsg(`🎉 Auto-filled ${count} movie fields from raw text!`);
-    setTimeout(() => setRawSuccessMsg(""), 6000);
-  };
-
   const handleAddScreenshots = () => {
     if (!newScreenshotText.trim()) return;
     const urls = newScreenshotText
-      .split(/[\n,]+/)
+      .split(/[\r\n,]+/)
       .map((l) => sanitizeImageUrl(l.trim()))
-      .filter(Boolean);
+      .filter((l) => l && (l.startsWith("http://") || l.startsWith("https://")));
     setScreenshots((prev) => Array.from(new Set([...prev, ...urls])));
     setNewScreenshotText("");
   };
@@ -643,30 +374,26 @@ export function MovieForm({
 
     // Category 1: Free Normal Links
     freeLinks.forEach((l) => {
-      if (l.url && l.url.trim()) {
-        const sizeBytes = parseSizeToBytes(l.size);
-        downloadLinksPayload.push({
-          title: `${l.label || "Standard Download"} (${l.size || "1.4 GB"})`,
-          link_type: "PRIMARY",
-          url: l.url.trim(),
-          size_bytes: sizeBytes,
-          sort_order: sortIdx++,
-        });
-      }
+      const sizeBytes = parseSizeToBytes(l.size);
+      downloadLinksPayload.push({
+        title: `${l.label || "Standard Download"} (${l.size || "1.4 GB"})`,
+        link_type: "PRIMARY",
+        url: (l.url || "").trim(),
+        size_bytes: sizeBytes,
+        sort_order: sortIdx++,
+      });
     });
 
     // Category 2: 4K VIP Premium Links
     vipLinks.forEach((l) => {
-      if (l.url && l.url.trim()) {
-        const sizeBytes = parseSizeToBytes(l.size);
-        downloadLinksPayload.push({
-          title: `👑 ${l.label || "VIP Master"} (${l.size || "4.2 GB"})`,
-          link_type: "MIRROR",
-          url: l.url.trim(),
-          size_bytes: sizeBytes,
-          sort_order: sortIdx++,
-        });
-      }
+      const sizeBytes = parseSizeToBytes(l.size);
+      downloadLinksPayload.push({
+        title: `👑 ${l.label || "VIP Master"} (${l.size || "4.2 GB"})`,
+        link_type: "MIRROR",
+        url: (l.url || "").trim(),
+        size_bytes: sizeBytes,
+        sort_order: sortIdx++,
+      });
     });
 
     // Determine primary normal link for official_url
@@ -702,6 +429,8 @@ export function MovieForm({
       icon_url: sanitizeImageUrl(posterUrl),
       short_description: shortDescription.trim(),
       description: description.trim(),
+      changelog: trailerUrl.trim() || null, // YouTube Trailer URL stored in changelog
+      license: rating.trim() || null, // Optional rating in license
       tags: finalTags,
       status,
       featured,
@@ -833,84 +562,7 @@ export function MovieForm({
         </div>
       )}
 
-      {/* ── 0. Smart Auto-Fill from Raw Release Post ── */}
-      <div className="p-5 sm:p-6 rounded-3xl border-2 border-amber-500/40 bg-gradient-to-br from-neutral-900 via-neutral-950 to-neutral-900 text-white shadow-xl space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-amber-500 text-neutral-950 font-black shadow-md flex-shrink-0">
-              <Wand2 className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm sm:text-base font-black text-white">
-                  ⚡ Smart Auto-Fill from Raw Release Info
-                </h3>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500 text-neutral-950 uppercase tracking-wide">
-                  1-Click Fill
-                </span>
-              </div>
-              <p className="text-xs text-neutral-400 mt-0.5">
-                Paste raw post text from 1TamilMV, TamilBlasters, Telegram, or IMDb. Title, year, audio, cast, plot, poster, screenshots &amp; links are extracted automatically!
-              </p>
-            </div>
-          </div>
 
-          <button
-            type="button"
-            onClick={() => setShowRawBox((p) => !p)}
-            className="px-3.5 py-1.5 rounded-xl border border-neutral-700 bg-neutral-800/90 hover:bg-neutral-700 text-xs font-semibold text-neutral-200 transition-colors flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
-          >
-            {showRawBox ? "Hide Paste Box" : "Open Auto-Fill Box"}
-          </button>
-        </div>
-
-        {showRawBox && (
-          <div className="space-y-3 pt-2 border-t border-neutral-800 animate-in fade-in duration-200">
-            <div className="relative">
-              <textarea
-                rows={6}
-                value={rawInput}
-                onChange={(e) => setRawInput(e.target.value)}
-                placeholder={`Paste raw movie release post here...\n\nExample:\nRam and Leela (2026) Tamil HQ HDRip - 1080p - HEVC - DD+ 5.1 - 1.4GB\nStar Cast: Rio Raj, Vartika Jain, Chetan Kadambi • Dir: Ramachandran Kannan\nAudio: Tamil • 5.1 Surround Sound\nGenre: Comedy, Romance, Sci-Fi\nRating: 8.5\nPlot: A man facing repeated marriage rejections...\nPoster: https://www.pixelbb.com/images/2026/08/22/1IQRfMiVbcAE1CWB.jpg\nScreenshots:\nhttps://www.pixelbb.com/images/.../screen1.jpg\nhttps://www.pixelbb.com/images/.../screen2.jpg\nDownload Links:\n720p HD (1.18 GB): https://cdn.site/ram-720p.mkv\n1080p FHD (1.4 GB): https://cdn.site/ram-1080p.mkv\n4K SDR 2160p (17.49 GB): https://cdn.site/ram-4k.mkv`}
-                className="w-full p-4 rounded-2xl border border-neutral-700 bg-neutral-900/90 text-xs font-mono text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500 scrollbar-thin"
-              />
-            </div>
-
-            {rawSuccessMsg && (
-              <div className="p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-bold text-xs flex items-center gap-2">
-                <Check className="w-4 h-4" />
-                <span>{rawSuccessMsg}</span>
-              </div>
-            )}
-
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <span className="text-[11px] text-neutral-400">
-                💡 Automatically routes 4K/2160p links to VIP Category 2 and 720p/1080p links to Free Category 1!
-              </span>
-
-              <div className="flex items-center gap-2">
-                {rawInput && (
-                  <button
-                    type="button"
-                    onClick={() => setRawInput("")}
-                    className="px-3 py-2 rounded-xl text-xs text-neutral-400 hover:text-white transition-colors"
-                  >
-                    Clear Text
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={handleAutoFillFromRaw}
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-neutral-950 text-xs font-black hover:brightness-110 shadow-lg shadow-amber-500/20 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
-                >
-                  <Wand2 className="w-4 h-4 text-neutral-950" />
-                  <span>Auto-Fill All Form Fields</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
 
       {/* Section 1: Basic Cinema Information */}
       <div className="p-6 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-xs space-y-5">
@@ -924,9 +576,33 @@ export function MovieForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Title */}
           <div className="space-y-1.5 md:col-span-2">
-            <label className="block text-xs font-semibold text-[var(--foreground)]">
-              Movie Title <span className="text-red-500">*</span>
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-semibold text-[var(--foreground)]">
+                Movie Title <span className="text-red-500">*</span>
+              </label>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => pasteTo(handleTitleChange)}
+                  className="px-2 py-0.5 rounded-md bg-[var(--secondary)] hover:bg-amber-500/20 text-amber-500 text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer"
+                  title="Paste from clipboard"
+                >
+                  <ClipboardPaste className="w-3 h-3" />
+                  <span>Paste</span>
+                </button>
+                {title && (
+                  <button
+                    type="button"
+                    onClick={() => copyVal(title, "title")}
+                    className="px-2 py-0.5 rounded-md bg-[var(--secondary)] hover:bg-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] text-[10px] font-semibold flex items-center gap-1 transition-all cursor-pointer"
+                    title="Copy title"
+                  >
+                    {copiedKey === "title" ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                    <span>{copiedKey === "title" ? "Copied" : "Copy"}</span>
+                  </button>
+                )}
+              </div>
+            </div>
             <input
               type="text"
               required
@@ -939,9 +615,22 @@ export function MovieForm({
 
           {/* Slug */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-[var(--foreground)]">
-              Slug / URL Identifier <span className="text-red-500">*</span>
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-semibold text-[var(--foreground)]">
+                Slug / URL Identifier <span className="text-red-500">*</span>
+              </label>
+              {slug && (
+                <button
+                  type="button"
+                  onClick={() => copyVal(slug, "slug")}
+                  className="px-2 py-0.5 rounded-md bg-[var(--secondary)] hover:bg-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] text-[10px] font-semibold flex items-center gap-1 transition-all cursor-pointer"
+                  title="Copy slug"
+                >
+                  {copiedKey === "slug" ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                  <span>{copiedKey === "slug" ? "Copied" : "Copy"}</span>
+                </button>
+              )}
+            </div>
             <input
               type="text"
               required
@@ -993,9 +682,20 @@ export function MovieForm({
 
           {/* Star Cast & Director */}
           <div className="space-y-1.5 md:col-span-2">
-            <label className="block text-xs font-semibold text-[var(--foreground)]">
-              Star Cast & Director
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-semibold text-[var(--foreground)]">
+                Star Cast & Director
+              </label>
+              <button
+                type="button"
+                onClick={() => pasteTo(setStarCast)}
+                className="px-2 py-0.5 rounded-md bg-[var(--secondary)] hover:bg-amber-500/20 text-amber-500 text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer"
+                title="Paste from clipboard"
+              >
+                <ClipboardPaste className="w-3 h-3" />
+                <span>Paste</span>
+              </button>
+            </div>
             <input
               type="text"
               value={starCast}
@@ -1007,9 +707,20 @@ export function MovieForm({
 
           {/* Audio Tracks & Dubs */}
           <div className="space-y-1.5 md:col-span-2">
-            <label className="block text-xs font-semibold text-[var(--foreground)]">
-              Audio Tracks & Sound Channels
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-semibold text-[var(--foreground)]">
+                Audio Tracks & Sound Channels
+              </label>
+              <button
+                type="button"
+                onClick={() => pasteTo(setAudio)}
+                className="px-2 py-0.5 rounded-md bg-[var(--secondary)] hover:bg-amber-500/20 text-amber-500 text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer"
+                title="Paste from clipboard"
+              >
+                <ClipboardPaste className="w-3 h-3" />
+                <span>Paste</span>
+              </button>
+            </div>
             <input
               type="text"
               value={audio}
@@ -1090,9 +801,34 @@ export function MovieForm({
                 <label className="block text-xs font-semibold text-[var(--foreground)]">
                   Movie Poster Image URL (Any Image Link Address)
                 </label>
-                <span className="text-[10px] text-amber-500 font-medium">
-                  ✓ Universal link support (Pixelbb, ImgBB, Google, Postimg, etc.)
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      pasteTo((val) => {
+                        const cleaned = sanitizeImageUrl(val);
+                        setPosterUrl(cleaned);
+                        setPosterError(false);
+                      })
+                    }
+                    className="px-2.5 py-1 rounded-md bg-amber-500/10 hover:bg-amber-500 hover:text-neutral-950 text-amber-500 text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer border border-amber-500/30"
+                    title="Paste image link from clipboard"
+                  >
+                    <ClipboardPaste className="w-3 h-3" />
+                    <span>Paste Link</span>
+                  </button>
+                  {posterUrl && (
+                    <button
+                      type="button"
+                      onClick={() => copyVal(posterUrl, "poster")}
+                      className="px-2.5 py-1 rounded-md bg-[var(--secondary)] hover:bg-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] text-[10px] font-semibold flex items-center gap-1 transition-all cursor-pointer"
+                      title="Copy poster link"
+                    >
+                      {copiedKey === "poster" ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                      <span>{copiedKey === "poster" ? "Copied" : "Copy"}</span>
+                    </button>
+                  )}
+                </div>
               </div>
               <input
                 type="text"
@@ -1128,9 +864,24 @@ export function MovieForm({
         <div className="space-y-4">
           {/* Add Screenshots Input */}
           <div className="space-y-2">
-            <label className="block text-xs font-semibold text-[var(--foreground)]">
-              Paste Screenshot URLs (One per line or comma separated)
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-semibold text-[var(--foreground)]">
+                Paste Screenshot URLs (One per line or comma separated)
+              </label>
+              <button
+                type="button"
+                onClick={() =>
+                  pasteTo((val) => {
+                    setNewScreenshotText((prev) => (prev ? `${prev}\n${val}` : val));
+                  })
+                }
+                className="px-2.5 py-1 rounded-md bg-amber-500/10 hover:bg-amber-500 hover:text-neutral-950 text-amber-500 text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer border border-amber-500/30"
+                title="Paste URLs from clipboard"
+              >
+                <ClipboardPaste className="w-3 h-3" />
+                <span>Paste Screenshots</span>
+              </button>
+            </div>
             <div className="flex flex-col sm:flex-row gap-2">
               <textarea
                 rows={2}
@@ -1165,6 +916,7 @@ export function MovieForm({
                   <img
                     src={url}
                     alt={`Quality frame ${idx + 1}`}
+                    referrerPolicy="no-referrer"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-between p-2">
@@ -1184,6 +936,95 @@ export function MovieForm({
               ))}
             </div>
           )}
+        </div>
+      </div>
+
+      {/* ── Section 2C: YouTube Video Trailer (Watch & Play Support) ── */}
+      <div className="p-6 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-xs space-y-5">
+        <div className="border-b border-[var(--border)] pb-3 flex items-center justify-between">
+          <h3 className="text-sm font-bold text-[var(--foreground)] uppercase tracking-wider flex items-center gap-2">
+            <Film className="w-4 h-4 text-amber-500" />
+            <span>2C. YouTube Video Trailer (Watch &amp; Play Support)</span>
+          </h3>
+          {trailerUrl && getYoutubeEmbedUrl(trailerUrl) && (
+            <span className="text-xs font-bold text-emerald-500 flex items-center gap-1">
+              <Check className="w-3.5 h-3.5" />
+              <span>Trailer Ready ✓</span>
+            </span>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-semibold text-[var(--foreground)]">
+                YouTube Trailer Link (Watch, Shorts, Embed or youtu.be)
+              </label>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => pasteTo(setTrailerUrl)}
+                  className="px-2.5 py-1 rounded-md bg-amber-500/10 hover:bg-amber-500 hover:text-neutral-950 text-amber-500 text-[10px] font-bold flex items-center gap-1 transition-all cursor-pointer border border-amber-500/30"
+                  title="Paste YouTube link from clipboard"
+                >
+                  <ClipboardPaste className="w-3 h-3" />
+                  <span>Paste Trailer URL</span>
+                </button>
+                {trailerUrl && (
+                  <button
+                    type="button"
+                    onClick={() => copyVal(trailerUrl, "trailer")}
+                    className="px-2.5 py-1 rounded-md bg-[var(--secondary)] hover:bg-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] text-[10px] font-semibold flex items-center gap-1 transition-all cursor-pointer"
+                    title="Copy trailer link"
+                  >
+                    {copiedKey === "trailer" ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                    <span>{copiedKey === "trailer" ? "Copied" : "Copy"}</span>
+                  </button>
+                )}
+              </div>
+            </div>
+            <input
+              type="url"
+              value={trailerUrl}
+              onChange={(e) => setTrailerUrl(e.target.value.trim())}
+              placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ or https://youtu.be/..."
+              className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+            />
+            <p className="text-[11px] text-[var(--muted-foreground)]">
+              Users can click the movie card or the Play button to watch this trailer directly in an embedded player.
+            </p>
+          </div>
+
+          {/* Live Trailer Player Preview */}
+          {trailerUrl && getYoutubeEmbedUrl(trailerUrl) ? (
+            <div className="space-y-2 pt-1">
+              <div className="flex items-center justify-between text-xs font-semibold text-[var(--foreground)]">
+                <span>Live Embedded Player Preview:</span>
+                <a
+                  href={trailerUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[11px] text-amber-500 hover:underline flex items-center gap-1"
+                >
+                  <span>Open on YouTube</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+              <div className="relative aspect-video max-w-lg rounded-2xl overflow-hidden bg-black border border-amber-500/30 shadow-md">
+                <iframe
+                  src={getYoutubeEmbedUrl(trailerUrl)!}
+                  title="Trailer Preview"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  className="w-full h-full"
+                />
+              </div>
+            </div>
+          ) : trailerUrl ? (
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-500 text-xs">
+              ⚠️ Please enter a valid YouTube URL (e.g. https://www.youtube.com/watch?v=... or https://youtu.be/...)
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -1217,6 +1058,11 @@ export function MovieForm({
 
             {/* List of Free Size Links */}
             <div className="space-y-3">
+              {freeLinks.length === 0 && (
+                <div className="p-3 text-center rounded-xl border border-dashed border-emerald-500/30 bg-emerald-500/5 text-xs text-[var(--muted-foreground)]">
+                  No free download links added yet. Click below to add one.
+                </div>
+              )}
               {freeLinks.map((link, idx) => (
                 <div
                   key={idx}
@@ -1224,16 +1070,15 @@ export function MovieForm({
                 >
                   <div className="flex items-center justify-between text-xs font-bold text-emerald-600 dark:text-emerald-400">
                     <span>Free Option #{idx + 1}</span>
-                    {freeLinks.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeFreeLink(idx)}
-                        className="text-red-500 hover:text-red-700 text-[11px] flex items-center gap-1 font-semibold"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                        <span>Remove</span>
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeFreeLink(idx)}
+                      className="text-red-500 hover:text-red-700 text-[11px] flex items-center gap-1 font-semibold cursor-pointer"
+                      title="Remove this option"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      <span>Remove</span>
+                    </button>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
@@ -1264,9 +1109,29 @@ export function MovieForm({
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-semibold text-[var(--muted-foreground)] mb-0.5">
-                      Direct Download URL
-                    </label>
+                    <div className="flex items-center justify-between mb-0.5">
+                      <label className="block text-[10px] font-semibold text-[var(--muted-foreground)]">
+                        Direct Download URL
+                      </label>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => pasteTo((val) => updateFreeLink(idx, "url", val))}
+                          className="text-[10px] text-emerald-500 hover:text-emerald-400 font-semibold flex items-center gap-1 hover:underline cursor-pointer"
+                        >
+                          <ClipboardPaste className="w-3 h-3" /> Paste
+                        </button>
+                        {link.url && (
+                          <button
+                            type="button"
+                            onClick={() => copyVal(link.url, `free-${idx}`)}
+                            className="text-[10px] text-[var(--muted-foreground)] hover:text-emerald-400 font-semibold flex items-center gap-1 hover:underline cursor-pointer"
+                          >
+                            <Copy className="w-3 h-3" /> {copiedKey === `free-${idx}` ? "Copied!" : "Copy"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
                     <input
                       type="url"
                       value={link.url}
@@ -1456,6 +1321,11 @@ export function MovieForm({
 
             {/* List of VIP Size Links */}
             <div className="space-y-3">
+              {vipLinks.length === 0 && (
+                <div className="p-3 text-center rounded-xl border border-dashed border-amber-500/30 bg-amber-500/5 text-xs text-[var(--muted-foreground)]">
+                  No 4K VIP download links added yet. Click below to add one.
+                </div>
+              )}
               {vipLinks.map((link, idx) => (
                 <div
                   key={idx}
@@ -1463,16 +1333,15 @@ export function MovieForm({
                 >
                   <div className="flex items-center justify-between text-xs font-bold text-amber-500">
                     <span>VIP Option #{idx + 1}</span>
-                    {vipLinks.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeVipLink(idx)}
-                        className="text-red-500 hover:text-red-700 text-[11px] flex items-center gap-1 font-semibold"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                        <span>Remove</span>
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeVipLink(idx)}
+                      className="text-red-500 hover:text-red-700 text-[11px] flex items-center gap-1 font-semibold cursor-pointer"
+                      title="Remove this option"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      <span>Remove</span>
+                    </button>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
@@ -1503,9 +1372,29 @@ export function MovieForm({
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-semibold text-[var(--muted-foreground)] mb-0.5">
-                      VIP Cloud Download URL
-                    </label>
+                    <div className="flex items-center justify-between mb-0.5">
+                      <label className="block text-[10px] font-semibold text-[var(--muted-foreground)]">
+                        VIP Cloud Download URL
+                      </label>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => pasteTo((val) => updateVipLink(idx, "url", val))}
+                          className="text-[10px] text-amber-500 hover:text-amber-400 font-semibold flex items-center gap-1 hover:underline cursor-pointer"
+                        >
+                          <ClipboardPaste className="w-3 h-3" /> Paste
+                        </button>
+                        {link.url && (
+                          <button
+                            type="button"
+                            onClick={() => copyVal(link.url, `vip-${idx}`)}
+                            className="text-[10px] text-[var(--muted-foreground)] hover:text-amber-400 font-semibold flex items-center gap-1 hover:underline cursor-pointer"
+                          >
+                            <Copy className="w-3 h-3" /> {copiedKey === `vip-${idx}` ? "Copied!" : "Copy"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
                     <input
                       type="url"
                       value={link.url}

@@ -16,10 +16,15 @@ import {
   LogOut,
   Settings,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { SearchModal } from "@/components/search/search-modal";
 import { useCart } from "@/lib/cart/cart-store";
 import { useAuth } from "@/lib/auth/auth-context";
+
+const SearchModal = dynamic(
+  () => import("@/components/search/search-modal").then((m) => m.SearchModal),
+  { ssr: false }
+);
 
 export function Header() {
   const pathname = usePathname();
@@ -31,7 +36,7 @@ export function Header() {
 
   const navLinks = [
     { href: "/", label: "Home" },
-    { href: "/explore", label: "Explore" },
+    { href: "/articles", label: "Articles" },
     { href: "/categories", label: "Categories" },
     { href: "/movies", label: "Movies" },
     { href: "/new-and-updated", label: "New & Updated" },

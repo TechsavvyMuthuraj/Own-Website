@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
     qualities: [50, 60, 70, 75, 80, 85, 90],
     minimumCacheTTL: 86400, // 24h CDN caching for optimized images
   },
+  experimental: {
+    optimizePackageImports: ["lucide-react", "framer-motion"],
+  },
   async headers() {
     return [
       {
@@ -49,12 +52,14 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               // Fonts
               "font-src 'self' https://fonts.gstatic.com data:",
-              // Images: self, data URIs, Supabase storage, Google AdSense, Unsplash & all HTTPS
-              "img-src 'self' data: blob: https: https://*.supabase.co https://*.supabase.in https://images.unsplash.com https://pagead2.googlesyndication.com https://*.google.com https://*.doubleclick.net https://tpc.googlesyndication.com",
-              // Frames: Cloudflare Turnstile iframe + Google AdSense & DoubleClick
-              "frame-src https://challenges.cloudflare.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.google.com https://pagead2.googlesyndication.com",
-              // Connections: API calls + Supabase + Cloudflare Turnstile verify endpoint + Web3Forms + AdSense
-              "connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co https://challenges.cloudflare.com https://api.web3forms.com https://pagead2.googlesyndication.com https://*.google.com https://*.doubleclick.net",
+              // Images: self, data URIs, Supabase storage, Google AdSense, Unsplash & all HTTPS + YouTube thumbnails
+              "img-src 'self' data: blob: https: https://*.supabase.co https://*.supabase.in https://images.unsplash.com https://i.ytimg.com https://*.ytimg.com https://pagead2.googlesyndication.com https://*.google.com https://*.doubleclick.net https://tpc.googlesyndication.com",
+              // Frames: YouTube Video Players + Cloudflare Turnstile iframe + Google AdSense & DoubleClick
+              "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://youtube.com https://*.youtube.com https://*.youtube-nocookie.com https://challenges.cloudflare.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://*.google.com https://pagead2.googlesyndication.com",
+              // Media: audio and video playback
+              "media-src 'self' https: data: blob:",
+              // Connections: API calls + Supabase + Cloudflare Turnstile verify endpoint + Web3Forms + AdSense + YouTube
+              "connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co https://challenges.cloudflare.com https://api.web3forms.com https://pagead2.googlesyndication.com https://*.google.com https://*.doubleclick.net https://www.youtube.com https://*.youtube.com https://*.googlevideo.com",
               // Workers: Cloudflare Turnstile uses workers
               "worker-src 'self' blob:",
             ].join("; "),

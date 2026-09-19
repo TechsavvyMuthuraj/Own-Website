@@ -39,24 +39,39 @@ export interface MovieDownloadLink {
 export interface MovieItem {
   id: string;
   title: string;
+  slug?: string;
   year: number;
   genres: string[];
   quality: string;
   posterUrl: string;
-  rating: string;
+  rating?: string;
   sizeNormal: string;
   sizePremium: string;
   audio: string;
+  cast?: string;
+  trailerUrl?: string;
   normalDownloadUrl: string;
   premiumPrice: number;
   regularPrice?: number;
   hasDiscount?: boolean;
   discountPct?: number;
   description: string;
+  shortDescription?: string;
   duration?: string;
   screenshots?: string[];
   freeLinks?: MovieDownloadLink[];
   vipLinks?: MovieDownloadLink[];
+}
+
+export function getYoutubeEmbedUrl(url?: string | null): string | null {
+  if (!url) return null;
+  const clean = url.trim();
+  const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+  const match = clean.match(regExp);
+  if (match && match[1]) {
+    return `https://www.youtube-nocookie.com/embed/${match[1]}?autoplay=0&rel=0`;
+  }
+  return null;
 }
 
 interface MoviesClientProps {
@@ -70,6 +85,10 @@ export function MoviesClient({ movies }: MoviesClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedQuality, setSelectedQuality] = useState<string>("ALL");
   const [selectedGenre, setSelectedGenre] = useState<string>("ALL");
+
+  // Details Modal and Lightbox states
+  const [activeDetailMovie, setActiveDetailMovie] = useState<MovieItem | null>(null);
+  const [activeZoomImage, setActiveZoomImage] = useState<string | null>(null);
 
   // Download Modals state
   const [activeNormalMovie, setActiveNormalMovie] = useState<MovieItem | null>(null);
@@ -241,18 +260,12 @@ export function MoviesClient({ movies }: MoviesClientProps) {
           <Film className="w-12 h-12 text-amber-500/50 mx-auto mb-2" />
           <h3 className="text-base font-bold text-[var(--foreground)]">No Movies Published Yet</h3>
           <p className="text-xs text-[var(--muted-foreground)] max-w-sm mx-auto leading-relaxed">
-            There are currently no cinema resources in the catalog. You can add and publish real movie titles directly in the Admin Console.
+            There are currently no cinema resources available in the catalog. Please check back soon or explore our other verified software and utility categories.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <Link
-              href="/admin/resources/new"
-              className="px-4 py-2 rounded-xl bg-amber-500 text-neutral-950 font-bold text-xs hover:brightness-110 transition-all"
-            >
-              + Add Movie (Admin)
-            </Link>
-            <Link
               href="/categories"
-              className="px-4 py-2 rounded-xl bg-[var(--secondary)] text-xs font-semibold hover:bg-[var(--border)] transition-all"
+              className="px-4 py-2 rounded-xl bg-[var(--secondary)] text-xs font-semibold hover:bg-[var(--border)] text-[var(--foreground)] transition-all"
             >
               Browse Categories
             </Link>
@@ -266,7 +279,10 @@ export function MoviesClient({ movies }: MoviesClientProps) {
               className="group relative flex flex-col rounded-2xl border border-[var(--border)] bg-[var(--card)] overflow-hidden shadow-sm hover:shadow-xl hover:border-amber-500/40 transition-all duration-300"
             >
               {/* Poster Image Container */}
-              <div className="relative aspect-[16/10] w-full overflow-hidden bg-neutral-900">
+              <Link
+                href={`/movies/${movie.slug || movie.id}`}
+                className="relative aspect-[16/10] w-full overflow-hidden bg-neutral-900 cursor-pointer block"
+              >
                 {movie.posterUrl ? (
                   <Image
                     src={movie.posterUrl}
@@ -284,8 +300,18 @@ export function MoviesClient({ movies }: MoviesClientProps) {
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
 
+                {/* Hover Play / View Details Overlay */}
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-3 text-center">
+                  <div className="w-11 h-11 rounded-full bg-amber-500 text-neutral-950 flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
+                    <Play className="w-5 h-5 fill-neutral-950 ml-0.5" />
+                  </div>
+                  <span className="text-[11px] font-black text-white bg-black/70 px-3 py-1 rounded-full backdrop-blur-xs border border-white/20">
+                    {movie.trailerUrl ? "Play Trailer & View Details" : "View Movie Details"}
+                  </span>
+                </div>
+
                 {/* Floating Badges */}
-                <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap max-w-[80%]">
+                <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap max-w-[80%] pointer-events-none">
                   <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-500 text-neutral-950 shadow-md">
                     {movie.quality}
                   </span>
@@ -301,7 +327,7 @@ export function MoviesClient({ movies }: MoviesClientProps) {
 
                 {/* Rating badge — only if real rating exists */}
                 {movie.rating && (
-                  <div className="absolute top-2.5 right-2.5 flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-black/70 text-amber-400 backdrop-blur-sm border border-amber-500/20">
+                  <div className="absolute top-2.5 right-2.5 flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-black/70 text-amber-400 backdrop-blur-sm border border-amber-500/20 pointer-events-none">
                     <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                     <span>{movie.rating}</span>
                   </div>
@@ -309,18 +335,23 @@ export function MoviesClient({ movies }: MoviesClientProps) {
 
                 {/* Audio Badge — only if real audio info exists */}
                 {movie.audio && (
-                  <div className="absolute bottom-2 left-2.5 right-2.5 text-[10px] text-neutral-300 font-medium truncate flex items-center gap-1">
+                  <div className="absolute bottom-2 left-2.5 right-2.5 text-[10px] text-neutral-300 font-medium truncate flex items-center gap-1 pointer-events-none">
                     <Zap className="w-3 h-3 text-amber-400 flex-shrink-0" />
                     <span className="truncate">{movie.audio}</span>
                   </div>
                 )}
-              </div>
+              </Link>
 
               {/* Movie Info */}
               <div className="p-4 flex-1 flex flex-col justify-between space-y-4">
                 <div>
-                  <h3 className="text-sm font-bold text-[var(--foreground)] line-clamp-1 group-hover:text-amber-500 transition-colors">
-                    {movie.title}
+                  <h3>
+                    <Link
+                      href={`/movies/${movie.slug || movie.id}`}
+                      className="text-sm font-bold text-[var(--foreground)] line-clamp-1 group-hover:text-amber-500 transition-colors cursor-pointer"
+                    >
+                      {movie.title}
+                    </Link>
                   </h3>
                   <p className="text-[11px] text-[var(--muted-foreground)] mt-1 line-clamp-2 leading-relaxed">
                     {movie.description}
@@ -356,44 +387,38 @@ export function MoviesClient({ movies }: MoviesClientProps) {
                   </div>
                 )}
 
-                {/* Two Distinct Download Action Buttons */}
+                {/* Action Buttons: Details/Trailer + Free Download + VIP Download */}
                 <div className="space-y-2 pt-1">
-                  {/* Normal Free Download Button */}
-                  <button
-                    type="button"
-                    onClick={() => handleStartNormalDownload(movie)}
-                    className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-[var(--border)] bg-[var(--secondary)] hover:bg-emerald-500/10 hover:border-emerald-500/40 hover:text-emerald-600 dark:hover:text-emerald-400 text-xs font-semibold transition-all cursor-pointer"
+                  {/* View Details & Watch Trailer Button */}
+                  <Link
+                    href={`/movies/${movie.slug || movie.id}`}
+                    className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500 hover:text-neutral-950 text-amber-500 text-xs font-bold transition-all cursor-pointer shadow-xs"
                   >
-                    <Download className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>Normal Download (Free)</span>
-                  </button>
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    <span>{movie.trailerUrl ? "Watch Trailer & Details" : "View Details & Frames"}</span>
+                  </Link>
 
-                  {/* Premium VIP Download Button */}
-                  <button
-                    type="button"
-                    onClick={() => setActivePremiumMovie(movie)}
-                    className="w-full flex items-center justify-between py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-neutral-950 text-xs font-bold hover:brightness-110 active:scale-[0.98] transition-all shadow-md shadow-amber-500/20 cursor-pointer"
-                  >
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <Crown className="w-4 h-4 text-neutral-950 fill-neutral-950 flex-shrink-0" />
-                      <span className="truncate">VIP Download</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
-                      {movie.hasDiscount && movie.regularPrice && (
-                        <span className="line-through text-neutral-800/70 text-[10px] font-semibold">
-                          ₹{movie.regularPrice}
-                        </span>
-                      )}
-                      <span className="font-extrabold font-mono text-xs">
-                        {movie.premiumPrice <= 0 ? "FREE" : `₹${movie.premiumPrice}`}
-                      </span>
-                      {movie.hasDiscount && movie.discountPct && movie.discountPct > 0 && (
-                        <span className="px-1.5 py-0.2 rounded bg-neutral-950 text-amber-400 text-[9px] font-black uppercase">
-                          {movie.discountPct}% OFF
-                        </span>
-                      )}
-                    </div>
-                  </button>
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Normal Free Download Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleStartNormalDownload(movie)}
+                      className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)] hover:bg-emerald-500/10 hover:border-emerald-500/40 hover:text-emerald-600 dark:hover:text-emerald-400 text-[11px] font-semibold transition-all cursor-pointer truncate"
+                    >
+                      <Download className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                      <span className="truncate">Free</span>
+                    </button>
+
+                    {/* Premium VIP Download Button */}
+                    <button
+                      type="button"
+                      onClick={() => setActivePremiumMovie(movie)}
+                      className="flex items-center justify-center gap-1 py-2 px-2 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-neutral-950 text-[11px] font-extrabold hover:brightness-110 active:scale-[0.98] transition-all shadow-sm shadow-amber-500/20 cursor-pointer truncate"
+                    >
+                      <Crown className="w-3.5 h-3.5 fill-neutral-950 flex-shrink-0" />
+                      <span className="truncate">VIP ({movie.premiumPrice <= 0 ? "FREE" : `₹${movie.premiumPrice}`})</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -494,7 +519,7 @@ export function MoviesClient({ movies }: MoviesClientProps) {
                           </span>
                         </a>
                       ))
-                    ) : (
+                    ) : activeNormalMovie.normalDownloadUrl && activeNormalMovie.normalDownloadUrl !== "#" ? (
                       <a
                         href={activeNormalMovie.normalDownloadUrl}
                         target="_blank"
@@ -517,8 +542,20 @@ export function MoviesClient({ movies }: MoviesClientProps) {
                         }}
                       >
                         <Download className="w-4 h-4" />
-                        <span>Click Here to Download Now ({activeNormalMovie.sizeNormal})</span>
+                        <span>Click Here to Download Now ({activeNormalMovie.sizeNormal || "Standard"})</span>
                       </a>
+                    ) : (
+                      <div className="p-4 rounded-xl border border-dashed border-amber-500/40 bg-amber-500/5 text-center space-y-1.5">
+                        <div className="w-8 h-8 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto">
+                          <Clock className="w-4 h-4" />
+                        </div>
+                        <h6 className="text-xs font-bold text-[var(--foreground)]">
+                          No Download Link Available Yet
+                        </h6>
+                        <p className="text-[11px] text-[var(--muted-foreground)]">
+                          Verified file mirrors for this title are currently being uploaded or processed. Please check back shortly!
+                        </p>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -656,6 +693,7 @@ export function MoviesClient({ movies }: MoviesClientProps) {
                       <img
                         src={screen}
                         alt={`Quality Proof ${idx + 1}`}
+                        referrerPolicy="no-referrer"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                       />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -753,12 +791,12 @@ export function MoviesClient({ movies }: MoviesClientProps) {
                         </span>
                       </a>
                     ))
-                  ) : (
+                  ) : activePremiumMovie.normalDownloadUrl && activePremiumMovie.normalDownloadUrl !== "#" ? (
                     <a
                       href={activePremiumMovie.normalDownloadUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center justify-center gap-2 w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-neutral-950 text-xs font-bold hover:brightness-110 shadow-lg shadow-amber-500/20 transition-all"
+                      className="inline-flex items-center justify-center gap-2 w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-neutral-950 text-xs font-bold hover:brightness-110 shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
                       onClick={() => {
                         if (activePremiumMovie.id) {
                           fetch("/api/downloads/record", {
@@ -777,6 +815,18 @@ export function MoviesClient({ movies }: MoviesClientProps) {
                       <Download className="w-4 h-4" />
                       <span>Click to Download VIP 4K ({activePremiumMovie.sizePremium || "Direct Link"})</span>
                     </a>
+                  ) : (
+                    <div className="p-4 rounded-xl border border-dashed border-amber-500/40 bg-amber-500/5 text-center space-y-1.5">
+                      <div className="w-8 h-8 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto">
+                        <Clock className="w-4 h-4" />
+                      </div>
+                      <h6 className="text-xs font-bold text-[var(--foreground)]">
+                        No Download Link Available Yet
+                      </h6>
+                      <p className="text-[11px] text-[var(--muted-foreground)]">
+                        The VIP 4K file mirrors for this title are currently being uploaded or processed. Please check back shortly!
+                      </p>
+                    </div>
                   )}
                 </div>
               </div>
@@ -828,6 +878,232 @@ export function MoviesClient({ movies }: MoviesClientProps) {
                 />
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Interactive Movie Details & Trailer Modal ── */}
+      {activeDetailMovie && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-[var(--card)] border border-amber-500/30 rounded-3xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl space-y-4 my-auto max-h-[92vh] overflow-y-auto scrollbar-thin">
+            {/* Modal Top Header */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500">
+                  <Film className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-base sm:text-lg font-black text-[var(--foreground)]">
+                      {activeDetailMovie.title}
+                    </h3>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-amber-500 text-neutral-950">
+                      {activeDetailMovie.quality}
+                    </span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[var(--secondary)] text-[var(--muted-foreground)]">
+                      {activeDetailMovie.year}
+                    </span>
+                  </div>
+                  {activeDetailMovie.audio && (
+                    <p className="text-xs text-amber-500 flex items-center gap-1 mt-0.5">
+                      <Zap className="w-3.5 h-3.5" />
+                      <span>{activeDetailMovie.audio}</span>
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <button
+                onClick={() => setActiveDetailMovie(null)}
+                className="p-1.5 rounded-xl bg-[var(--secondary)] hover:bg-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* YouTube Trailer Video Player or Artwork Banner */}
+            {activeDetailMovie.trailerUrl && getYoutubeEmbedUrl(activeDetailMovie.trailerUrl) ? (
+              <div className="space-y-1.5">
+                <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-black border border-amber-500/40 shadow-xl">
+                  <iframe
+                    src={getYoutubeEmbedUrl(activeDetailMovie.trailerUrl)!}
+                    title={`${activeDetailMovie.title} Official Trailer`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    className="w-full h-full"
+                  />
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-[var(--muted-foreground)] px-1">
+                  <span className="flex items-center gap-1 text-emerald-500 font-semibold">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Official Trailer &amp; Promo</span>
+                  </span>
+                  <a
+                    href={activeDetailMovie.trailerUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-amber-500 transition-colors flex items-center gap-1 font-medium"
+                  >
+                    <span>Open on YouTube</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <div className="relative aspect-[21/9] w-full rounded-2xl overflow-hidden bg-neutral-900 border border-[var(--border)] shadow-md flex items-center justify-center">
+                {activeDetailMovie.posterUrl ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={activeDetailMovie.posterUrl}
+                    alt={activeDetailMovie.title}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Film className="w-12 h-12 text-neutral-700" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex items-end p-4">
+                  <span className="px-3 py-1 rounded-full bg-black/70 backdrop-blur-sm border border-white/10 text-neutral-300 text-xs font-semibold">
+                    🎬 Official Trailer Coming Soon
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Cast & Director */}
+            {activeDetailMovie.cast && (
+              <div className="p-3 rounded-2xl bg-[var(--secondary)]/60 border border-[var(--border)] text-xs">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] block mb-0.5">
+                  Star Cast &amp; Crew
+                </span>
+                <span className="font-semibold text-[var(--foreground)] leading-relaxed">
+                  {activeDetailMovie.cast}
+                </span>
+              </div>
+            )}
+
+            {/* Story Synopsis */}
+            {activeDetailMovie.description && (
+              <div className="space-y-1 text-xs">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] block">
+                  Plot Synopsis &amp; Release Notes
+                </span>
+                <p className="text-[var(--foreground)] text-xs leading-relaxed">
+                  {activeDetailMovie.description}
+                </p>
+              </div>
+            )}
+
+            {/* Genre Tags */}
+            {activeDetailMovie.genres && activeDetailMovie.genres.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {activeDetailMovie.genres.map((g) => (
+                  <span
+                    key={g}
+                    className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-[var(--secondary)] text-[var(--foreground)] border border-[var(--border)]"
+                  >
+                    {g}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* 4K Quality Proof Screenshots Gallery */}
+            {activeDetailMovie.screenshots && activeDetailMovie.screenshots.length > 0 && (
+              <div className="space-y-2 pt-1 border-t border-[var(--border)]">
+                <div className="flex items-center justify-between text-xs font-bold text-[var(--foreground)]">
+                  <span className="flex items-center gap-1.5">
+                    <Camera className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Quality Proof &amp; 4K Sample Frames:</span>
+                  </span>
+                  <span className="text-[10px] text-[var(--muted-foreground)] font-mono">
+                    {activeDetailMovie.screenshots.length} Screenshot{activeDetailMovie.screenshots.length === 1 ? "" : "s"} (Click to zoom)
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 max-h-48 overflow-y-auto pr-1 scrollbar-thin">
+                  {activeDetailMovie.screenshots.map((screen, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setActiveZoomImage(screen)}
+                      className="group relative aspect-video rounded-xl overflow-hidden border border-[var(--border)] bg-black hover:border-amber-500 transition-all shadow-xs cursor-pointer text-left"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={screen}
+                        alt={`Quality Proof ${idx + 1}`}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <ExternalLink className="w-3.5 h-3.5 text-white" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Download Action Section inside Details Modal */}
+            <div className="pt-3 border-t border-[var(--border)] space-y-2.5">
+              <span className="text-xs font-bold text-[var(--foreground)] block">
+                Choose Download Release:
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const m = activeDetailMovie;
+                    setActiveDetailMovie(null);
+                    handleStartNormalDownload(m);
+                  }}
+                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold transition-all cursor-pointer shadow-xs"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Free Download ({activeDetailMovie.sizeNormal || "Standard"})</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const m = activeDetailMovie;
+                    setActiveDetailMovie(null);
+                    setActivePremiumMovie(m);
+                  }}
+                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-neutral-950 text-xs font-black hover:brightness-110 active:scale-95 transition-all shadow-md shadow-amber-500/20 cursor-pointer"
+                >
+                  <Crown className="w-4 h-4 fill-neutral-950" />
+                  <span>
+                    VIP 4K Access ({activeDetailMovie.premiumPrice <= 0 ? "FREE" : `₹${activeDetailMovie.premiumPrice}`})
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Image Lightbox / Zoom Modal ── */}
+      {activeZoomImage && (
+        <div
+          onClick={() => setActiveZoomImage(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-150 cursor-zoom-out"
+        >
+          <div className="relative max-w-5xl max-h-[90vh] w-full flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={activeZoomImage}
+              alt="Zoomed Screenshot"
+              referrerPolicy="no-referrer"
+              className="max-w-full max-h-[85vh] rounded-2xl object-contain border border-neutral-700 shadow-2xl"
+            />
+            <button
+              onClick={() => setActiveZoomImage(null)}
+              className="absolute top-2 right-2 p-2 rounded-full bg-black/70 text-white hover:bg-neutral-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
         </div>
       )}

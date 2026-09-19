@@ -1,4 +1,4 @@
-import React from "react";
+import React, { cache } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -43,18 +43,38 @@ interface ResourceDetailPageProps {
 
 export const revalidate = 60;
 
+const CARD_FIELDS =
+  "id, title, slug, short_description, thumbnail_url, icon_url, resource_type, access_type, price, sale_price, currency, platform, version, status, featured, tags, created_at, updated_at, published_at, category_id, category:categories(id, name, slug, icon)";
+
+// Deduplicate resource lookup between generateMetadata and Page component using React cache
+const getResourceBySlug = cache(async (slug: string): Promise<Resource | null> => {
+  const supabase = await createClient();
+  const { data: resData, error } = await supabase
+    .from("resources")
+    .select("*, category:categories(id, name, slug, icon), images:resource_images(*), download_links(*)")
+    .eq("slug", slug)
+    .eq("status", "PUBLISHED")
+    .maybeSingle();
+
+  if (error || !resData) return null;
+
+  return {
+    ...resData,
+    category: Array.isArray(resData.category) ? resData.category[0] : resData.category,
+    images: (resData.images || []).sort(
+      (a: ResourceImage, b: ResourceImage) => a.sort_order - b.sort_order
+    ),
+    download_links: (resData.download_links || []).filter(
+      (link: DownloadLink) => link.is_active
+    ),
+  } as Resource;
+});
+
 export async function generateMetadata({
   params,
 }: ResourceDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
-
-  const { data: res } = await supabase
-    .from("resources")
-    .select("title, short_description, description, thumbnail_url, tags, platform, version, category:categories(name)")
-    .eq("slug", slug)
-    .eq("status", "PUBLISHED")
-    .maybeSingle();
+  const res = await getResourceBySlug(slug);
 
   if (!res) {
     return {
@@ -74,9 +94,7 @@ export async function generateMetadata({
     `Download ${res.title} safely on NammaTech. Fast, verified, and malware-free.`;
   const imageUrl = res.thumbnail_url || `${siteUrl}/images/hero-clean.png`;
 
-  const categoryName = Array.isArray(res.category)
-    ? (res.category[0] as any)?.name
-    : (res.category as any)?.name;
+  const categoryName = (res.category as any)?.name;
 
   return {
     title,
@@ -117,55 +135,36 @@ export async function generateMetadata({
 
 export default async function ResourceDetailPage({ params }: ResourceDetailPageProps) {
   const { slug } = await params;
-  const supabase = await createClient();
+  const resource = await getResourceBySlug(slug);
 
-  // 1. Fetch Resource with Category, Images, and Active Download Links
-  const { data: resData, error } = await supabase
-    .from("resources")
-    .select("*, category:categories(*), images:resource_images(*), download_links(*)")
-    .eq("slug", slug)
-    .eq("status", "PUBLISHED")
-    .single();
-
-  if (error || !resData) {
+  if (!resource) {
     notFound();
   }
 
-  const resource = {
-    ...resData,
-    category: Array.isArray(resData.category) ? resData.category[0] : resData.category,
-    images: (resData.images || []).sort(
-      (a: ResourceImage, b: ResourceImage) => a.sort_order - b.sort_order
-    ),
-    download_links: (resData.download_links || []).filter(
-      (link: DownloadLink) => link.is_active
-    ),
-  } as Resource;
+  const supabase = await createClient();
 
-  // 2. Fetch Related Resources in same category
-  let relatedResources: Resource[] = [];
-  if (resource.category_id) {
-    const { data: relatedData } = await supabase
-      .from("resources")
-      .select("*, category:categories(*)")
-      .eq("category_id", resource.category_id)
-      .eq("status", "PUBLISHED")
-      .neq("id", resource.id)
-      .limit(4);
-
-    if (relatedData) {
-      relatedResources = (relatedData as unknown[]).map((item: any) => ({
-        ...item,
-        category: Array.isArray(item.category) ? item.category[0] : item.category,
-      })) as Resource[];
-    }
-  }
-
-  // 3. Fetch Active Ad Placements for Sidebar and Content Bottom
-  const [sidebarAd, resourcePageAd] = await Promise.all([
+  // Fetch Related Resources and Active Ads concurrently in parallel
+  const [relatedDataRes, sidebarAd, resourcePageAd] = await Promise.all([
+    resource.category_id
+      ? supabase
+          .from("resources")
+          .select(CARD_FIELDS)
+          .eq("category_id", resource.category_id)
+          .eq("status", "PUBLISHED")
+          .neq("id", resource.id)
+          .limit(4)
+      : Promise.resolve({ data: [] }),
     getActiveAd("SIDEBAR"),
     getActiveAd("RESOURCE_PAGE"),
   ]);
+
+  let relatedResources: Resource[] = [];
+  if (relatedDataRes.data) {
+    relatedResources = (relatedDataRes.data as unknown[]).map((item: any) => ({
+      ...item,
+      category: Array.isArray(item.category) ? item.category[0] : item.category,
+    })) as Resource[];
+  }
 
   const isNew = isNewResource(resource.published_at || resource.created_at);
   const isUpdated = isUpdatedResource(resource.updated_at, resource.created_at);
