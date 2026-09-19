@@ -157,6 +157,16 @@ export default async function MoviesPage() {
           sizePremiumStr = `${vipLinks[0].size} – ${vipLinks[vipLinks.length - 1].size}`;
         }
 
+        const regularPrice = item.price > 0 ? item.price : 99;
+        const hasDiscount =
+          item.sale_price !== null &&
+          item.sale_price !== undefined &&
+          item.sale_price < regularPrice;
+        const offerPrice = hasDiscount ? item.sale_price : regularPrice;
+        const discountPct = hasDiscount
+          ? Math.round(((regularPrice - offerPrice) / regularPrice) * 100)
+          : 0;
+
         return {
           id: item.id,
           title: item.title,
@@ -169,7 +179,10 @@ export default async function MoviesPage() {
           sizePremium: sizePremiumStr,
           audio: item.platform || "",
           normalDownloadUrl: freeLinks[0]?.url || "",
-          premiumPrice: item.price > 0 ? item.price : 49,
+          premiumPrice: offerPrice,
+          regularPrice,
+          hasDiscount,
+          discountPct,
           description: item.short_description || item.description || "",
           freeLinks,
           vipLinks,

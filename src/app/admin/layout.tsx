@@ -49,6 +49,7 @@ export default function AdminLayout({
     { href: "/admin/categories", label: "Categories", icon: Layers },
     { href: "/admin/users", label: "Users & Verification", icon: Users },
     { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
+    { href: "/admin/payments", label: "Payments", icon: CreditCard },
     { href: "/admin/coupons", label: "Coupons", icon: Tag },
     { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
     { href: "/admin/ads", label: "Ad Placements", icon: Sliders },

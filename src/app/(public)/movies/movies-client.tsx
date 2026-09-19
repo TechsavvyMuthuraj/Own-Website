@@ -48,6 +48,9 @@ export interface MovieItem {
   audio: string;
   normalDownloadUrl: string;
   premiumPrice: number;
+  regularPrice?: number;
+  hasDiscount?: boolean;
+  discountPct?: number;
   description: string;
   duration?: string;
   freeLinks?: MovieDownloadLink[];
@@ -280,13 +283,18 @@ export function MoviesClient({ movies }: MoviesClientProps) {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
 
                 {/* Floating Badges */}
-                <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap max-w-[80%]">
                   <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-amber-500 text-neutral-950 shadow-md">
                     {movie.quality}
                   </span>
                   <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-black/70 text-white backdrop-blur-sm border border-white/10">
                     {movie.year}
                   </span>
+                  {movie.hasDiscount && movie.discountPct && movie.discountPct > 0 && (
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-red-600 text-white shadow-md animate-pulse">
+                      {movie.discountPct}% OFF
+                    </span>
+                  )}
                 </div>
 
                 {/* Rating badge — only if real rating exists */}
@@ -362,10 +370,27 @@ export function MoviesClient({ movies }: MoviesClientProps) {
                   <button
                     type="button"
                     onClick={() => setActivePremiumMovie(movie)}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-neutral-950 text-xs font-bold hover:brightness-110 active:scale-[0.98] transition-all shadow-md shadow-amber-500/20 cursor-pointer"
+                    className="w-full flex items-center justify-between py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-neutral-950 text-xs font-bold hover:brightness-110 active:scale-[0.98] transition-all shadow-md shadow-amber-500/20 cursor-pointer"
                   >
-                    <Crown className="w-4 h-4 text-neutral-950 fill-neutral-950" />
-                    <span>👑 Premium VIP Download (₹{movie.premiumPrice})</span>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <Crown className="w-4 h-4 text-neutral-950 fill-neutral-950 flex-shrink-0" />
+                      <span className="truncate">VIP Download</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      {movie.hasDiscount && movie.regularPrice && (
+                        <span className="line-through text-neutral-800/70 text-[10px] font-semibold">
+                          ₹{movie.regularPrice}
+                        </span>
+                      )}
+                      <span className="font-extrabold font-mono text-xs">
+                        ₹{movie.premiumPrice}
+                      </span>
+                      {movie.hasDiscount && movie.discountPct && movie.discountPct > 0 && (
+                        <span className="px-1.5 py-0.2 rounded bg-neutral-950 text-amber-400 text-[9px] font-black uppercase">
+                          {movie.discountPct}% OFF
+                        </span>
+                      )}
+                    </div>
                   </button>
                 </div>
               </div>
@@ -513,9 +538,10 @@ export function MoviesClient({ movies }: MoviesClientProps) {
                   setActiveNormalMovie(null);
                   setActivePremiumMovie(m);
                 }}
-                className="px-2.5 py-1 rounded-lg bg-amber-500 text-neutral-950 font-bold text-[11px] hover:brightness-110 cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-amber-500 text-neutral-950 font-bold text-[11px] hover:brightness-110 cursor-pointer whitespace-nowrap"
               >
                 Go VIP (₹{activeNormalMovie.premiumPrice})
+                {activeNormalMovie.hasDiscount && ` • ${activeNormalMovie.discountPct}% OFF`}
               </button>
             </div>
           </div>
@@ -553,6 +579,34 @@ export function MoviesClient({ movies }: MoviesClientProps) {
                 <X className="w-4 h-4" />
               </button>
             </div>
+
+            {/* VIP Discount Banner */}
+            {activePremiumMovie.hasDiscount && activePremiumMovie.regularPrice && (
+              <div className="p-3 rounded-2xl bg-gradient-to-r from-amber-500/20 via-yellow-500/15 to-red-500/20 border border-amber-500/40 flex items-center justify-between shadow-xs">
+                <div>
+                  <span className="text-[10px] font-extrabold uppercase text-amber-500 tracking-wider flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-amber-400" />
+                    Special VIP Discount Deal
+                  </span>
+                  <div className="flex items-baseline gap-2 mt-0.5">
+                    <span className="text-xl font-black text-amber-500 font-mono">
+                      ₹{activePremiumMovie.premiumPrice}
+                    </span>
+                    <span className="line-through text-xs font-semibold text-[var(--muted-foreground)]">
+                      MRP ₹{activePremiumMovie.regularPrice}
+                    </span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="px-2.5 py-1 rounded-full text-xs font-black bg-gradient-to-r from-red-600 to-amber-600 text-white shadow-sm uppercase tracking-wide">
+                    {activePremiumMovie.discountPct}% OFF
+                  </span>
+                  <span className="block text-[10px] text-emerald-500 dark:text-emerald-400 font-semibold mt-0.5">
+                    Save ₹{activePremiumMovie.regularPrice - activePremiumMovie.premiumPrice}
+                  </span>
+                </div>
+              </div>
+            )}
 
             {/* VIP Perks */}
             <div className="grid grid-cols-3 gap-1.5 text-center text-[9px] sm:text-[10px]">

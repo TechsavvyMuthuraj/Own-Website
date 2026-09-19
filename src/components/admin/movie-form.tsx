@@ -22,6 +22,8 @@ import {
   ExternalLink,
   Plus,
   Layers,
+  Tag,
+  Percent,
 } from "lucide-react";
 import type { Resource } from "@/types/database";
 
@@ -165,9 +167,32 @@ export function MovieForm({
   // Two Categories of Size-Based Download Links
   const [freeLinks, setFreeLinks] = useState<SizeLinkItem[]>(initialFreeLinks);
   const [vipLinks, setVipLinks] = useState<SizeLinkItem[]>(initialVipLinks);
-  const [vipPrice, setVipPrice] = useState<number>(
-    initialData?.price !== undefined && initialData.price > 0 ? initialData.price : 49
+
+  // VIP Pricing & Discount State
+  const initialHasDiscount = Boolean(
+    initialData?.sale_price !== null &&
+      initialData?.sale_price !== undefined &&
+      initialData.sale_price < (initialData?.price || 0)
   );
+
+  const [hasVipDiscount, setHasVipDiscount] = useState<boolean>(initialHasDiscount);
+  const [vipRegularPrice, setVipRegularPrice] = useState<number>(
+    initialData?.price !== undefined && initialData.price > 0
+      ? initialData.price
+      : 99
+  );
+  const [vipOfferPrice, setVipOfferPrice] = useState<number>(
+    initialData?.sale_price !== null && initialData?.sale_price !== undefined
+      ? initialData.sale_price
+      : initialData?.price !== undefined && initialData.price > 0
+      ? initialData.price
+      : 1
+  );
+
+  const discountPct =
+    hasVipDiscount && vipRegularPrice > vipOfferPrice
+      ? Math.round(((vipRegularPrice - vipOfferPrice) / vipRegularPrice) * 100)
+      : 0;
 
   const [shortDescription, setShortDescription] = useState(
     initialData?.short_description ||
@@ -307,14 +332,21 @@ export function MovieForm({
     const firstSizeBytes =
       freeLinks.length > 0 ? parseSizeToBytes(freeLinks[0].size) : 1500000000;
 
+    const finalPrice = hasVipDiscount ? Number(vipRegularPrice) || 0 : Number(vipOfferPrice) || 0;
+    const finalSalePrice =
+      hasVipDiscount && Number(vipOfferPrice) < Number(vipRegularPrice)
+        ? Number(vipOfferPrice)
+        : null;
+    const finalEffectivePrice = finalSalePrice !== null ? finalSalePrice : finalPrice;
+
     const payload = {
       title: title.trim(),
       slug: slug.trim(),
       category_id: movieCategoryId,
       resource_type: "MEDIA",
-      access_type: vipPrice > 0 ? "PAID" : "FREE",
-      price: Number(vipPrice) || 0,
-      sale_price: 299,
+      access_type: finalEffectivePrice > 0 ? "PAID" : "FREE",
+      price: finalPrice,
+      sale_price: finalSalePrice,
       currency: "INR",
       platform: audio.trim(), // Audio specs in platform
       version: year.toString(), // Year in version
@@ -762,25 +794,153 @@ export function MovieForm({
               </span>
             </div>
 
-            <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-[var(--card)] border border-amber-500/30">
-              <div>
-                <span className="block text-xs font-bold text-[var(--foreground)]">
-                  Total VIP Price (₹ INR)
-                </span>
-                <span className="text-[10px] text-[var(--muted-foreground)]">
-                  One-time payment unlocks all VIP sizes
-                </span>
+            {/* VIP Pricing & Discount Settings Card */}
+            <div className="p-4 rounded-xl bg-[var(--card)] border border-amber-500/30 space-y-3.5 shadow-xs">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="block text-xs font-bold text-[var(--foreground)]">
+                    VIP Download Pricing
+                  </span>
+                  <span className="text-[10px] text-[var(--muted-foreground)]">
+                    Configure standard price & optional VIP discount
+                  </span>
+                </div>
+                {/* Discount Toggle */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!hasVipDiscount) {
+                      setHasVipDiscount(true);
+                      if (vipRegularPrice <= vipOfferPrice) {
+                        setVipRegularPrice(99);
+                      }
+                    } else {
+                      setHasVipDiscount(false);
+                    }
+                  }}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    hasVipDiscount
+                      ? "bg-amber-500 text-neutral-950 shadow-sm ring-2 ring-amber-400/40"
+                      : "bg-[var(--secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                  }`}
+                >
+                  <Tag className="w-3.5 h-3.5" />
+                  <span>{hasVipDiscount ? "VIP Discount Active ✓" : "+ Enable VIP Discount"}</span>
+                </button>
               </div>
-              <div className="flex items-center gap-1 font-mono font-black text-base text-amber-500">
-                <span>₹</span>
-                <input
-                  type="number"
-                  min={0}
-                  value={vipPrice}
-                  onChange={(e) => setVipPrice(parseFloat(e.target.value) || 0)}
-                  className="w-16 px-2 py-1 rounded-lg border border-[var(--border)] bg-[var(--background)] text-xs text-center font-bold text-amber-500"
-                />
-              </div>
+
+              {hasVipDiscount ? (
+                <div className="space-y-3 pt-2.5 border-t border-[var(--border)]">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-[var(--muted-foreground)] mb-1">
+                        Regular Price (₹ MRP)
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[var(--muted-foreground)]">
+                          ₹
+                        </span>
+                        <input
+                          type="number"
+                          min={1}
+                          value={vipRegularPrice}
+                          onChange={(e) => setVipRegularPrice(parseFloat(e.target.value) || 0)}
+                          placeholder="99"
+                          className="w-full pl-7 pr-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-bold text-[var(--foreground)] focus:ring-1 focus:ring-amber-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-amber-500 mb-1">
+                        VIP Offer Price (₹ Sale)
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-500">
+                          ₹
+                        </span>
+                        <input
+                          type="number"
+                          min={0}
+                          value={vipOfferPrice}
+                          onChange={(e) => setVipOfferPrice(parseFloat(e.target.value) || 0)}
+                          placeholder="1"
+                          className="w-full pl-7 pr-3 py-2 rounded-xl border border-amber-500/50 bg-[var(--background)] text-xs font-mono font-bold text-amber-500 focus:ring-2 focus:ring-amber-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Live Discount Calculation Badge */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs">
+                    <div className="flex items-center gap-1.5 font-bold text-amber-500">
+                      <Percent className="w-3.5 h-3.5" />
+                      {discountPct > 0 ? (
+                        <span>
+                          Customer saves ₹{Math.max(0, vipRegularPrice - vipOfferPrice)} ({discountPct}% OFF)
+                        </span>
+                      ) : (
+                        <span className="text-[var(--muted-foreground)] font-normal">
+                          Set VIP offer price lower than regular price to activate savings badge
+                        </span>
+                      )}
+                    </div>
+                    {discountPct > 0 && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-neutral-950 uppercase">
+                        {discountPct}% OFF Deal
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Quick Discount Presets */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto text-[11px] pt-0.5">
+                    <span className="text-[10px] font-semibold text-[var(--muted-foreground)] mr-1 whitespace-nowrap">
+                      Presets:
+                    </span>
+                    {[
+                      { label: "₹1 Deal", price: 1 },
+                      { label: "₹49 Deal", price: 49 },
+                      { label: "50% OFF", price: Math.max(1, Math.round(vipRegularPrice * 0.5)) },
+                      { label: "70% OFF", price: Math.max(1, Math.round(vipRegularPrice * 0.3)) },
+                      { label: "90% OFF", price: Math.max(1, Math.round(vipRegularPrice * 0.1)) },
+                    ].map((p, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setVipOfferPrice(p.price)}
+                        className="px-2.5 py-1 rounded-lg bg-[var(--secondary)] hover:bg-amber-500/20 hover:text-amber-500 border border-[var(--border)] text-[10px] font-bold transition-colors whitespace-nowrap cursor-pointer"
+                      >
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between gap-3 pt-2.5 border-t border-[var(--border)]">
+                  <div>
+                    <span className="block text-xs font-bold text-[var(--foreground)]">
+                      Fixed VIP Price (₹ INR)
+                    </span>
+                    <span className="text-[10px] text-[var(--muted-foreground)]">
+                      One-time payment unlocks all VIP sizes
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 font-mono font-black text-base text-amber-500">
+                    <span>₹</span>
+                    <input
+                      type="number"
+                      min={0}
+                      value={vipOfferPrice}
+                      onChange={(e) => {
+                        const v = parseFloat(e.target.value) || 0;
+                        setVipOfferPrice(v);
+                        setVipRegularPrice(v);
+                      }}
+                      className="w-20 px-2 py-1 rounded-lg border border-[var(--border)] bg-[var(--background)] text-xs text-center font-bold text-amber-500"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* List of VIP Size Links */}

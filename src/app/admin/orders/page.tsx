@@ -19,10 +19,10 @@ export default async function AdminOrdersPage() {
     <div className="space-y-6 max-w-7xl">
       <div>
         <h1 className="text-2xl font-extrabold text-[var(--foreground)] tracking-tight">
-          Order & Payment Management
+          Orders &amp; Fulfillment
         </h1>
         <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
-          Real transactions, payment verification status, and manual UPI reconciliations.
+          Customer orders, digital product deliveries, and fulfillment status.
         </p>
       </div>
 
