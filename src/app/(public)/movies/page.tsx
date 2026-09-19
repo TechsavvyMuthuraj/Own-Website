@@ -184,6 +184,7 @@ export default async function MoviesPage() {
           hasDiscount,
           discountPct,
           description: item.short_description || item.description || "",
+          screenshots: Array.isArray(item.features) ? item.features : [],
           freeLinks,
           vipLinks,
         };

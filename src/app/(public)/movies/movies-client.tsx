@@ -22,6 +22,7 @@ import {
   Layers,
   ArrowRight,
   ExternalLink,
+  Camera,
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -53,6 +54,7 @@ export interface MovieItem {
   discountPct?: number;
   description: string;
   duration?: string;
+  screenshots?: string[];
   freeLinks?: MovieDownloadLink[];
   vipLinks?: MovieDownloadLink[];
 }
@@ -626,6 +628,44 @@ export function MoviesClient({ movies }: MoviesClientProps) {
                 <span className="text-[var(--muted-foreground)]">Cloud Access</span>
               </div>
             </div>
+
+            {/* Quality Proof Screenshots Gallery */}
+            {activePremiumMovie.screenshots && activePremiumMovie.screenshots.length > 0 && (
+              <div className="p-3 rounded-2xl bg-[var(--secondary)]/60 border border-[var(--border)] text-left space-y-2">
+                <div className="flex items-center justify-between text-xs font-bold text-[var(--foreground)]">
+                  <span className="flex items-center gap-1.5">
+                    <Camera className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Quality Proof &amp; 4K Sample Frames:</span>
+                  </span>
+                  <span className="text-[10px] text-[var(--muted-foreground)] font-mono">
+                    {activePremiumMovie.screenshots.length} Verified Frame{activePremiumMovie.screenshots.length === 1 ? "" : "s"}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-44 overflow-y-auto pr-1 scrollbar-thin">
+                  {activePremiumMovie.screenshots.map((screen, idx) => (
+                    <a
+                      key={idx}
+                      href={screen}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group relative aspect-video rounded-lg overflow-hidden border border-[var(--border)] bg-black hover:border-amber-500 transition-all shadow-xs"
+                      title="Click to inspect pristine 4K video frame"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={screen}
+                        alt={`Quality Proof ${idx + 1}`}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <ExternalLink className="w-3 h-3 text-white" />
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Included VIP Tiers List Based on Size */}
             {activePremiumMovie.vipLinks && activePremiumMovie.vipLinks.length > 0 && (
