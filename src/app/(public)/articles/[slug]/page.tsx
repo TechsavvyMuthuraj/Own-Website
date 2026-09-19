@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { Article } from "@/types/database";
 import { Newspaper, Calendar, Clock, Tag, ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
@@ -29,11 +29,12 @@ function estimateReadTime(content: string | null) {
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data } = await supabase
     .from("articles")
     .select("title, excerpt, thumbnail_url")
     .eq("slug", slug)
+    .eq("status", "PUBLISHED")
     .maybeSingle();
   if (!data) return { title: "Article Not Found | NammaTech" };
   return {
@@ -49,19 +50,34 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
 export default async function ArticleDetailPage({ params }: ArticlePageProps) {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
-  const { data: article } = await supabase
+  // Use admin client (service role) to bypass RLS for public article pages
+  const { data: article, error: articleError } = await supabase
     .from("articles")
-    .select("*, author:profiles(id, full_name, avatar_url)")
+    .select("*")
     .eq("slug", slug)
     .eq("status", "PUBLISHED")
     .maybeSingle();
 
+  if (articleError) {
+    console.error("[ArticlePage] Error fetching article:", articleError.message);
+  }
 
   if (!article) notFound();
 
   const a = article as Article;
+
+  // Fetch author profile separately (no FK relationship exists in schema)
+  let authorName = "NammaTech";
+  if (a.author_id) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", a.author_id)
+      .maybeSingle();
+    if (profile?.full_name) authorName = profile.full_name;
+  }
 
   const { data: related } = await supabase
     .from("articles")
@@ -132,7 +148,7 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-3.5 h-3.5 text-amber-500 font-bold">✍</span>
-              <span className="font-semibold text-[var(--foreground)]">{a.author?.full_name || "NammaTech"}</span>
+              <span className="font-semibold text-[var(--foreground)]">{authorName}</span>
             </span>
           </div>
         </header>

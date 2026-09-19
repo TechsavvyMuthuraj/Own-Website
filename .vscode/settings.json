@@ -1,0 +1,37 @@
+{
+  // Disable the built-in CSS validation — Tailwind v4 uses non-standard at-rules
+  // like @plugin and @custom-variant that the default CSS language server doesn't know about.
+  "css.validate": false,
+  "scss.validate": false,
+  "less.validate": false,
+
+  // Tell the CSS language service to ignore unknown at-rules (Tailwind v4 directives)
+  "css.lint.unknownAtRules": "ignore",
+
+  // If you have the Tailwind CSS IntelliSense extension installed, point it to the CSS file
+  "tailwindCSS.includeLanguages": {
+    "typescript": "javascript",
+    "typescriptreact": "javascript"
+  },
+
+  // Treat @plugin, @custom-variant, @import "tailwindcss" as valid
+  "tailwindCSS.experimental.configFile": null,
+
+  // File associations
+  "files.associations": {
+    "*.css": "css"
+  },
+
+  // Editor settings
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}
