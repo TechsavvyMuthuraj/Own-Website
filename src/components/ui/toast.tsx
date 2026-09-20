@@ -107,7 +107,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       {children}
 
       {/* Floating Animated Toasts Container */}
-      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none p-2 sm:p-0">
+      <div className="fixed top-5 right-5 z-[999999] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none p-2 sm:p-0">
         {toasts.map((toast) => {
           const isSuccess = toast.type === "success";
           const isError = toast.type === "error";
@@ -117,21 +117,31 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           return (
             <div
               key={toast.id}
-              className={`pointer-events-auto flex items-start gap-3 p-4 rounded-2xl shadow-2xl border backdrop-blur-xl transition-all duration-300 animate-in slide-in-from-top-3 fade-in ${
+              className={`pointer-events-auto flex items-start gap-3 p-4 rounded-2xl shadow-2xl border backdrop-blur-2xl transition-all duration-300 animate-in slide-in-from-top-3 fade-in bg-[var(--card)]/95 text-[var(--foreground)] ${
                 isSuccess
-                  ? "bg-emerald-950/90 dark:bg-emerald-950/95 border-emerald-500/40 text-emerald-100 shadow-emerald-500/10"
+                  ? "border-emerald-500/40 shadow-emerald-500/10"
                   : isError
-                  ? "bg-red-950/90 dark:bg-red-950/95 border-red-500/40 text-red-100 shadow-red-500/10"
+                  ? "border-red-500/40 shadow-red-500/10"
                   : isWarning
-                  ? "bg-amber-950/90 dark:bg-amber-950/95 border-amber-500/40 text-amber-100 shadow-amber-500/10"
-                  : "bg-indigo-950/90 dark:bg-indigo-950/95 border-indigo-500/40 text-indigo-100 shadow-indigo-500/10"
+                  ? "border-amber-500/40 shadow-amber-500/10"
+                  : "border-indigo-500/40 shadow-indigo-500/10"
               }`}
             >
-              <div className="flex-shrink-0 pt-0.5">
-                {isSuccess && <CheckCircle2 className="w-5 h-5 text-emerald-400" />}
-                {isError && <AlertCircle className="w-5 h-5 text-red-400" />}
-                {isWarning && <AlertTriangle className="w-5 h-5 text-amber-400" />}
-                {isInfo && <Sparkles className="w-5 h-5 text-indigo-400" />}
+              <div
+                className={`p-2 rounded-xl flex-shrink-0 ${
+                  isSuccess
+                    ? "bg-emerald-500/15 text-emerald-500"
+                    : isError
+                    ? "bg-red-500/15 text-red-500"
+                    : isWarning
+                    ? "bg-amber-500/15 text-amber-500"
+                    : "bg-indigo-500/15 text-indigo-500"
+                }`}
+              >
+                {isSuccess && <CheckCircle2 className="w-4 h-4" />}
+                {isError && <AlertCircle className="w-4 h-4" />}
+                {isWarning && <AlertTriangle className="w-4 h-4" />}
+                {isInfo && <Sparkles className="w-4 h-4" />}
               </div>
 
               <div className="flex-1 min-w-0 pr-1">
@@ -140,15 +150,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                     {toast.title}
                   </h4>
                 )}
-                <p className="text-xs leading-relaxed font-medium">{toast.message}</p>
+                <p className="text-xs leading-relaxed font-semibold">{toast.message}</p>
               </div>
 
               <button
                 type="button"
                 onClick={() => removeToast(toast.id)}
-                className="flex-shrink-0 text-white/60 hover:text-white transition-colors p-0.5"
+                className="flex-shrink-0 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors p-1 rounded-lg hover:bg-[var(--secondary)]"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
           );
@@ -157,7 +167,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
       {/* Modern Animated Confirmation Modal */}
       {confirmModal && confirmModal.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
           <div className="w-full max-w-md rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-200">
             <div className="flex items-start gap-3.5">
               <div

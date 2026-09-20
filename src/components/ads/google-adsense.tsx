@@ -34,7 +34,7 @@ export function GoogleAdSense({
       async
       src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${formattedClientId}`}
       crossOrigin="anonymous"
-      strategy="lazyOnload"
+      strategy="afterInteractive"
       data-ad-client={formattedClientId}
       {...(effectiveAutoAds ? {} : { "data-ad-frequency-hint": "30s" })}
     />

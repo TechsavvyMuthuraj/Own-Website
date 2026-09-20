@@ -24,6 +24,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import type { Resource } from "@/types/database";
+import { useToast } from "@/components/ui/toast";
 
 interface MovieTableClientProps {
   initialMovies: Resource[];
@@ -31,6 +32,7 @@ interface MovieTableClientProps {
 
 export function MovieTableClient({ initialMovies }: MovieTableClientProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [movies, setMovies] = useState<Resource[]>(initialMovies);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedQuality, setSelectedQuality] = useState("ALL");
@@ -79,13 +81,14 @@ export function MovieTableClient({ initialMovies }: MovieTableClientProps) {
       if (res.ok) {
         setMovies((prev) => prev.filter((m) => m.id !== movieToDelete.id));
         setMovieToDelete(null);
+        showToast({ message: "Movie deleted successfully", type: "success" });
         router.refresh();
       } else {
         const d = await res.json();
-        alert(d.error || "Failed to delete movie.");
+        showToast({ message: d.error || "Failed to delete movie", type: "error" });
       }
     } catch (err: any) {
-      alert(err?.message || "Failed to delete movie.");
+      showToast({ message: err?.message || "Failed to delete movie", type: "error" });
     } finally {
       setIsDeleting(false);
     }

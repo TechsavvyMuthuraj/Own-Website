@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { AdPlacement } from "@/types/database";
 import { useAds } from "@/components/providers/ads-provider";
 
@@ -29,10 +29,32 @@ export function AdSlot({
 }: AdSlotProps) {
   const adRef = useRef<HTMLModElement | null>(null);
   const pushedRef = useRef(false);
+  const [isMounted, setIsMounted] = useState(false);
   const { adsEnabled } = useAds();
 
   const clientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || "ca-pub-1960459798233871";
   const formattedClientId = clientId.startsWith("ca-") ? clientId : `ca-${clientId}`;
+
+  // Track client mounting to prevent SSR hydration mismatch with external scripts
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Push AdSense unit once mounted and visible
+  useEffect(() => {
+    if (!adsEnabled || !isMounted) return;
+    if (pushedRef.current) return;
+
+    if (typeof window !== "undefined" && adRef.current) {
+      try {
+        window.adsbygoogle = window.adsbygoogle || [];
+        window.adsbygoogle.push({});
+        pushedRef.current = true;
+      } catch (err) {
+        // Suppress AdSense duplicate push or blocker errors
+      }
+    }
+  }, [ad, adsEnabled, isMounted]);
 
   // 1. If ads are globally disabled from admin console, render absolutely nothing
   if (!adsEnabled) {
@@ -48,22 +70,6 @@ export function AdSlot({
   if (ad && !ad.is_active) {
     return null;
   }
-
-  // Push AdSense unit once mounted and visible
-  useEffect(() => {
-    if (!adsEnabled) return;
-    if (pushedRef.current) return;
-
-    if (typeof window !== "undefined" && adRef.current) {
-      try {
-        window.adsbygoogle = window.adsbygoogle || [];
-        window.adsbygoogle.push({});
-        pushedRef.current = true;
-      } catch (err) {
-        // Suppress AdSense duplicate push or blocker errors
-      }
-    }
-  }, [ad, adsEnabled]);
 
   // Dimension presets to prevent Layout Shift (CLS)
   const minHeightClass = {
@@ -81,6 +87,7 @@ export function AdSlot({
     return (
       <aside
         aria-label="Advertisement"
+        suppressHydrationWarning
         className={`w-full flex flex-col items-center justify-center p-3 rounded-2xl border border-[var(--border)] bg-[var(--card)]/60 text-center overflow-hidden transition-all ${minHeightClass} ${className}`}
       >
         {showLabel && (
@@ -88,10 +95,14 @@ export function AdSlot({
             Sponsored / Ad
           </span>
         )}
-        <div
-          className="w-full flex justify-center items-center"
-          dangerouslySetInnerHTML={{ __html: ad.ad_code }}
-        />
+        {isMounted ? (
+          <div
+            className="w-full flex justify-center items-center"
+            dangerouslySetInnerHTML={{ __html: ad.ad_code }}
+          />
+        ) : (
+          <div className="w-full h-8" />
+        )}
       </aside>
     );
   }
@@ -100,6 +111,7 @@ export function AdSlot({
   return (
     <aside
       aria-label="Advertisement"
+      suppressHydrationWarning
       className={`w-full flex flex-col items-center justify-center p-3 rounded-2xl border border-[var(--border)] bg-[var(--card)]/60 text-center overflow-hidden transition-all ${minHeightClass} ${className}`}
     >
       {showLabel && (
@@ -108,16 +120,24 @@ export function AdSlot({
         </span>
       )}
 
-      <div className="w-full flex items-center justify-center overflow-hidden">
-        <ins
-          ref={adRef}
-          className="adsbygoogle"
-          style={{ display: "block", width: "100%" }}
-          data-ad-client={formattedClientId}
-          data-ad-slot={slotId || "auto"}
-          data-ad-format={format}
-          data-full-width-responsive="true"
-        />
+      <div
+        className="w-full flex items-center justify-center overflow-hidden"
+        suppressHydrationWarning
+      >
+        {isMounted ? (
+          <ins
+            ref={adRef}
+            className="adsbygoogle"
+            style={{ display: "block", width: "100%" }}
+            data-ad-client={formattedClientId}
+            data-ad-slot={slotId || "auto"}
+            data-ad-format={format}
+            data-full-width-responsive="true"
+            suppressHydrationWarning
+          />
+        ) : (
+          <div className="w-full h-8" />
+        )}
       </div>
     </aside>
   );

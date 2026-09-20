@@ -6,9 +6,11 @@ import { Mail, Trash2, CheckCircle2, Archive, MessageSquare } from "lucide-react
 import type { ContactMessage } from "@/types/database";
 import { formatDate } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useToast } from "@/components/ui/toast";
 
 export function MessagesClient({ initialMessages }: { initialMessages: ContactMessage[] }) {
   const router = useRouter();
+  const { showToast, confirm } = useToast();
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
 
   const updateStatus = async (id: string, status: string) => {
@@ -18,27 +20,39 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, status }),
       });
-      if (res.ok) router.refresh();
-    } catch {
-      alert("Failed to update status.");
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this message?")) return;
-    try {
-      const res = await fetch("/api/admin/messages", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
-      });
       if (res.ok) {
-        if (selectedMessage?.id === id) setSelectedMessage(null);
+        showToast({ message: "Status updated", type: "success" });
         router.refresh();
       }
     } catch {
-      alert("Failed to delete message.");
+      showToast({ message: "Failed to update status", type: "error" });
     }
+  };
+
+  const handleDelete = (id: string) => {
+    confirm({
+      title: "Delete Message",
+      message: "Are you sure you want to permanently delete this contact message?",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          const res = await fetch("/api/admin/messages", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id }),
+          });
+          if (res.ok) {
+            if (selectedMessage?.id === id) setSelectedMessage(null);
+            showToast({ message: "Message deleted", type: "success" });
+            router.refresh();
+          }
+        } catch {
+          showToast({ message: "Failed to delete message", type: "error" });
+        }
+      },
+    });
   };
 
   return (

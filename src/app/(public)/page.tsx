@@ -24,7 +24,6 @@ import { AdSlot } from "@/components/ads/ad-slot";
 import { getActiveAd } from "@/lib/ads";
 import { FounderProfile } from "@/components/home/founder-profile";
 import { HomepageWallpapers } from "@/components/wallpapers/homepage-wallpapers";
-import { DEFAULT_WALLPAPERS } from "@/app/api/wallpapers/route";
 
 import type { Metadata } from "next";
 
@@ -45,7 +44,7 @@ export default async function HomePage() {
   let homepageAd: any = null;
   let inFeedAd: any = null;
   let hpSettings: Record<string, any> = {};
-  let wallpapers: Wallpaper[] = DEFAULT_WALLPAPERS as Wallpaper[];
+  let wallpapers: Wallpaper[] = [];
 
   try {
     const CARD_FIELDS =
@@ -134,11 +133,11 @@ export default async function HomePage() {
         .order("created_at", { ascending: false })
         .limit(9);
 
-      if (!wpError && wpData && wpData.length > 0) {
+      if (!wpError && wpData) {
         wallpapers = wpData as Wallpaper[];
       }
     } catch {
-      // Gracefully uses DEFAULT_WALLPAPERS
+      wallpapers = [];
     }
   } catch (error) {
     console.error("Failed to load homepage resources from database:", error);

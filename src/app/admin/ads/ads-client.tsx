@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import type { AdPlacement } from "@/types/database";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useToast } from "@/components/ui/toast";
 
 interface AdsClientProps {
   initialAds: AdPlacement[];
@@ -37,6 +38,7 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
   const [adsEnabled, setAdsEnabled] = useState<boolean>(initialSettings.ads_enabled !== false);
   const [autoAds, setAutoAds] = useState<boolean>(initialSettings.adsense_auto_ads !== false);
   const [adsTxtStatus, setAdsTxtStatus] = useState<"VERIFIED" | "CHECKING" | "ERROR">("CHECKING");
+  const { showToast, confirm } = useToast();
 
   // Modal / Form states
   const [modalOpen, setModalOpen] = useState(false);
@@ -108,11 +110,10 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
         body: JSON.stringify({ action: "update_settings", ads_enabled: enabled }),
       });
       if (res.ok) {
-        setSuccessMsg(enabled ? "Ads enabled across platform." : "All ads globally paused.");
-        setTimeout(() => setSuccessMsg(""), 3000);
+        showToast({ message: enabled ? "Ads enabled across platform." : "All ads globally paused.", type: "success" });
       }
     } catch {
-      alert("Failed to update global ad status.");
+      showToast({ message: "Failed to update global ad status.", type: "error" });
     } finally {
       setSavingSettings(false);
     }
@@ -128,11 +129,10 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
         body: JSON.stringify({ action: "update_settings", adsense_auto_ads: auto }),
       });
       if (res.ok) {
-        setSuccessMsg(auto ? "Auto-Ads enabled." : "Auto-Ads disabled.");
-        setTimeout(() => setSuccessMsg(""), 3000);
+        showToast({ message: auto ? "Auto-Ads enabled." : "Auto-Ads disabled.", type: "success" });
       }
     } catch {
-      alert("Failed to update Auto-Ads setting.");
+      showToast({ message: "Failed to update Auto-Ads setting.", type: "error" });
     } finally {
       setSavingSettings(false);
     }
@@ -156,41 +156,47 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
         setAds((prev) =>
           prev.map((item) => (item.id === id ? { ...item, is_active: currentActive } : item))
         );
-        alert("Failed to toggle ad placement status.");
+        showToast({ message: "Failed to toggle ad placement status.", type: "error" });
       }
     } catch {
       setAds((prev) =>
         prev.map((item) => (item.id === id ? { ...item, is_active: currentActive } : item))
       );
+      showToast({ message: "Network error updating ad slot.", type: "error" });
     }
   };
 
   // 1-Click Seed recommended high-earning placements
-  const handleSeedDefaults = async () => {
-    if (!confirm("Automatically create recommended Google AdSense placements for Header, Sidebar, Download Page, and Footer?")) {
-      return;
-    }
+  const handleSeedDefaults = () => {
+    confirm({
+      title: "Generate Recommended Placements",
+      message: "Automatically create recommended Google AdSense placements for Header, Sidebar, Download Page, and Footer?",
+      confirmText: "Generate Slots",
+      cancelText: "Cancel",
+      variant: "primary",
+      onConfirm: async () => {
+        setSeeding(true);
+        try {
+          const res = await fetch("/api/admin/ads", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "seed_defaults" }),
+          });
 
-    setSeeding(true);
-    try {
-      const res = await fetch("/api/admin/ads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "seed_defaults" }),
-      });
-
-      if (res.ok) {
-        setSuccessMsg("Standard high-earning ad slots generated successfully!");
-        router.refresh();
-        setTimeout(() => window.location.reload(), 800);
-      } else {
-        alert("Failed to seed default placements.");
-      }
-    } catch {
-      alert("Network error.");
-    } finally {
-      setSeeding(false);
-    }
+          if (res.ok) {
+            showToast({ message: "Standard high-earning ad slots generated successfully!", type: "success" });
+            router.refresh();
+            setTimeout(() => window.location.reload(), 800);
+          } else {
+            showToast({ message: "Failed to seed default placements", type: "error" });
+          }
+        } catch {
+          showToast({ message: "Error generating ad slots", type: "error" });
+        } finally {
+          setSeeding(false);
+        }
+      },
+    });
   };
 
   const handleSaveModal = async (e: React.FormEvent) => {
@@ -261,22 +267,31 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Permanently delete this ad placement?")) return;
-    try {
-      const res = await fetch("/api/admin/ads", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
-      });
-      if (res.ok) {
-        setAds((prev) => prev.filter((item) => item.id !== id));
-        setSuccessMsg("Ad placement removed.");
-        setTimeout(() => setSuccessMsg(""), 3000);
-      }
-    } catch {
-      alert("Error deleting ad placement.");
-    }
+  const handleDelete = (id: string) => {
+    confirm({
+      title: "Delete Ad Placement",
+      message: "Are you sure you want to permanently delete this ad placement?",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          const res = await fetch("/api/admin/ads", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id }),
+          });
+          if (res.ok) {
+            setAds((prev) => prev.filter((item) => item.id !== id));
+            showToast({ message: "Ad placement removed", type: "success" });
+          } else {
+            showToast({ message: "Failed to delete ad placement", type: "error" });
+          }
+        } catch {
+          showToast({ message: "Error deleting ad placement", type: "error" });
+        }
+      },
+    });
   };
 
   const locationLabels: Record<string, { name: string; desc: string; rpm: string }> = {

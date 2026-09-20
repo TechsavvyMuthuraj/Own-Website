@@ -26,7 +26,6 @@ import type { Wallpaper } from "@/types/database";
 
 interface WallpapersClientProps {
   initialWallpapers: Wallpaper[];
-  isFromFallback: boolean;
 }
 
 const CATEGORY_OPTIONS = [
@@ -50,9 +49,8 @@ const RESOLUTION_OPTIONS = [
 
 export function WallpapersClient({
   initialWallpapers,
-  isFromFallback,
 }: WallpapersClientProps) {
-  const { showToast } = useToast();
+  const { showToast, confirm } = useToast();
   const [wallpapers, setWallpapers] = useState<Wallpaper[]>(initialWallpapers);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
@@ -160,23 +158,30 @@ export function WallpapersClient({
     }
   };
 
-  // Handle Delete
-  const handleDelete = async (id: string, wpName: string) => {
-    if (!confirm(`Are you sure you want to delete "${wpName}"?`)) return;
-
-    try {
-      const res = await fetch(`/api/wallpapers/${id}`, { method: "DELETE" });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to delete");
-      }
-      setWallpapers((prev) => prev.filter((w) => w.id !== id));
-      showToast({ message: "Wallpaper deleted", type: "success" });
-    } catch (err: any) {
-      // If table is not yet in db, delete from local state
-      setWallpapers((prev) => prev.filter((w) => w.id !== id));
-      showToast({ message: "Wallpaper removed from current view", type: "info" });
-    }
+  // Handle Delete with Custom Modal
+  const handleDelete = (id: string, wpName: string) => {
+    confirm({
+      title: "Delete Wallpaper",
+      message: `Are you sure you want to permanently delete "${wpName}"? This action cannot be undone.`,
+      confirmText: "Delete Wallpaper",
+      cancelText: "Cancel",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`/api/wallpapers/${id}`, { method: "DELETE" });
+          if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.error || "Failed to delete");
+          }
+          setWallpapers((prev) => prev.filter((w) => w.id !== id));
+          showToast({ message: "Wallpaper deleted successfully", type: "success" });
+        } catch (err: any) {
+          // If table is not yet in db, delete from local state
+          setWallpapers((prev) => prev.filter((w) => w.id !== id));
+          showToast({ message: "Wallpaper removed from current view", type: "info" });
+        }
+      },
+    });
   };
 
   // Copy URL
@@ -224,33 +229,6 @@ export function WallpapersClient({
           <span>Add 4K Wallpaper</span>
         </button>
       </div>
-
-      {/* SQL Migration Notice if using fallback */}
-      {isFromFallback && (
-        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <Database className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-            <div>
-              <h4 className="text-sm font-bold text-[var(--foreground)]">
-                Database Schema Ready: <code className="font-mono text-xs px-1.5 py-0.5 rounded bg-black/20 text-amber-400">wallpapers_schema.sql</code>
-              </h4>
-              <p className="text-xs text-[var(--muted-foreground)] mt-0.5 leading-relaxed">
-                Run the provided <strong className="text-amber-400">wallpapers_schema.sql</strong> in your Supabase SQL editor to enable persistent database storage. Curated wallpapers are currently loaded in preview mode.
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              navigator.clipboard.writeText(`-- Check wallpapers_schema.sql in the project root`);
-              showToast({ message: "SQL file is available at wallpapers_schema.sql in project root", type: "info" });
-            }}
-            className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-semibold shrink-0 cursor-pointer"
-          >
-            Check SQL File
-          </button>
-        </div>
-      )}
 
       {/* Search & Categories Bar */}
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between">

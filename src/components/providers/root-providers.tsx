@@ -8,6 +8,7 @@ import { CartProvider } from "@/lib/cart/cart-store";
 import { ClickSoundProvider } from "@/components/ui/click-sound-provider";
 import { ScrollToTop } from "@/components/ui/scroll-to-top";
 import { ToastProvider } from "@/components/ui/toast";
+import { CookieConsent } from "@/components/ui/cookie-consent";
 
 export function RootProviders({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -33,6 +34,7 @@ export function RootProviders({ children }: { children: React.ReactNode }) {
               <ToastProvider>
                 {children}
                 <ScrollToTop />
+                <CookieConsent />
               </ToastProvider>
             </ClickSoundProvider>
           </CartProvider>

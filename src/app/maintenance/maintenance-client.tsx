@@ -14,8 +14,10 @@ import {
   Loader2,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useToast } from "@/components/ui/toast";
 
 export function MaintenanceClient() {
+  const { showToast, confirm } = useToast();
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(false);
   const [isDisabling, setIsDisabling] = useState(false);
@@ -85,28 +87,37 @@ export function MaintenanceClient() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleDisableMaintenance = async () => {
-    if (!confirm("Turn OFF maintenance mode and restore public access immediately?")) return;
-    setIsDisabling(true);
-    try {
-      const res = await fetch("/api/admin/settings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ maintenance_mode: false }),
-      });
-      if (res.ok) {
-        setLiveDetected(true);
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 500);
-      } else {
-        alert("Failed to disable maintenance mode. Please use admin settings.");
-      }
-    } catch {
-      alert("Network error.");
-    } finally {
-      setIsDisabling(false);
-    }
+  const handleDisableMaintenance = () => {
+    confirm({
+      title: "Disable Maintenance Mode",
+      message: "Are you sure you want to turn OFF maintenance mode and restore public access immediately?",
+      confirmText: "Restore Access",
+      cancelText: "Cancel",
+      variant: "danger",
+      onConfirm: async () => {
+        setIsDisabling(true);
+        try {
+          const res = await fetch("/api/admin/settings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ maintenance_mode: false }),
+          });
+          if (res.ok) {
+            setLiveDetected(true);
+            showToast({ message: "Maintenance mode disabled! Redirecting...", type: "success" });
+            setTimeout(() => {
+              window.location.href = "/";
+            }, 600);
+          } else {
+            showToast({ message: "Failed to disable maintenance mode. Please use admin settings.", type: "error" });
+          }
+        } catch {
+          showToast({ message: "Network error occurred.", type: "error" });
+        } finally {
+          setIsDisabling(false);
+        }
+      },
+    });
   };
 
   return (
@@ -217,16 +228,7 @@ export function MaintenanceClient() {
           <span>Auto-checks every few seconds • Will automatically reload when live</span>
         </div>
 
-        {/* Admin Login Link */}
-        <p className="text-xs text-[var(--muted-foreground)]">
-          Are you an administrator?{" "}
-          <Link
-            href="/admin/login"
-            className="text-[var(--primary)] hover:underline font-semibold"
-          >
-            Access Admin Console
-          </Link>
-        </p>
+        
       </div>
     </div>
   );
