@@ -1,10 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Outfit, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { RootProviders } from "@/components/providers/root-providers";
 import { GoogleAdSense } from "@/components/ads/google-adsense";
 import { getAdsGlobalSettings } from "@/lib/ads";
 import { AdsProvider } from "@/components/providers/ads-provider";
+
+const outfit = Outfit({
+  variable: "--font-outfit",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  display: "swap",
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -149,7 +156,7 @@ export default async function RootLayout({
   const { adsEnabled, autoAds } = await getAdsGlobalSettings();
 
   return (
-    <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} h-full`}>
+    <html lang="en" suppressHydrationWarning className={`${outfit.variable} ${geistSans.variable} ${geistMono.variable} h-full`}>
       <head>
         {/* Google Site Verification */}
         <meta name="google-site-verification" content="google38f31838101be6e4" />

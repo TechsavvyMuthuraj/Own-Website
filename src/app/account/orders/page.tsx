@@ -1,6 +1,7 @@
 import React from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { OrderHistoryClient } from "./orders-client";
 
 export const revalidate = 0;
@@ -15,7 +16,9 @@ export default async function AccountOrdersPage() {
     redirect("/auth/login?redirect=/account/orders");
   }
 
-  const { data: orders } = await supabase
+  // Use admin client to reliably fetch user's order items and joined resources
+  const supabaseAdmin = createAdminClient();
+  const { data: orders } = await supabaseAdmin
     .from("orders")
     .select("*, items:order_items(*, resource:resources(title, slug))")
     .eq("user_id", user.id)

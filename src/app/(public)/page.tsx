@@ -18,11 +18,13 @@ import {
   Shapes,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import type { Resource, Category } from "@/types/database";
+import type { Resource, Category, Wallpaper } from "@/types/database";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 import { AdSlot } from "@/components/ads/ad-slot";
 import { getActiveAd } from "@/lib/ads";
 import { FounderProfile } from "@/components/home/founder-profile";
+import { HomepageWallpapers } from "@/components/wallpapers/homepage-wallpapers";
+import { DEFAULT_WALLPAPERS } from "@/app/api/wallpapers/route";
 
 import type { Metadata } from "next";
 
@@ -43,6 +45,7 @@ export default async function HomePage() {
   let homepageAd: any = null;
   let inFeedAd: any = null;
   let hpSettings: Record<string, any> = {};
+  let wallpapers: Wallpaper[] = DEFAULT_WALLPAPERS as Wallpaper[];
 
   try {
     const CARD_FIELDS =
@@ -120,6 +123,22 @@ export default async function HomePage() {
       categories = (categoriesResult.data as Category[]).filter(
         (cat) => cat.slug !== "movies"
       );
+    }
+
+    try {
+      const { data: wpData, error: wpError } = await supabase
+        .from("wallpapers")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: false })
+        .limit(9);
+
+      if (!wpError && wpData && wpData.length > 0) {
+        wallpapers = wpData as Wallpaper[];
+      }
+    } catch {
+      // Gracefully uses DEFAULT_WALLPAPERS
     }
   } catch (error) {
     console.error("Failed to load homepage resources from database:", error);
@@ -383,7 +402,10 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 5. FOUNDER & LEAD DEVELOPER PROFILE */}
+      {/* 5. 4K & ULTRA HD WALLPAPERS SHOWCASE */}
+      <HomepageWallpapers wallpapers={wallpapers} />
+
+      {/* 6. FOUNDER & LEAD DEVELOPER PROFILE */}
       <FounderProfile settings={hpSettings} />
     </div>
   );

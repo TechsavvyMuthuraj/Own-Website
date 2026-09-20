@@ -26,7 +26,30 @@ const SearchModal = dynamic(
   { ssr: false }
 );
 
-export function Header() {
+export interface NavLinkItem {
+  id?: string;
+  href: string;
+  label: string;
+  active?: boolean;
+  badge?: string;
+}
+
+export const DEFAULT_NAV_LINKS: NavLinkItem[] = [
+  { id: "nav-home", href: "/", label: "Home", active: true },
+  { id: "nav-movies", href: "/movies", label: "Movies", active: true, badge: "HOT" },
+  { id: "nav-categories", href: "/categories", label: "Categories", active: true },
+  { id: "nav-free", href: "/free", label: "Free", active: true, badge: "FREE" },
+  { id: "nav-new", href: "/new-and-updated", label: "New & Updated", active: true },
+  { id: "nav-articles", href: "/articles", label: "Articles", active: true },
+  { id: "nav-premium", href: "/premium", label: "Premium", active: true, badge: "VIP" },
+  { id: "nav-request", href: "/request", label: "Request", active: true },
+];
+
+interface HeaderProps {
+  navLinks?: NavLinkItem[];
+}
+
+export function Header({ navLinks = DEFAULT_NAV_LINKS }: HeaderProps) {
   const pathname = usePathname();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -34,16 +57,9 @@ export function Header() {
   const { itemCount } = useCart();
   const { user, profile, isAdmin, signOut } = useAuth();
 
-  const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/movies", label: "Movies" },
-    { href: "/categories", label: "Categories" },
-    { href: "/free", label: "Free" },
-    { href: "/new-and-updated", label: "New & Updated" },
-    { href: "/articles", label: "Articles" },
-    { href: "/premium", label: "Premium" },
-    { href: "/request", label: "Request" },
-  ];
+  const activeLinks = (navLinks && navLinks.length > 0 ? navLinks : DEFAULT_NAV_LINKS).filter(
+    (l) => l.active !== false
+  );
 
   return (
     <>
@@ -63,22 +79,27 @@ export function Header() {
               </div>
             </Link>
 
-            {/* Desktop Navigation with Instant Route Prefetching */}
+            {/* Desktop Navigation with Instant Route Prefetching & Dynamic Editable Links */}
             <nav className="hidden lg:flex items-center gap-1">
-              {navLinks.map((link) => {
-                const isActive = pathname === link.href;
+              {activeLinks.map((link) => {
+                const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
                 return (
                   <Link
-                    key={link.href}
+                    key={link.id || link.href}
                     href={link.href}
                     prefetch={true}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                       isActive
                         ? "bg-[var(--secondary)] text-[var(--primary)] font-semibold"
                         : "text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--secondary)]/60"
                     }`}
                   >
-                    {link.label}
+                    <span>{link.label}</span>
+                    {link.badge && (
+                      <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-500 dark:text-amber-400 border border-amber-500/30">
+                        {link.badge}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
@@ -224,19 +245,24 @@ export function Header() {
         {/* Mobile Navigation Drawer */}
         {isMobileMenuOpen && (
           <div className="lg:hidden border-t border-[var(--border)] bg-[var(--card)] px-4 py-4 space-y-1 text-sm shadow-xl animate-in slide-in-from-top-2 duration-150">
-            {navLinks.map((link) => (
+            {activeLinks.map((link) => (
               <Link
-                key={link.href}
+                key={link.id || link.href}
                 href={link.href}
                 prefetch={true}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`block px-3 py-2 rounded-xl text-xs font-medium ${
-                  pathname === link.href
+                className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium ${
+                  pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href))
                     ? "bg-[var(--secondary)] text-[var(--primary)] font-semibold"
                     : "text-[var(--foreground)] hover:bg-[var(--secondary)]/60"
                 }`}
               >
-                {link.label}
+                <span>{link.label}</span>
+                {link.badge && (
+                  <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-500 dark:text-amber-400 border border-amber-500/30">
+                    {link.badge}
+                  </span>
+                )}
               </Link>
             ))}
 

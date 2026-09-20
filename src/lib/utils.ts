@@ -71,13 +71,14 @@ export function isNewResource(createdAt: string | null | undefined, newThreshold
 export function isUpdatedResource(
   updatedAt: string | null | undefined,
   createdAt: string | null | undefined,
-  updatedThresholdDays = 14
+  updatedThresholdDays = 30
 ): boolean {
   if (!updatedAt || !createdAt) return false;
   const updated = new Date(updatedAt);
   const created = new Date(createdAt);
   if (isNaN(updated.getTime()) || isNaN(created.getTime())) return false;
-  if (Math.abs(updated.getTime() - created.getTime()) < 10 * 60 * 1000) return false;
+  // If updated at least 5 seconds after creation, it is considered updated by admin
+  if (updated.getTime() - created.getTime() < 5 * 1000) return false;
   const now = new Date();
   const diffTime = Math.abs(now.getTime() - updated.getTime());
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));

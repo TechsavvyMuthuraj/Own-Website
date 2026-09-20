@@ -160,21 +160,13 @@ function LoginForm() {
               priority
             />
           </div>
-          <span className="text-sm font-semibold tracking-wide" style={{ color: "rgba(255,255,255,0.75)" }}>
-            NammaTech
-          </span>
         </Link>
         <div className="mb-2">
-          <GlitchText
-            speed={1.2}
-            enableShadows={true}
-            enableOnHover={true}
-            className="!text-2xl !font-extrabold !tracking-tight !cursor-default"
-          >
-            Welcome Back
-          </GlitchText>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white drop-shadow-sm">
+            Welcome <span className="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 bg-clip-text text-transparent">Back</span>
+          </h1>
         </div>
-        <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+        <p className="text-xs text-neutral-400">
           Sign in to access your downloads and account settings.
         </p>
       </div>

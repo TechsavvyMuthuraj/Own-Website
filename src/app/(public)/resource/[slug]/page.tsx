@@ -33,6 +33,7 @@ import { ResourceGrid } from "@/components/resources/resource-grid";
 import { ResourceDetailActions } from "./actions-client";
 import { DownloadLinksClient } from "./download-links-client";
 import { ResourceVisual } from "@/components/resources/resource-visual";
+import BorderGlow from "@/components/ui/BorderGlow";
 import { AdSlot } from "@/components/ads/ad-slot";
 import { getActiveAd } from "@/lib/ads";
 
@@ -227,18 +228,19 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
         {/* Left 2 Columns: Main Content */}
         <div className="lg:col-span-2 space-y-8">
           {/* Header Card */}
-          <div className="flex flex-col sm:flex-row items-start gap-5 p-6 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
-            {/* App / File Icon */}
-            <ResourceVisual
-              resource={resource}
-              variant="icon"
-              size="xl"
-              showFormatTag={false}
-            />
-
-            {/* Title & Metadata */}
-            <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap items-center gap-2 mb-2">
+          <BorderGlow
+            borderRadius={24}
+            edgeSensitivity={30}
+            glowRadius={40}
+            glowIntensity={1.0}
+            glowColor="40 90 75"
+            colors={["#f59e0b", "#ec4899", "#38bdf8"]}
+            backgroundColor="var(--card)"
+            className="w-full shadow-sm"
+          >
+            <div className="p-6 sm:p-8 w-full">
+              {/* Title & Metadata */}
+              <div className="flex flex-wrap items-center gap-2 mb-3">
                 {isNew && (
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                     <Sparkles className="w-3 h-3" />
@@ -267,17 +269,17 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
                 )}
               </div>
 
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--foreground)] tracking-tight mb-2">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[var(--foreground)] tracking-tight mb-2.5">
                 {resource.title}
               </h1>
 
               {resource.short_description && (
-                <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
+                <p className="text-sm sm:text-base text-[var(--muted-foreground)] leading-relaxed">
                   {resource.short_description}
                 </p>
               )}
             </div>
-          </div>
+          </BorderGlow>
 
           {/* Screenshots Gallery (if available) or Default App/File Showcase */}
           {resource.images && resource.images.length > 0 ? (
@@ -415,19 +417,35 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
           <div className="sticky top-20 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-lg shadow-indigo-500/5 space-y-5">
             {/* Price section */}
             <div>
-              <span className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
-                Access & Pricing
-              </span>
-              <div className="flex items-baseline gap-2 mt-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+                  Access & Pricing
+                </span>
+                {isPaid ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-black bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-neutral-950 shadow-xs border border-amber-300/30">
+                    ★ PRO ACCESS
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30">
+                    100% FREE
+                  </span>
+                )}
+              </div>
+              <div className="flex items-baseline gap-2 mt-2">
                 {isPaid ? (
                   <>
-                    <span className="text-3xl font-extrabold text-[var(--foreground)]">
-                      {formatCurrency(resource.sale_price !== null ? resource.sale_price : resource.price, resource.currency)}
+                    <span className="text-3xl font-black text-amber-500 tracking-tight">
+                      {formatCurrency(resource.sale_price !== null && resource.sale_price !== undefined ? resource.sale_price : resource.price, resource.currency)}
                     </span>
-                    {resource.sale_price !== null && (
-                      <span className="text-sm text-[var(--muted-foreground)] line-through">
-                        {formatCurrency(resource.price, resource.currency)}
-                      </span>
+                    {resource.sale_price !== null && resource.sale_price !== undefined && resource.price > resource.sale_price && (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm text-[var(--muted-foreground)] line-through">
+                          {formatCurrency(resource.price, resource.currency)}
+                        </span>
+                        <span className="px-1.5 py-0.5 rounded-md text-[10px] font-black bg-amber-500/20 text-amber-500 border border-amber-500/30">
+                          {Math.round(((resource.price - resource.sale_price) / resource.price) * 100)}% OFF
+                        </span>
+                      </div>
                     )}
                   </>
                 ) : (
@@ -498,10 +516,20 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
               <div className="flex items-center justify-between text-[var(--muted-foreground)]">
                 <span className="flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5" />
+                  Initial Release:
+                </span>
+                <span className="font-medium text-[var(--foreground)]">
+                  {formatDate(resource.published_at || resource.created_at)}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between text-[var(--muted-foreground)]">
+                <span className="flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-amber-500" />
                   Last Updated:
                 </span>
                 <span className="font-medium text-[var(--foreground)]">
-                  {formatDate(resource.updated_at)}
+                  {formatDate(resource.updated_at || resource.created_at)}
                 </span>
               </div>
 

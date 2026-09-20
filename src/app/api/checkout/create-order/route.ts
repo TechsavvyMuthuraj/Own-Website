@@ -118,19 +118,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
     }
 
-    // 6. Insert Order Items
+    // 6. Insert Order Items using admin client to guarantee bypass of RLS
+    const { createAdminClient } = await import("@/lib/supabase/admin");
+    const supabaseAdmin = createAdminClient();
+
     const orderItems = resources.map((res) => ({
       order_id: order.id,
       resource_id: res.id,
       price: res.sale_price !== null ? Number(res.sale_price) : Number(res.price),
     }));
 
-    await supabase.from("order_items").insert(orderItems);
+    const { error: itemsError } = await supabaseAdmin.from("order_items").insert(orderItems);
+    if (itemsError) {
+      console.error("[Checkout] Order items insert error:", itemsError);
+    }
 
     // 7. If this is a free order, grant active entitlements immediately!
     if (isFreeOrder) {
-      const { createAdminClient } = await import("@/lib/supabase/admin");
-      const supabaseAdmin = createAdminClient();
       const entitlementsToInsert = resources.map((res) => ({
         user_id: user.id,
         resource_id: res.id,

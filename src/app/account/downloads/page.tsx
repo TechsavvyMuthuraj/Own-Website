@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Download, Crown, CheckCircle2, Sparkles, Film, ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { formatDate, formatBytes } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ResourceVisual } from "@/components/resources/resource-visual";
@@ -19,19 +20,27 @@ export default async function AccountDownloadsPage() {
     redirect("/auth/login?redirect=/account/downloads");
   }
 
-  // 1. Fetch both active entitlements AND download records for current user
-  const [entitlementsRes, downloadsRes] = await Promise.all([
-    supabase
+  const supabaseAdmin = createAdminClient();
+
+  // 1. Fetch active entitlements, download records, and paid orders for current user
+  const [entitlementsRes, downloadsRes, paidOrdersRes] = await Promise.all([
+    supabaseAdmin
       .from("entitlements")
       .select("*, resource:resources(*)")
       .eq("user_id", user.id)
       .eq("status", "ACTIVE")
       .order("created_at", { ascending: false }),
-    supabase
+    supabaseAdmin
       .from("downloads")
       .select("id, downloaded_at, resource_id, resource:resources(*)")
       .eq("user_id", user.id)
       .order("downloaded_at", { ascending: false }),
+    supabaseAdmin
+      .from("orders")
+      .select("id, created_at, status, items:order_items(*, resource:resources(*))")
+      .eq("user_id", user.id)
+      .in("status", ["PAID", "VERIFIED"])
+      .order("created_at", { ascending: false }),
   ]);
 
   // 2. Merge and deduplicate by resource_id
@@ -58,6 +67,41 @@ export default async function AccountDownloadsPage() {
           isEntitled: true,
           isFree,
         });
+      }
+    }
+  }
+
+  // Add items from paid/verified orders (Fail-safe: guarantees user downloads appear immediately upon order payment)
+  if (paidOrdersRes.data) {
+    for (const order of paidOrdersRes.data) {
+      if (order.items && Array.isArray(order.items)) {
+        for (const item of order.items) {
+          const res = Array.isArray(item.resource) ? item.resource[0] : item.resource;
+          if (res && !seenResourceIds.has(res.id)) {
+            seenResourceIds.add(res.id);
+            const isFree = Number(res.price || 0) === 0 && res.access_type !== "PAID";
+            allItems.push({
+              id: item.id,
+              resource: res,
+              date: order.created_at,
+              isEntitled: true,
+              isFree,
+            });
+            // Auto-heal missing entitlement in background if needed
+            supabaseAdmin
+              .from("entitlements")
+              .upsert(
+                {
+                  user_id: user.id,
+                  resource_id: res.id,
+                  order_id: order.id,
+                  status: "ACTIVE",
+                },
+                { onConflict: "user_id,resource_id" }
+              )
+              .then(() => {});
+          }
+        }
       }
     }
   }

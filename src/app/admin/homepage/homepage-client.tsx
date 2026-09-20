@@ -17,8 +17,33 @@ import {
   Image as ImageIcon,
   CheckCircle2,
   Eye,
+  Compass,
+  ArrowUp,
+  ArrowDown,
+  Plus,
+  Trash2,
+  RotateCcw,
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
+
+export interface NavbarMenuItem {
+  id: string;
+  label: string;
+  href: string;
+  active: boolean;
+  badge?: string;
+}
+
+export const DEFAULT_NAVBAR_ITEMS: NavbarMenuItem[] = [
+  { id: "nav-home", label: "Home", href: "/", active: true },
+  { id: "nav-movies", label: "Movies", href: "/movies", active: true, badge: "HOT" },
+  { id: "nav-categories", label: "Categories", href: "/categories", active: true },
+  { id: "nav-free", label: "Free", href: "/free", active: true, badge: "FREE" },
+  { id: "nav-new", label: "New & Updated", href: "/new-and-updated", active: true },
+  { id: "nav-articles", label: "Articles", href: "/articles", active: true },
+  { id: "nav-premium", label: "Premium", href: "/premium", active: true, badge: "VIP" },
+  { id: "nav-request", label: "Request", href: "/request", active: true },
+];
 
 interface HomepageClientProps {
   initialSettings: Record<string, any>;
@@ -39,6 +64,72 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
     initialSettings.search_placeholder ||
       "Search software, movies, tools, APKs, templates..."
   );
+
+  // Navbar / Menubar navigation links state & operations
+  const [navbarItems, setNavbarItems] = useState<NavbarMenuItem[]>(() => {
+    if (
+      initialSettings.navbar_items &&
+      Array.isArray(initialSettings.navbar_items) &&
+      initialSettings.navbar_items.length > 0
+    ) {
+      return initialSettings.navbar_items;
+    }
+    return DEFAULT_NAVBAR_ITEMS;
+  });
+
+  const moveNavbarItemUp = (index: number) => {
+    if (index === 0) return;
+    setNavbarItems((prev) => {
+      const next = [...prev];
+      const temp = next[index - 1];
+      next[index - 1] = next[index];
+      next[index] = temp;
+      return next;
+    });
+  };
+
+  const moveNavbarItemDown = (index: number) => {
+    if (index === navbarItems.length - 1) return;
+    setNavbarItems((prev) => {
+      const next = [...prev];
+      const temp = next[index + 1];
+      next[index + 1] = next[index];
+      next[index] = temp;
+      return next;
+    });
+  };
+
+  const updateNavbarItem = (index: number, field: keyof NavbarMenuItem, value: any) => {
+    setNavbarItems((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
+
+  const toggleNavbarItem = (index: number) => {
+    setNavbarItems((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], active: !next[index].active };
+      return next;
+    });
+  };
+
+  const addNavbarItem = () => {
+    const newId = `nav-custom-${Date.now()}`;
+    setNavbarItems((prev) => [
+      ...prev,
+      { id: newId, label: "Custom Link", href: "/explore", active: true, badge: "" },
+    ]);
+  };
+
+  const deleteNavbarItem = (index: number) => {
+    setNavbarItems((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const resetNavbarItems = () => {
+    setNavbarItems(DEFAULT_NAVBAR_ITEMS);
+  };
 
   // Trending
   const [showTrending, setShowTrending] = useState(
@@ -147,6 +238,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
     try {
       const payload = {
         homepage_settings: {
+          navbar_items: navbarItems,
           hero_image_url: heroImageUrl.trim(),
           show_search_bar: showSearchBar,
           search_placeholder: searchPlaceholder.trim(),
@@ -316,7 +408,181 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
         </div>
       </div>
 
-      {/* 2. TRENDING PILLS BAR */}
+      {/* 2. HEADER NAVBAR / MENUBAR SECTION (ADJUST ORDER & EDIT LINKS) */}
+      <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8 space-y-6 shadow-sm">
+        <div className="flex items-center justify-between border-b border-[var(--border)] pb-4 flex-wrap gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500">
+              <Compass className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-[var(--foreground)]">
+                2. Header Navbar / Menubar (Adjust Priority Order & Links)
+              </h2>
+              <p className="text-xs text-[var(--muted-foreground)]">
+                Rearrange priority order, change menu names, edit destination links, set badges (HOT, VIP, FREE), and toggle visibility.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={resetNavbarItems}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/50 hover:bg-[var(--secondary)] text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset Defaults</span>
+            </button>
+            <button
+              type="button"
+              onClick={addNavbarItem}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-bold transition-all shadow-sm cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Menu Item</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Live Preview of Header Navbar */}
+        <div className="p-4 rounded-2xl bg-[var(--secondary)]/30 border border-[var(--border)] space-y-2">
+          <div className="flex items-center justify-between text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+            <span>Live Header Navbar Preview</span>
+            <span className="text-[10px] text-amber-500 lowercase">updates in real-time</span>
+          </div>
+          <div className="flex items-center gap-1.5 overflow-x-auto py-2 px-1">
+            {navbarItems
+              .filter((item) => item.active)
+              .map((item, i) => (
+                <div
+                  key={item.id}
+                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium border ${
+                    i === 0
+                      ? "bg-[var(--secondary)] text-[var(--primary)] border-[var(--primary)]/30 font-semibold"
+                      : "bg-[var(--card)] text-[var(--foreground)] border-[var(--border)]"
+                  } whitespace-nowrap shadow-xs`}
+                >
+                  <span>{item.label}</span>
+                  {item.badge && (
+                    <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black uppercase bg-amber-500/20 text-amber-500 border border-amber-500/30">
+                      {item.badge}
+                    </span>
+                  )}
+                </div>
+              ))}
+          </div>
+        </div>
+
+        {/* Editable Menu Items List */}
+        <div className="space-y-3">
+          {navbarItems.map((item, index) => (
+            <div
+              key={item.id}
+              className={`p-4 rounded-2xl border transition-all ${
+                item.active
+                  ? "border-[var(--border)] bg-[var(--secondary)]/20"
+                  : "border-dashed border-[var(--border)]/70 bg-[var(--secondary)]/10 opacity-65"
+              } flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3`}
+            >
+              {/* Order & Priority Controls */}
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-[var(--secondary)] border border-[var(--border)] flex items-center justify-center font-mono text-xs font-bold text-[var(--muted-foreground)]">
+                  {index + 1}
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <button
+                    type="button"
+                    disabled={index === 0}
+                    onClick={() => moveNavbarItemUp(index)}
+                    title="Move higher in priority"
+                    className="p-1 rounded bg-[var(--card)] hover:bg-[var(--secondary)] border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                  >
+                    <ArrowUp className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={index === navbarItems.length - 1}
+                    onClick={() => moveNavbarItemDown(index)}
+                    title="Move lower in priority"
+                    className="p-1 rounded bg-[var(--card)] hover:bg-[var(--secondary)] border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                  >
+                    <ArrowDown className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Editable Fields: Label, Link, Badge */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 flex-1 w-full sm:w-auto">
+                <div>
+                  <label className="text-[10px] font-semibold text-[var(--muted-foreground)] uppercase block mb-1">
+                    Menu Label
+                  </label>
+                  <input
+                    type="text"
+                    value={item.label}
+                    onChange={(e) => updateNavbarItem(index, "label", e.target.value)}
+                    placeholder="Label (e.g. Movies)"
+                    className="w-full px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--card)] text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-semibold text-[var(--muted-foreground)] uppercase block mb-1">
+                    Destination URL / Route
+                  </label>
+                  <input
+                    type="text"
+                    value={item.href}
+                    onChange={(e) => updateNavbarItem(index, "href", e.target.value)}
+                    placeholder="/movies or https://..."
+                    className="w-full px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--card)] text-xs text-[var(--foreground)] font-mono focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-semibold text-[var(--muted-foreground)] uppercase block mb-1">
+                    Highlight Badge (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={item.badge || ""}
+                    onChange={(e) => updateNavbarItem(index, "badge", e.target.value)}
+                    placeholder="e.g. HOT, VIP, NEW, FREE"
+                    className="w-full px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--card)] text-xs text-[var(--foreground)] uppercase focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+                  />
+                </div>
+              </div>
+
+              {/* Status & Actions */}
+              <div className="flex items-center gap-3 self-end sm:self-center">
+                <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={item.active}
+                    onChange={() => toggleNavbarItem(index)}
+                    className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
+                  />
+                  <span className="text-xs font-semibold text-[var(--foreground)]">
+                    {item.active ? "Active" : "Hidden"}
+                  </span>
+                </label>
+
+                <button
+                  type="button"
+                  onClick={() => deleteNavbarItem(index)}
+                  title="Delete menu item"
+                  className="p-2 rounded-xl text-rose-500 hover:bg-rose-500/10 border border-rose-500/20 transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 3. TRENDING PILLS BAR */}
       <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8 space-y-6 shadow-sm">
         <div className="flex items-center gap-3 border-b border-[var(--border)] pb-4">
           <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500">
@@ -324,7 +590,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
           </div>
           <div>
             <h2 className="text-base font-bold text-[var(--foreground)]">
-              2. Trending Quick-Access Bar
+              3. Trending Quick-Access Bar
             </h2>
             <p className="text-xs text-[var(--muted-foreground)]">
               Quick access shortcut pills below the hero banner (Movies, Free Downloads, VIP, APKs).
@@ -365,7 +631,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
         </div>
       </div>
 
-      {/* 3. CATEGORIES SECTION */}
+      {/* 4. CATEGORIES SECTION */}
       <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8 space-y-6 shadow-sm">
         <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
           <div className="flex items-center gap-3">
@@ -374,7 +640,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
             </div>
             <div>
               <h2 className="text-base font-bold text-[var(--foreground)]">
-                3. Categories Grid Section
+                4. Categories Grid Section
               </h2>
               <p className="text-xs text-[var(--muted-foreground)]">
                 Classification tiles showing software, cinema, AI tools, APKs, etc.
@@ -433,7 +699,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
         </div>
       </div>
 
-      {/* 4. FEATURED RESOURCES SECTION */}
+      {/* 5. FEATURED RESOURCES SECTION */}
       <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8 space-y-6 shadow-sm">
         <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
           <div className="flex items-center gap-3">
@@ -442,7 +708,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
             </div>
             <div>
               <h2 className="text-base font-bold text-[var(--foreground)]">
-                4. Featured Resources Section
+                5. Featured Resources Section
               </h2>
               <p className="text-xs text-[var(--muted-foreground)]">
                 Hand-picked resources marked as featured in the Resources catalog.
@@ -487,7 +753,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
         </div>
       </div>
 
-      {/* 5. LATEST RELEASES SECTION */}
+      {/* 6. LATEST RELEASES SECTION */}
       <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8 space-y-6 shadow-sm">
         <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
           <div className="flex items-center gap-3">
@@ -496,7 +762,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
             </div>
             <div>
               <h2 className="text-base font-bold text-[var(--foreground)]">
-                5. Latest Additions Section
+                6. Latest Additions Section
               </h2>
               <p className="text-xs text-[var(--muted-foreground)]">
                 Displays the newest published verified downloads.
@@ -555,7 +821,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
         </div>
       </div>
 
-      {/* 6. FOUNDER PROFILE SECTION */}
+      {/* 7. FOUNDER PROFILE SECTION */}
       <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8 space-y-6 shadow-sm">
         <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
           <div className="flex items-center gap-3">
@@ -564,7 +830,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
             </div>
             <div>
               <h2 className="text-base font-bold text-[var(--foreground)]">
-                6. Founder & CEO Profile Section
+                7. Founder & CEO Profile Section
               </h2>
               <p className="text-xs text-[var(--muted-foreground)]">
                 Customize Muthuraj C&apos;s verified founder card at the bottom of the homepage.
@@ -707,7 +973,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
         </div>
       </div>
 
-      {/* 7. AD PLACEMENTS TOGGLES */}
+      {/* 8. AD PLACEMENTS TOGGLES */}
       <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8 space-y-4 shadow-sm">
         <div className="flex items-center gap-3 border-b border-[var(--border)] pb-4">
           <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-500">
@@ -715,7 +981,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
           </div>
           <div>
             <h2 className="text-base font-bold text-[var(--foreground)]">
-              7. Homepage Ad Placements
+              8. Homepage Ad Placements
             </h2>
             <p className="text-xs text-[var(--muted-foreground)]">
               Control where Google AdSense and custom banner ads appear on the homepage.

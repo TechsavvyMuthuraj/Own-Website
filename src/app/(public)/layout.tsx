@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import { Header } from "@/components/navigation/header";
+import { Header, DEFAULT_NAV_LINKS, type NavLinkItem } from "@/components/navigation/header";
 import { Footer } from "@/components/navigation/footer";
 import { AnnouncementBar } from "@/components/announcements/announcement-bar";
 import { AdSlot } from "@/components/ads/ad-slot";
@@ -7,6 +7,7 @@ import { getActiveAd } from "@/lib/ads";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AdminMaintenanceBanner } from "@/components/admin/admin-maintenance-banner";
 import { TopLoader } from "@/components/navigation/top-loader";
+import { PageLoader } from "@/components/ui/page-loader";
 
 // In-memory 30s cache to avoid blocking database queries on every navigation click
 let cachedMaintenance: { value: boolean; expiresAt: number } | null = null;
@@ -39,25 +40,46 @@ async function checkMaintenanceMode(): Promise<boolean> {
   }
 }
 
+async function getNavbarLinks(): Promise<NavLinkItem[]> {
+  try {
+    const supabaseAdmin = createAdminClient();
+    const { data } = await supabaseAdmin
+      .from("site_settings")
+      .select("value")
+      .eq("key", "homepage_settings")
+      .maybeSingle();
+
+    if (data?.value) {
+      const parsed = typeof data.value === "string" ? JSON.parse(data.value) : data.value;
+      if (parsed?.navbar_items && Array.isArray(parsed.navbar_items) && parsed.navbar_items.length > 0) {
+        return parsed.navbar_items;
+      }
+    }
+  } catch {}
+  return DEFAULT_NAV_LINKS;
+}
+
 export default async function PublicLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [headerAd, footerAd, isMaintenanceActive] = await Promise.all([
+  const [headerAd, footerAd, isMaintenanceActive, navLinks] = await Promise.all([
     getActiveAd("HEADER"),
     getActiveAd("FOOTER"),
     checkMaintenanceMode(),
+    getNavbarLinks(),
   ]);
 
   return (
     <div className="flex flex-col min-h-screen">
       <Suspense fallback={null}>
+        <PageLoader />
         <TopLoader />
       </Suspense>
       <AdminMaintenanceBanner isMaintenanceActive={isMaintenanceActive} />
       <AnnouncementBar />
-      <Header />
+      <Header navLinks={navLinks} />
 
       {/* Top Header Leaderboard Ad */}
       {headerAd && (

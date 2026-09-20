@@ -25,6 +25,7 @@ import {
   Film,
   Newspaper,
   Home,
+  Image as ImageIcon,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -50,6 +51,7 @@ export default function AdminLayout({
     { href: "/admin/resources", label: "Resources", icon: Package },
     { href: "/admin/movies", label: "Movies & Cinema", icon: Film },
     { href: "/admin/articles", label: "Articles & News", icon: Newspaper },
+    { href: "/admin/wallpapers", label: "4K Wallpapers", icon: ImageIcon },
     { href: "/admin/categories", label: "Categories", icon: Layers },
     { href: "/admin/users", label: "Users & Verification", icon: Users },
     { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
