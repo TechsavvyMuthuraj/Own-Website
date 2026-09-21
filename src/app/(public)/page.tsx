@@ -17,7 +17,7 @@ import {
   FileText,
   Shapes,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { Resource, Category, Wallpaper } from "@/types/database";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 import { AdSlot } from "@/components/ads/ad-slot";
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
 export const revalidate = 3600; // Cache at edge for 1 hour — dramatically reduces TTFB
 
 export default async function HomePage() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   let featuredResources: Resource[] = [];
   let latestResources: Resource[] = [];
@@ -51,7 +51,15 @@ export default async function HomePage() {
       "id, title, slug, short_description, thumbnail_url, icon_url, resource_type, access_type, price, sale_price, currency, platform, version, status, featured, tags, created_at, updated_at, published_at, category_id, category:categories(id, name, slug, icon)";
 
     // Concurrent queries in parallel for ultra-fast rendering speed
-    const [adResult, inFeedAdResult, featuredResult, latestResult, categoriesResult, hpSettingsResult] = await Promise.all([
+    const [
+      adResult,
+      inFeedAdResult,
+      featuredResult,
+      latestResult,
+      categoriesResult,
+      hpSettingsResult,
+      wallpapersResult,
+    ] = await Promise.all([
       getActiveAd("HOMEPAGE"),
       getActiveAd("IN_FEED"),
       supabase
@@ -78,6 +86,13 @@ export default async function HomePage() {
         .select("value")
         .eq("key", "homepage_settings")
         .maybeSingle(),
+      supabase
+        .from("wallpapers")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: false })
+        .limit(9),
     ]);
 
     if (hpSettingsResult?.data?.value) {
@@ -124,20 +139,8 @@ export default async function HomePage() {
       );
     }
 
-    try {
-      const { data: wpData, error: wpError } = await supabase
-        .from("wallpapers")
-        .select("*")
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true })
-        .order("created_at", { ascending: false })
-        .limit(9);
-
-      if (!wpError && wpData) {
-        wallpapers = wpData as Wallpaper[];
-      }
-    } catch {
-      wallpapers = [];
+    if (wallpapersResult.data) {
+      wallpapers = wallpapersResult.data as Wallpaper[];
     }
   } catch (error) {
     console.error("Failed to load homepage resources from database:", error);
@@ -187,7 +190,6 @@ export default async function HomePage() {
               alt="NammaTech - Everything You Need In One Place. Founder Muthuraj"
               fill
               priority
-              unoptimized
               sizes="(max-width: 640px) 100vw, (max-width: 1280px) 1200px, 1280px"
               className="object-cover object-center select-none"
             />

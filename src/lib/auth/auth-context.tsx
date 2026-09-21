@@ -15,18 +15,18 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const supabase = createClient();
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
 
   const fetchProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, role, full_name, avatar_url, updated_at")
         .eq("id", userId)
         .single();
 

@@ -1,6 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { MoviesClient, type MovieItem, type MovieDownloadLink } from "./movies-client";
 
 export const metadata: Metadata = {
@@ -40,17 +40,34 @@ export const metadata: Metadata = {
 
 export const revalidate = 60; // Cache at edge for 60 seconds
 
-export default async function MoviesPage() {
-  const supabase = await createClient();
-  let dbMovies: MovieItem[] = [];
+let cachedMovieCategoryId: { id: string | null; expiresAt: number } | null = null;
 
+async function getMovieCategoryId(supabase: any): Promise<string | null> {
+  const now = Date.now();
+  if (cachedMovieCategoryId && cachedMovieCategoryId.expiresAt > now) {
+    return cachedMovieCategoryId.id;
+  }
   try {
-    // 1. Find Movies category ID if exists
-    const { data: movieCategory } = await supabase
+    const { data } = await supabase
       .from("categories")
       .select("id")
       .eq("slug", "movies")
       .maybeSingle();
+    const id = data?.id ?? null;
+    cachedMovieCategoryId = { id, expiresAt: now + 60000 };
+    return id;
+  } catch {
+    return cachedMovieCategoryId ? cachedMovieCategoryId.id : null;
+  }
+}
+
+export default async function MoviesPage() {
+  const supabase = createAdminClient();
+  let dbMovies: MovieItem[] = [];
+
+  try {
+    // 1. Find Movies category ID if exists from cache
+    const movieCategoryId = await getMovieCategoryId(supabase);
 
     // 2. Query real database resources for movies with their size-based download links
     const MOVIE_FIELDS =
@@ -61,9 +78,9 @@ export default async function MoviesPage() {
       .select(MOVIE_FIELDS)
       .eq("status", "PUBLISHED");
 
-    if (movieCategory?.id) {
+    if (movieCategoryId) {
       query = query.or(
-        `category_id.eq.${movieCategory.id},tags.cs.{movie},tags.cs.{movies},tags.cs.{Cinema}`
+        `category_id.eq.${movieCategoryId},tags.cs.{movie},tags.cs.{movies},tags.cs.{Cinema}`
       );
     } else {
       query = query.or(

@@ -19,7 +19,7 @@ import {
   Info,
   Check,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { Resource, ResourceImage, DownloadLink } from "@/types/database";
 import {
   formatBytes,
@@ -45,12 +45,23 @@ interface ResourceDetailPageProps {
 
 export const revalidate = 60;
 
+export async function generateStaticParams() {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from("resources")
+    .select("slug")
+    .eq("status", "PUBLISHED")
+    .limit(100);
+
+  return (data || []).filter((r) => Boolean(r.slug)).map((r) => ({ slug: r.slug }));
+}
+
 const CARD_FIELDS =
   "id, title, slug, short_description, thumbnail_url, icon_url, resource_type, access_type, price, sale_price, currency, platform, version, status, featured, tags, created_at, updated_at, published_at, category_id, category:categories(id, name, slug, icon)";
 
 // Deduplicate resource lookup between generateMetadata and Page component using React cache
 const getResourceBySlug = cache(async (slug: string): Promise<Resource | null> => {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data: resData, error } = await supabase
     .from("resources")
     .select("*, category:categories(id, name, slug, icon), images:resource_images(*), download_links(*)")
@@ -143,7 +154,7 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
     notFound();
   }
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   // Fetch Related Resources and Active Ads concurrently in parallel
   const [relatedDataRes, sidebarAd, resourcePageAd] = await Promise.all([

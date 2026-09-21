@@ -18,7 +18,7 @@ import {
   Filter,
   Sparkles,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { Resource, Category } from "@/types/database";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 
@@ -31,11 +31,23 @@ interface CategoryDetailPageProps {
 
 export const revalidate = 60;
 
+export async function generateStaticParams() {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from("categories")
+    .select("slug")
+    .eq("is_active", true);
+
+  return (data || [])
+    .filter((c) => Boolean(c.slug) && c.slug !== "movies")
+    .map((c) => ({ slug: c.slug }));
+}
+
 const CARD_FIELDS =
   "id, title, slug, short_description, thumbnail_url, icon_url, resource_type, access_type, price, sale_price, currency, platform, version, status, featured, tags, created_at, updated_at, published_at, category_id, category:categories(id, name, slug, icon)";
 
 const getCategoryBySlug = cache(async (slug: string): Promise<Category | null> => {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("categories")
     .select("id, name, slug, icon, description, sort_order, is_active")
@@ -115,7 +127,7 @@ export default async function CategoryDetailPage({
   const { sort } = await searchParams;
   const currentSort = sort || "newest";
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   // 1. Fetch current Category and all sibling categories concurrently
   const [category, allCatsRes] = await Promise.all([

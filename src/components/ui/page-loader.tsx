@@ -13,10 +13,10 @@ interface PageLoaderProps {
 }
 
 export function PageLoader({
-  duration = 1600,
-  forceShow = true,
+  duration = 500,
+  forceShow = false,
 }: PageLoaderProps) {
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [progress, setProgress] = useState(0);
   const [statusText, setStatusText] = useState("INITIALIZING NAMMATECH CORE...");
@@ -42,17 +42,23 @@ export function PageLoader({
       try {
         sessionStorage.setItem("nammatech_loader_shown", "true");
       } catch {}
-    }, 600);
+    }, 300);
   }, []);
 
   useEffect(() => {
     if (!forceShow) {
       try {
         if (sessionStorage.getItem("nammatech_loader_shown") === "true") {
-          setVisible(false);
           return;
         }
       } catch {}
+    }
+
+    setVisible(true);
+
+    if (typeof document !== "undefined" && document.readyState === "complete") {
+      finishLoading();
+      return;
     }
 
     const startTime = performance.now();
@@ -79,6 +85,9 @@ export function PageLoader({
 
     animationFrameId = requestAnimationFrame(tick);
 
+    const handleLoad = () => finishLoading();
+    window.addEventListener("load", handleLoad);
+
     const handleReplay = () => {
       setVisible(true);
       setIsFadingOut(false);
@@ -88,6 +97,7 @@ export function PageLoader({
 
     return () => {
       cancelAnimationFrame(animationFrameId);
+      window.removeEventListener("load", handleLoad);
       window.removeEventListener("replay-namma-loader", handleReplay);
     };
   }, [duration, finishLoading, forceShow]);

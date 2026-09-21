@@ -322,7 +322,9 @@ export function Header({ navLinks = DEFAULT_NAV_LINKS }: HeaderProps) {
         )}
       </header>
 
-      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      {isSearchOpen && (
+        <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      )}
     </>
   );
 }

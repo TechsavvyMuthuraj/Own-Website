@@ -1,4 +1,4 @@
-import React from "react";
+import React, { cache } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -12,6 +12,28 @@ export const revalidate = 120;
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
 }
+
+export async function generateStaticParams() {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from("articles")
+    .select("slug")
+    .eq("status", "PUBLISHED")
+    .limit(50);
+
+  return (data || []).filter((a) => Boolean(a.slug)).map((a) => ({ slug: a.slug }));
+}
+
+const getArticleBySlug = cache(async (slug: string): Promise<Article | null> => {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from("articles")
+    .select("*")
+    .eq("slug", slug)
+    .eq("status", "PUBLISHED")
+    .maybeSingle();
+  return (data as Article) || null;
+});
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-IN", {
@@ -29,13 +51,7 @@ function estimateReadTime(content: string | null) {
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("articles")
-    .select("title, excerpt, thumbnail_url")
-    .eq("slug", slug)
-    .eq("status", "PUBLISHED")
-    .maybeSingle();
+  const data = await getArticleBySlug(slug);
   if (!data) return { title: "Article Not Found | NammaTech" };
   return {
     title: `${data.title} | NammaTech Journal`,
@@ -50,23 +66,12 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
 export default async function ArticleDetailPage({ params }: ArticlePageProps) {
   const { slug } = await params;
-  const supabase = createAdminClient();
-
-  // Use admin client (service role) to bypass RLS for public article pages
-  const { data: article, error: articleError } = await supabase
-    .from("articles")
-    .select("*")
-    .eq("slug", slug)
-    .eq("status", "PUBLISHED")
-    .maybeSingle();
-
-  if (articleError) {
-    console.error("[ArticlePage] Error fetching article:", articleError.message);
-  }
+  const article = await getArticleBySlug(slug);
 
   if (!article) notFound();
 
   const a = article as Article;
+  const supabase = createAdminClient();
 
   // Fetch author profile separately (no FK relationship exists in schema)
   let authorName = "NammaTech";

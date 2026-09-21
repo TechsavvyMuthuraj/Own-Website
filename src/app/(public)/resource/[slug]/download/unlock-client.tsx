@@ -23,8 +23,8 @@ interface DownloadUnlockExperienceProps {
 }
 
 export function DownloadUnlockExperience({ resource }: DownloadUnlockExperienceProps) {
-  const [step, setStep] = useState<"PREPARING" | "VERIFIED" | "READY">("PREPARING");
-  const [downloadLinks, setDownloadLinks] = useState<DownloadLink[]>([]);
+  const [step, setStep] = useState<"PREPARING" | "VERIFIED" | "READY">("READY");
+  const [downloadLinks, setDownloadLinks] = useState<DownloadLink[]>(resource.download_links || []);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handleCopyLink = async (url?: string | null, id?: string) => {
@@ -41,29 +41,16 @@ export function DownloadUnlockExperience({ resource }: DownloadUnlockExperienceP
   };
 
   useEffect(() => {
-    // Genuine quick verification progression (short, responsive feedback)
-    const timer1 = setTimeout(() => {
-      setStep("VERIFIED");
-    }, 400);
-
-    const timer2 = setTimeout(async () => {
-      setStep("READY");
-      // Record download log event
-      try {
-        await fetch("/api/downloads/record", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ resourceId: resource.id }),
-        });
-      } catch (e) {
-        console.error("Failed to log download:", e);
-      }
-    }, 800);
-
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-    };
+    // Record download log event asynchronously in background
+    try {
+      fetch("/api/downloads/record", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resourceId: resource.id }),
+      }).catch(() => {});
+    } catch (e) {
+      console.error("Failed to log download:", e);
+    }
   }, [resource.id]);
 
   useEffect(() => {

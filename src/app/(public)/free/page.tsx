@@ -1,6 +1,6 @@
 import React from "react";
 import { Download, Sparkles } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { Resource } from "@/types/database";
 import type { Metadata } from "next";
 import { ResourceGrid } from "@/components/resources/resource-grid";
@@ -18,14 +18,17 @@ export const metadata: Metadata = {
 
 export const revalidate = 60;
 
+const CARD_FIELDS =
+  "id, title, slug, short_description, thumbnail_url, icon_url, resource_type, access_type, price, sale_price, currency, platform, version, status, featured, tags, created_at, updated_at, published_at, category_id, category:categories(id, name, slug, icon)";
+
 export default async function FreeResourcesPage() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   let resources: Resource[] = [];
 
   try {
     const { data } = await supabase
       .from("resources")
-      .select("*, category:categories(*)")
+      .select(CARD_FIELDS)
       .eq("status", "PUBLISHED")
       .eq("access_type", "FREE")
       .order("published_at", { ascending: false })

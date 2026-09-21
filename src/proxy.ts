@@ -1,6 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+let cachedMaintenanceMode: { value: boolean; expiresAt: number } | null = null;
+
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -29,6 +31,8 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
+  const isProtectedAdmin = pathname.startsWith("/admin") && pathname !== "/admin/login";
+  const isProtectedAccount = pathname.startsWith("/account");
   const isMaintenanceExempt =
     pathname.startsWith("/admin") ||
     pathname.startsWith("/auth") ||
@@ -40,10 +44,15 @@ export async function proxy(request: NextRequest) {
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml";
 
-  // ── Run auth check + maintenance fetch IN PARALLEL for max speed ───────────
-  const maintenanceFetch =
-    !isMaintenanceExempt && supabaseServiceKey
-      ? fetch(
+  // ── In-Memory Cached Maintenance Mode Check (30s TTL) ────────────────────────
+  let isInMaintenance = false;
+  if (!isMaintenanceExempt && supabaseServiceKey) {
+    const now = Date.now();
+    if (cachedMaintenanceMode && cachedMaintenanceMode.expiresAt > now) {
+      isInMaintenance = cachedMaintenanceMode.value;
+    } else {
+      try {
+        const res = await fetch(
           `${supabaseUrl}/rest/v1/site_settings?key=eq.maintenance_mode&select=value&limit=1`,
           {
             headers: {
@@ -51,18 +60,39 @@ export async function proxy(request: NextRequest) {
               Authorization: `Bearer ${supabaseServiceKey}`,
               "Content-Type": "application/json",
             },
-            cache: "no-store",
+            next: { revalidate: 30 },
           }
-        ).catch(() => null)
-      : Promise.resolve(null);
+        );
+        if (res.ok) {
+          const rows: Array<{ value: string | boolean }> = await res.json();
+          if (rows.length > 0) {
+            const raw = rows[0].value;
+            const val = typeof raw === "string" ? JSON.parse(raw) : raw;
+            isInMaintenance = val === true || val === "true";
+          }
+        }
+        cachedMaintenanceMode = { value: isInMaintenance, expiresAt: now + 30000 };
+      } catch {
+        isInMaintenance = cachedMaintenanceMode ? cachedMaintenanceMode.value : false;
+      }
+    }
+  }
 
-  const [{ data: { user } }, maintenanceRes] = await Promise.all([
-    supabase.auth.getUser(),
-    maintenanceFetch,
-  ]);
+  // ── Run Auth Check ONLY When Needed (Admin, Account, or Maintenance Bypass) ───
+  const requiresAuthCheck = isProtectedAdmin || isProtectedAccount || isInMaintenance;
+
+  let user: any = null;
+  if (requiresAuthCheck) {
+    try {
+      const authResult = await supabase.auth.getUser();
+      user = authResult.data?.user ?? null;
+    } catch {
+      user = null;
+    }
+  }
 
   // ── Protect /admin routes (Access strictly via /admin and /admin/login) ──────
-  if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
+  if (isProtectedAdmin) {
     if (!user) {
       const loginUrl = new URL("/admin/login", request.url);
       loginUrl.searchParams.set("redirect", pathname);
@@ -91,26 +121,15 @@ export async function proxy(request: NextRequest) {
   }
 
   // ── Protect /account routes ────────────────────────────────────────────────
-  if (pathname.startsWith("/account") && !user) {
+  if (isProtectedAccount && !user) {
     const loginUrl = new URL("/auth/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // ── Maintenance Mode ───────────────────────────────────────────────────────
-  if (!isMaintenanceExempt && maintenanceRes) {
+  // ── Maintenance Mode Redirects ─────────────────────────────────────────────
+  if (!isMaintenanceExempt) {
     try {
-      let isInMaintenance = false;
-
-      if (maintenanceRes.ok) {
-        const rows: Array<{ value: string | boolean }> = await maintenanceRes.json();
-        if (rows.length > 0) {
-          const raw = rows[0].value;
-          const val = typeof raw === "string" ? JSON.parse(raw) : raw;
-          isInMaintenance = val === true || val === "true";
-        }
-      }
-
       if (!isInMaintenance && pathname === "/maintenance") {
         const r = NextResponse.redirect(new URL("/", request.url), 307);
         r.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");

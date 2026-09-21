@@ -125,6 +125,12 @@ export default function CookiePolicyPage() {
                   <td className="p-3">13 Months</td>
                 </tr>
                 <tr>
+                  <td className="p-3 font-mono font-bold text-[var(--foreground)]">_ga / _ga_*</td>
+                  <td className="p-3">Google Analytics 4 (G-0PV54Y30XS)</td>
+                  <td className="p-3">Distinguishes unique users and measures anonymous telemetry &amp; site usage.</td>
+                  <td className="p-3">2 Years</td>
+                </tr>
+                <tr>
                   <td className="p-3 font-mono font-bold text-[var(--foreground)]">IDE / DART</td>
                   <td className="p-3">Google DoubleClick</td>
                   <td className="p-3">Used to measure the efficacy of an ad campaign and serve contextual ads.</td>

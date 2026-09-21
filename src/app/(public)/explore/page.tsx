@@ -16,7 +16,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { Resource, Category } from "@/types/database";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 
@@ -37,6 +37,27 @@ export const revalidate = 60;
 
 const CARD_FIELDS =
   "id, title, slug, short_description, thumbnail_url, icon_url, resource_type, access_type, price, sale_price, currency, platform, version, status, featured, tags, created_at, updated_at, published_at, category_id, category:categories(id, name, slug, icon)";
+
+let cachedCategories: { data: Category[]; expiresAt: number } | null = null;
+
+async function getCachedCategories(supabase: any): Promise<Category[]> {
+  const now = Date.now();
+  if (cachedCategories && cachedCategories.expiresAt > now) {
+    return cachedCategories.data;
+  }
+  try {
+    const { data: catData } = await supabase
+      .from("categories")
+      .select("id, name, slug, icon, description, sort_order, is_active")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true });
+    const list = (catData as Category[]) || [];
+    cachedCategories = { data: list, expiresAt: now + 60000 };
+    return list;
+  } catch {
+    return cachedCategories ? cachedCategories.data : [];
+  }
+}
 
 interface ExplorePageProps {
   searchParams: Promise<{
@@ -79,25 +100,16 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   const currentPlatform = params.platform || "all";
   const currentSort = params.sort || "newest";
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   let categories: Category[] = [];
   let resources: Resource[] = [];
 
   try {
-    // 1. Fetch Categories for filter pills
-    const { data: catData } = await supabase
-      .from("categories")
-      .select("id, name, slug, icon, description, sort_order, is_active")
-      .eq("is_active", true)
-      .order("sort_order", { ascending: true });
-
-    if (catData) {
-      // Exclude Movies & Cinema from software explore categories
-      categories = (catData as Category[]).filter((c) => c.slug !== "movies");
-    }
-
-    const movieCat = (catData as Category[] | undefined)?.find((c) => c.slug === "movies");
+    // 1. Fetch Categories from memory cache or DB
+    const allCategories = await getCachedCategories(supabase);
+    categories = allCategories.filter((c) => c.slug !== "movies");
+    const movieCat = allCategories.find((c) => c.slug === "movies");
 
     // 2. Build filtered resource query
     let query = supabase

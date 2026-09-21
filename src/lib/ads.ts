@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { AdPlacement } from "@/types/database";
 
 let cachedAdsSettings: {
@@ -8,8 +8,11 @@ let cachedAdsSettings: {
   expiresAt: number;
 } | null = null;
 
+let cachedAdsByLocation: Record<string, { ad: AdPlacement | null; expiresAt: number }> = {};
+
 export function invalidateAdsCache() {
   cachedAdsSettings = null;
+  cachedAdsByLocation = {};
 }
 
 export const getAdsGlobalSettings = async (): Promise<{
@@ -25,7 +28,7 @@ export const getAdsGlobalSettings = async (): Promise<{
   }
 
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { data } = await supabase
       .from("site_settings")
       .select("key, value")
@@ -55,7 +58,7 @@ export const getAdsGlobalSettings = async (): Promise<{
     cachedAdsSettings = {
       adsEnabled,
       autoAds,
-      expiresAt: now + 15000,
+      expiresAt: now + 60000,
     };
 
     return { adsEnabled, autoAds };
@@ -71,14 +74,20 @@ export const areAdsGloballyEnabled = cache(async (): Promise<boolean> => {
 
 /**
  * Fetch the highest priority active ad for a given placement location.
- * Memoized per request using React cache() to prevent duplicate database roundtrips.
+ * Memoized per request using React cache() and in-memory 60s cache.
  */
 export const getActiveAd = cache(async (location: string): Promise<AdPlacement | null> => {
   try {
     const isEnabled = await areAdsGloballyEnabled();
     if (!isEnabled) return null;
 
-    const supabase = await createClient();
+    const now = Date.now();
+    const cached = cachedAdsByLocation[location];
+    if (cached && cached.expiresAt > now) {
+      return cached.ad;
+    }
+
+    const supabase = createAdminClient();
     const { data } = await supabase
       .from("ad_placements")
       .select("id, title, location, provider, ad_code, priority, is_active")
@@ -88,7 +97,9 @@ export const getActiveAd = cache(async (location: string): Promise<AdPlacement |
       .limit(1)
       .single();
 
-    return (data as AdPlacement) || null;
+    const ad = (data as AdPlacement) || null;
+    cachedAdsByLocation[location] = { ad, expiresAt: now + 60000 };
+    return ad;
   } catch {
     return null;
   }

@@ -2,6 +2,7 @@ import React, { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { MovieViewClient } from "./movie-view-client";
 import type { MovieItem, MovieDownloadLink } from "../movies-client";
 
@@ -11,12 +12,29 @@ interface MoviePageProps {
 
 export const revalidate = 60; // Revalidate every 60 seconds
 
+export async function generateStaticParams() {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from("resources")
+    .select("slug, tags")
+    .eq("status", "PUBLISHED")
+    .limit(100);
+
+  return (data || [])
+    .filter((r) => {
+      const tags = Array.isArray(r.tags) ? r.tags.map((t: string) => String(t).toLowerCase()) : [];
+      return tags.includes("movie") || tags.includes("movies") || tags.includes("cinema");
+    })
+    .filter((r) => Boolean(r.slug))
+    .map((r) => ({ slug: r.slug }));
+}
+
 const MOVIE_FIELDS =
   "id, title, slug, version, created_at, size_bytes, tags, price, sale_price, description, short_description, developer, features, platform, thumbnail_url, changelog, category_id, download_links(id, title, link_type, url, size_bytes, is_active)";
 
 // Memoized resource fetcher
 const getMovieBySlug = cache(async (slug: string) => {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
 
   let query = supabase

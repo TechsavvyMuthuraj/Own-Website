@@ -3,6 +3,7 @@ import { Outfit, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { RootProviders } from "@/components/providers/root-providers";
 import { GoogleAdSense } from "@/components/ads/google-adsense";
+import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { getAdsGlobalSettings } from "@/lib/ads";
 import { AdsProvider } from "@/components/providers/ads-provider";
 
@@ -169,6 +170,7 @@ export default async function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col font-sans bg-[var(--background)] text-[var(--foreground)] antialiased">
+        <GoogleAnalytics />
         <AdsProvider adsEnabled={adsEnabled} autoAds={autoAds}>
           <GoogleAdSense autoAds={autoAds} />
           <RootProviders>{children}</RootProviders>

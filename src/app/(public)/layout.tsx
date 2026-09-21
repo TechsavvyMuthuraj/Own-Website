@@ -9,8 +9,9 @@ import { AdminMaintenanceBanner } from "@/components/admin/admin-maintenance-ban
 import { TopLoader } from "@/components/navigation/top-loader";
 import { PageLoader } from "@/components/ui/page-loader";
 
-// In-memory 30s cache to avoid blocking database queries on every navigation click
+// In-memory cache for maintenance mode and navbar links (60s TTL)
 let cachedMaintenance: { value: boolean; expiresAt: number } | null = null;
+let cachedNavLinks: { links: NavLinkItem[]; expiresAt: number } | null = null;
 
 async function checkMaintenanceMode(): Promise<boolean> {
   const now = Date.now();
@@ -33,7 +34,7 @@ async function checkMaintenanceMode(): Promise<boolean> {
         isMaintenanceActive = data.value === "true";
       }
     }
-    cachedMaintenance = { value: isMaintenanceActive, expiresAt: now + 30000 };
+    cachedMaintenance = { value: isMaintenanceActive, expiresAt: now + 60000 };
     return isMaintenanceActive;
   } catch {
     return false;
@@ -41,6 +42,10 @@ async function checkMaintenanceMode(): Promise<boolean> {
 }
 
 async function getNavbarLinks(): Promise<NavLinkItem[]> {
+  const now = Date.now();
+  if (cachedNavLinks && cachedNavLinks.expiresAt > now) {
+    return cachedNavLinks.links;
+  }
   try {
     const supabaseAdmin = createAdminClient();
     const { data } = await supabaseAdmin
@@ -52,10 +57,12 @@ async function getNavbarLinks(): Promise<NavLinkItem[]> {
     if (data?.value) {
       const parsed = typeof data.value === "string" ? JSON.parse(data.value) : data.value;
       if (parsed?.navbar_items && Array.isArray(parsed.navbar_items) && parsed.navbar_items.length > 0) {
+        cachedNavLinks = { links: parsed.navbar_items, expiresAt: now + 60000 };
         return parsed.navbar_items;
       }
     }
   } catch {}
+  cachedNavLinks = { links: DEFAULT_NAV_LINKS, expiresAt: now + 60000 };
   return DEFAULT_NAV_LINKS;
 }
 
