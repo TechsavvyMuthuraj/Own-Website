@@ -28,7 +28,7 @@ import { UpiQrCard } from "@/components/payments/upi-qr-card";
 import { AdSlot } from "@/components/ads/ad-slot";
 import type { MovieDownloadLink, MovieItem } from "../movies-client";
 import { getYoutubeEmbedUrl } from "../movies-client";
-
+import type { AdPlacement } from "@/types/database";
 
 interface MovieViewClientProps {
   movie: MovieItem;
@@ -37,9 +37,20 @@ interface MovieViewClientProps {
   hasVipAccess?: boolean;
   hasPendingOrder?: boolean;
   movieSlug?: string;
+  resourceAd?: AdPlacement | null;
+  inFeedAd?: AdPlacement | null;
 }
 
-export function MovieViewClient({ movie, relatedMovies, isLoggedIn = false, hasVipAccess = false, hasPendingOrder = false, movieSlug = "" }: MovieViewClientProps) {
+export function MovieViewClient({
+  movie,
+  relatedMovies,
+  isLoggedIn = false,
+  hasVipAccess = false,
+  hasPendingOrder = false,
+  movieSlug = "",
+  resourceAd,
+  inFeedAd,
+}: MovieViewClientProps) {
   const { showToast } = useToast();
 
   // State for normal free download countdown
@@ -461,8 +472,10 @@ export function MovieViewClient({ movie, relatedMovies, isLoggedIn = false, hasV
         </div>
       </div>
 
-      {/* ── Ad Banner between specs and downloads ── */}
-      <AdSlot location="RESOURCE_PAGE" format="auto" slotId="6779758190" showLabel={false} />
+      {/* ── Ad Banner between specs and downloads (only rendered if active in admin) ── */}
+      {resourceAd && (
+        <AdSlot ad={resourceAd} location="RESOURCE_PAGE" format="auto" showLabel={false} />
+      )}
 
       {/* ── DOWNLOADS SECTION (TWO CATEGORIES) ── */}
       <div id="downloads-section" className="space-y-6 pt-6">
@@ -761,8 +774,10 @@ export function MovieViewClient({ movie, relatedMovies, isLoggedIn = false, hasV
         </div>
       </div>
 
-      {/* ── Ad Banner above related movies ── */}
-      <AdSlot location="IN_FEED" format="auto" slotId="2029994396" showLabel={false} />
+      {/* ── Ad Banner above related movies (only rendered if active in admin) ── */}
+      {inFeedAd && (
+        <AdSlot ad={inFeedAd} location="IN_FEED" format="auto" showLabel={false} />
+      )}
 
       {/* ── Related Blockbuster Movies ── */}
       {relatedMovies.length > 0 && (

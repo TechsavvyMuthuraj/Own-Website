@@ -286,16 +286,16 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
   return (
     <div className="space-y-6">
       {/* Top Action Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-3xl border border-neutral-800/80 bg-neutral-900/50 backdrop-blur-xl shadow-xl">
         {/* Reordering helper note */}
-        <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
-          <ArrowUpDown className="w-4 h-4 text-[var(--primary)]" />
+        <div className="flex items-center gap-2 text-xs text-neutral-300">
+          <ArrowUpDown className="w-4 h-4 text-indigo-400" />
           <span>
-            Drag rows using the <strong className="text-[var(--foreground)]">⠿</strong> handle or use{" "}
-            <strong className="text-[var(--foreground)]">↑ ↓</strong> arrows to change order.
+            Drag rows using the <strong className="text-white font-mono">⠿</strong> grip or use{" "}
+            <strong className="text-white">↑ ↓</strong> arrows to reorganize navigation hierarchy.
           </span>
           {isSavingOrder && (
-            <span className="inline-flex items-center gap-1.5 text-xs text-[var(--primary)] font-semibold animate-pulse ml-2">
+            <span className="inline-flex items-center gap-1.5 text-xs text-indigo-400 font-semibold animate-pulse ml-2">
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
               <span>Saving order...</span>
             </span>
@@ -305,21 +305,22 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
         <button
           type="button"
           onClick={() => setShowAddForm(!showAddForm)}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] transition-all shadow-sm"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold text-xs transition-all shadow-lg shadow-indigo-500/20 active:scale-95 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>{showAddForm ? "Cancel" : "Add Category"}</span>
+          <span>{showAddForm ? "Cancel" : "+ Add Category"}</span>
         </button>
       </div>
 
       {showAddForm && (
-        <form onSubmit={handleCreate} className="p-6 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm space-y-4 max-w-2xl">
-          <h3 className="text-sm font-bold text-[var(--foreground)] uppercase tracking-wider">
-            Create New Category
+        <form onSubmit={handleCreate} className="p-6 rounded-3xl border border-neutral-800/80 bg-neutral-900/50 backdrop-blur-xl shadow-2xl space-y-4 max-w-2xl">
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <Layers className="w-4 h-4 text-indigo-400" />
+            <span>Create New Taxonomy Node</span>
           </h3>
 
           {errorMsg && (
-            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs flex items-center gap-2">
+            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
               <span>{errorMsg}</span>
             </div>
@@ -327,7 +328,7 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+              <label className="block text-xs font-semibold text-neutral-300 mb-1">
                 Category Name *
               </label>
               <input
@@ -336,11 +337,11 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
                 value={name}
                 onChange={(e) => handleNameChange(e.target.value)}
                 placeholder="e.g. Developer Tools"
-                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950 text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 shadow-inner"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+              <label className="block text-xs font-semibold text-neutral-300 mb-1">
                 Slug *
               </label>
               <input
@@ -348,8 +349,8 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
                 required
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
-                placeholder="developer-tools"
-                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-mono"
+                placeholder="e.g. developer-tools"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950 text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 shadow-inner font-mono"
               />
             </div>
           </div>
@@ -403,154 +404,170 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
       )}
 
       {categories.length > 0 ? (
-        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] overflow-hidden shadow-sm">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-[var(--secondary)]/60 text-[var(--muted-foreground)] uppercase font-semibold border-b border-[var(--border)]">
-              <tr>
-                <th className="w-16 px-3 py-3.5 text-center">Order</th>
-                <th className="px-5 py-3.5">Name</th>
-                <th className="px-4 py-3.5">Slug</th>
-                <th className="px-4 py-3.5">Sort #</th>
-                <th className="px-4 py-3.5">Status</th>
-                <th className="px-5 py-3.5 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--border)]">
-              {categories.map((cat, idx) => {
-                const isDragging = draggedIndex === idx;
-                const isOver = dragOverIndex === idx && draggedIndex !== idx;
+        <div className="rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl overflow-hidden shadow-2xl">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead className="bg-neutral-950/70 text-neutral-400 uppercase tracking-wider font-semibold border-b border-neutral-800 text-[10px]">
+                <tr>
+                  <th className="w-20 px-4 py-4 text-center">Reorder</th>
+                  <th className="px-6 py-4">Category Details</th>
+                  <th className="px-4 py-4">Routing Slug</th>
+                  <th className="px-4 py-4">Hierarchy #</th>
+                  <th className="px-4 py-4">Status</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-800/60">
+                {categories.map((cat, idx) => {
+                  const isDragging = draggedIndex === idx;
+                  const isOver = dragOverIndex === idx && draggedIndex !== idx;
 
-                return (
-                  <tr
-                    key={cat.id}
-                    draggable={true}
-                    onDragStart={(e) => {
-                      setDraggedIndex(idx);
-                      e.dataTransfer.effectAllowed = "move";
-                      e.dataTransfer.setData("text/plain", String(idx));
-                    }}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      e.dataTransfer.dropEffect = "move";
-                      if (dragOverIndex !== idx) {
+                  return (
+                    <tr
+                      key={cat.id}
+                      draggable={true}
+                      onDragStart={(e) => {
+                        setDraggedIndex(idx);
+                        e.dataTransfer.effectAllowed = "move";
+                        e.dataTransfer.setData("text/plain", String(idx));
+                      }}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = "move";
+                        if (dragOverIndex !== idx) {
+                          setDragOverIndex(idx);
+                        }
+                      }}
+                      onDragEnter={(e) => {
+                        e.preventDefault();
                         setDragOverIndex(idx);
-                      }
-                    }}
-                    onDragEnter={(e) => {
-                      e.preventDefault();
-                      setDragOverIndex(idx);
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      if (draggedIndex !== null && draggedIndex !== idx) {
-                        handleDragReorder(draggedIndex, idx);
-                      }
-                      setDraggedIndex(null);
-                      setDragOverIndex(null);
-                    }}
-                    onDragEnd={() => {
-                      setDraggedIndex(null);
-                      setDragOverIndex(null);
-                    }}
-                    className={`transition-all select-none ${
-                      isDragging
-                        ? "opacity-30 bg-[var(--secondary)]"
-                        : "hover:bg-[var(--secondary)]/30"
-                    } ${
-                      isOver
-                        ? "border-t-2 border-[var(--primary)] bg-[var(--primary)]/10"
-                        : ""
-                    }`}
-                  >
-                    {/* Drag Handle & Up/Down Arrows */}
-                    <td className="px-3 py-3 text-center align-middle">
-                      <div className="flex items-center justify-center gap-1">
-                        <span
-                          className="cursor-grab active:cursor-grabbing p-1 rounded-md text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--secondary)] transition-colors"
-                          title="Drag to reorder"
-                        >
-                          <GripVertical className="w-4 h-4" />
-                        </span>
-                        <div className="flex flex-col">
-                          <button
-                            type="button"
-                            disabled={idx === 0 || isSavingOrder}
-                            onClick={() => handleMoveUp(idx)}
-                            className="p-0.5 rounded hover:bg-[var(--secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] disabled:opacity-20 disabled:hover:bg-transparent transition-colors"
-                            title="Move category up"
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        if (draggedIndex !== null && draggedIndex !== idx) {
+                          handleDragReorder(draggedIndex, idx);
+                        }
+                        setDraggedIndex(null);
+                        setDragOverIndex(null);
+                      }}
+                      onDragEnd={() => {
+                        setDraggedIndex(null);
+                        setDragOverIndex(null);
+                      }}
+                      className={`transition-all select-none ${
+                        isDragging
+                          ? "opacity-30 bg-neutral-800"
+                          : "hover:bg-neutral-800/30"
+                      } ${
+                        isOver
+                          ? "border-t-2 border-indigo-500 bg-indigo-500/10"
+                          : ""
+                      }`}
+                    >
+                      {/* Drag Handle & Up/Down Arrows */}
+                      <td className="px-4 py-4 text-center align-middle">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <span
+                            className="cursor-grab active:cursor-grabbing p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
+                            title="Drag to reorder"
                           >
-                            <ChevronUp className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            disabled={idx === categories.length - 1 || isSavingOrder}
-                            onClick={() => handleMoveDown(idx)}
-                            className="p-0.5 rounded hover:bg-[var(--secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] disabled:opacity-20 disabled:hover:bg-transparent transition-colors"
-                            title="Move category down"
-                          >
-                            <ChevronDown className="w-3.5 h-3.5" />
-                          </button>
+                            <GripVertical className="w-4 h-4" />
+                          </span>
+                          <div className="flex flex-col">
+                            <button
+                              type="button"
+                              disabled={idx === 0 || isSavingOrder}
+                              onClick={() => handleMoveUp(idx)}
+                              className="p-0.5 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-20 disabled:hover:bg-transparent transition-colors"
+                              title="Move category up"
+                            >
+                              <ChevronUp className="w-3 h-3" />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={idx === categories.length - 1 || isSavingOrder}
+                              onClick={() => handleMoveDown(idx)}
+                              className="p-0.5 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-20 disabled:hover:bg-transparent transition-colors"
+                              title="Move category down"
+                            >
+                              <ChevronDown className="w-3 h-3" />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    <td className="px-5 py-3.5 font-semibold text-[var(--foreground)]">
-                      <div>{cat.name}</div>
-                      {cat.description && (
-                        <div className="text-[11px] text-[var(--muted-foreground)] line-clamp-1 font-normal">
-                          {cat.description}
+                      <td className="px-6 py-4">
+                        <div className="font-bold text-sm text-white">{cat.name}</div>
+                        {cat.description && (
+                          <div className="text-[11px] text-neutral-400 line-clamp-1 font-normal mt-0.5">
+                            {cat.description}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-4 font-mono text-neutral-400 text-[11px]">
+                        /{cat.slug}
+                      </td>
+                      <td className="px-4 py-4 font-mono">
+                        <span className="px-2.5 py-1 rounded-lg bg-neutral-950 border border-neutral-800 text-[11px] font-bold text-indigo-400">
+                          #{cat.sort_order}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4">
+                        {cat.is_active ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            ACTIVE
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-neutral-800 text-neutral-400 border border-neutral-700">
+                            <span className="w-1.5 h-1.5 rounded-full bg-neutral-500" />
+                            DISABLED
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="inline-flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => openEditModal(cat)}
+                            className="p-2 rounded-xl border border-neutral-700/80 bg-neutral-800/60 hover:bg-indigo-500/15 text-neutral-300 hover:text-indigo-400 hover:border-indigo-500/30 transition-all shadow-xs"
+                            title="Edit category"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(cat.id, cat.name)}
+                            disabled={deletingId === cat.id}
+                            className="p-2 rounded-xl border border-neutral-700/80 bg-neutral-800/60 hover:bg-red-500/15 text-neutral-400 hover:text-red-400 hover:border-red-500/30 transition-all shadow-xs cursor-pointer"
+                            title="Delete category"
+                          >
+                            {deletingId === cat.id ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-3.5 h-3.5" />
+                            )}
+                          </button>
                         </div>
-                      )}
-                    </td>
-                    <td className="px-4 py-3.5 font-mono text-[var(--muted-foreground)]">
-                      /{cat.slug}
-                    </td>
-                    <td className="px-4 py-3.5 font-mono">
-                      <span className="px-2 py-0.5 rounded-md bg-[var(--secondary)] text-[11px] font-semibold text-[var(--foreground)]">
-                        {cat.sort_order}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      {cat.is_active ? (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600">
-                          ACTIVE
-                        </span>
-                      ) : (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-500/10 text-slate-500">
-                          DISABLED
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3.5 text-right">
-                      <div className="inline-flex items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => openEditModal(cat)}
-                          className="p-1.5 text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--secondary)] rounded-lg transition-colors"
-                          title="Edit category"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(cat.id, cat.name)}
-                          disabled={deletingId === cat.id}
-                          className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                          title="Delete category"
-                        >
-                          {deletingId === cat.id ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <Trash2 className="w-3.5 h-3.5" />
-                          )}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="px-6 py-3.5 bg-neutral-950/80 border-t border-neutral-800 flex items-center justify-between text-[11px] text-neutral-400">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
+              <span>
+                Total <strong className="text-white">{categories.length}</strong> taxonomy categories configured
+              </span>
+            </div>
+            <div className="font-mono text-[10px] text-neutral-400">
+              SUPABASE TAXONOMY SCHEMA ACTIVE
+            </div>
+          </div>
         </div>
       ) : (
         <EmptyState

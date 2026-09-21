@@ -2,6 +2,9 @@ import React from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { HomepageClient } from "./homepage-client";
 
+import { Sparkles, Eye, LayoutTemplate, Layers } from "lucide-react";
+import Link from "next/link";
+
 export const revalidate = 0;
 
 export default async function AdminHomepagePage() {
@@ -25,14 +28,37 @@ export default async function AdminHomepagePage() {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl">
-      <div>
-        <h1 className="text-2xl font-extrabold text-[var(--foreground)] tracking-tight">
-          Homepage Sections Editor
-        </h1>
-        <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
-          Customize and configure the hero banner, sections visibility, categories, featured releases, and founder bio on the public homepage.
-        </p>
+    <div className="space-y-6 max-w-7xl pb-16">
+      {/* ── SaaS Section Header ── */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl shadow-xl relative overflow-hidden">
+        <div className="absolute -top-16 -right-16 w-56 h-56 bg-fuchsia-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-fuchsia-500/10 border border-fuchsia-500/20 text-fuchsia-400 text-[11px] font-semibold tracking-wide uppercase mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400 animate-pulse" />
+            Visual Experience &amp; Storefront Architecture
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2.5">
+            <div className="p-2 rounded-2xl bg-fuchsia-500/10 border border-fuchsia-500/20 text-fuchsia-400">
+              <LayoutTemplate className="w-6 h-6" />
+            </div>
+            <span>Homepage Experience &amp; Sections</span>
+          </h1>
+          <p className="text-xs sm:text-sm text-neutral-400 mt-1 max-w-xl">
+            Customize and configure the 3D WebGL hero banner, section toggles, category displays, featured spotlight, and founder bio on the public homepage.
+          </p>
+        </div>
+
+        <div className="relative z-10 flex flex-wrap items-center gap-3">
+          <Link
+            href="/"
+            target="_blank"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-neutral-800 bg-neutral-950/80 hover:bg-neutral-800 text-xs font-bold text-neutral-200 hover:text-white transition-all shadow-sm group"
+          >
+            <Eye className="w-4 h-4 text-fuchsia-400 group-hover:scale-110 transition-transform" />
+            <span>Preview Storefront</span>
+          </Link>
+        </div>
       </div>
 
       <HomepageClient initialSettings={initialSettings} />

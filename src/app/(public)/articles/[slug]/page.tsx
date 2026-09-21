@@ -6,6 +6,7 @@ import type { Article } from "@/types/database";
 import { Newspaper, Calendar, Clock, Tag, ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import { AdSlot } from "@/components/ads/ad-slot";
+import { getActiveAd } from "@/lib/ads";
 
 export const revalidate = 120;
 
@@ -73,24 +74,33 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
   const a = article as Article;
   const supabase = createAdminClient();
 
-  // Fetch author profile separately (no FK relationship exists in schema)
-  let authorName = "NammaTech";
-  if (a.author_id) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("full_name")
-      .eq("id", a.author_id)
-      .maybeSingle();
-    if (profile?.full_name) authorName = profile.full_name;
-  }
+  // Fetch author profile, related articles, and ad placements concurrently in parallel
+  const [authorResult, relatedResult, topAdResult, inFeedAdResult] = await Promise.all([
+    a.author_id
+      ? supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", a.author_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    supabase
+      .from("articles")
+      .select("id, title, slug, thumbnail_url, published_at, excerpt")
+      .eq("status", "PUBLISHED")
+      .neq("id", a.id)
+      .order("published_at", { ascending: false })
+      .limit(3),
+    getActiveAd("RESOURCE_PAGE"),
+    getActiveAd("IN_FEED"),
+  ]);
 
-  const { data: related } = await supabase
-    .from("articles")
-    .select("id, title, slug, thumbnail_url, published_at, excerpt")
-    .eq("status", "PUBLISHED")
-    .neq("id", a.id)
-    .order("published_at", { ascending: false })
-    .limit(3);
+  let authorName = "NammaTech";
+  if (authorResult.data?.full_name) {
+    authorName = authorResult.data.full_name;
+  }
+  const related = relatedResult.data;
+  const topAd = topAdResult;
+  const inFeedAd = inFeedAdResult;
 
   return (
     <div className="relative min-h-screen py-8 sm:py-12 overflow-hidden">
@@ -158,8 +168,10 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
           </div>
         </header>
 
-        {/* AdSense top of article */}
-        <AdSlot location="RESOURCE_PAGE" format="fluid" slotId="7836943657" />
+        {/* AdSense top of article (only rendered if active in admin) */}
+        {topAd && (
+          <AdSlot ad={topAd} location="RESOURCE_PAGE" format="fluid" />
+        )}
 
         {/* Article Content */}
         <article className="rounded-3xl border border-[var(--border)] bg-[var(--card)] backdrop-blur-md p-6 sm:p-10 shadow-xl">
@@ -192,8 +204,10 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
           )}
         </article>
 
-        {/* AdSense bottom of article */}
-        <AdSlot location="IN_FEED" format="auto" slotId="8282064044" />
+        {/* AdSense bottom of article (only rendered if active in admin) */}
+        {inFeedAd && (
+          <AdSlot ad={inFeedAd} location="IN_FEED" format="auto" />
+        )}
 
         {/* Related Articles */}
         {related && related.length > 0 && (

@@ -12,18 +12,39 @@ export default async function AdminCouponsPage() {
     .select("*")
     .order("created_at", { ascending: false });
 
+  const allCoupons = (coupons || []) as Coupon[];
+  const activeCoupons = allCoupons.filter((c) => c.is_active).length;
+
   return (
-    <div className="space-y-6 max-w-6xl">
-      <div>
-        <h1 className="text-2xl font-extrabold text-[var(--foreground)] tracking-tight">
-          Coupons & Discounts
-        </h1>
-        <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
-          Create percentage or fixed promotional vouchers with minimum orders and usage caps.
-        </p>
+    <div className="space-y-6 max-w-7xl">
+      {/* ── SaaS Section Header ── */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl shadow-xl relative overflow-hidden">
+        <div className="absolute -top-16 -right-16 w-56 h-56 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[11px] font-semibold tracking-wide uppercase mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
+            Promotional Engine • Live Checkout Sync
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+            Coupons & Promotional Vouchers
+          </h1>
+          <p className="text-xs sm:text-sm text-neutral-400 mt-1 max-w-xl">
+            Configure percentage or fixed promotional vouchers, minimum order thresholds, and expiry safeguards.
+          </p>
+        </div>
+
+        <div className="relative z-10 flex items-center gap-3">
+          <div className="px-4 py-2.5 rounded-2xl bg-neutral-950/80 border border-neutral-800 text-xs text-neutral-300">
+            <span className="text-neutral-400">Active Codes:</span>{" "}
+            <strong className="text-purple-400 font-mono text-sm font-bold">
+              {activeCoupons} / {allCoupons.length}
+            </strong>
+          </div>
+        </div>
       </div>
 
-      <CouponsClient initialCoupons={(coupons || []) as Coupon[]} />
+      <CouponsClient initialCoupons={allCoupons} />
     </div>
   );
 }

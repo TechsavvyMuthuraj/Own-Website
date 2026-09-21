@@ -1,5 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Outfit, Geist, Geist_Mono } from "next/font/google";
+import {
+  Plus_Jakarta_Sans,
+  Inter,
+  Space_Grotesk,
+  DM_Sans,
+  Outfit,
+  Geist,
+  Geist_Mono,
+} from "next/font/google";
 import "./globals.css";
 import { RootProviders } from "@/components/providers/root-providers";
 import { GoogleAdSense } from "@/components/ads/google-adsense";
@@ -7,10 +15,38 @@ import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { getAdsGlobalSettings } from "@/lib/ads";
 import { AdsProvider } from "@/components/providers/ads-provider";
 
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-grotesk",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const dmSans = DM_Sans({
+  variable: "--font-dmsans",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
 const outfit = Outfit({
   variable: "--font-outfit",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -157,7 +193,11 @@ export default async function RootLayout({
   const { adsEnabled, autoAds } = await getAdsGlobalSettings();
 
   return (
-    <html lang="en" suppressHydrationWarning className={`${outfit.variable} ${geistSans.variable} ${geistMono.variable} h-full`}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${jakarta.variable} ${inter.variable} ${spaceGrotesk.variable} ${dmSans.variable} ${outfit.variable} ${geistSans.variable} ${geistMono.variable} h-full`}
+    >
       <head>
         {/* Google Site Verification */}
         <meta name="google-site-verification" content="google38f31838101be6e4" />

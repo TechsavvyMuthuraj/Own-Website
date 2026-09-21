@@ -1,0 +1,19 @@
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://api.justwoker.icu",
+    "ANTHROPIC_AUTH_TOKEN": "sk-eIwRp6ggzkBhUOA8TAtAuUoORWfWx3Llv753dFtxMmogAhxb",
+    "ANTHROPIC_MODEL": "claude-opus-4-8"
+  },
+  "modelOverrides": {
+    "claude-opus-4-8": "claude-opus-4-8",
+    "claude-opus-4-8-thinking": "claude-opus-4-8",
+    "claude-opus-5": "claude-opus-4-8",
+    "claude-opus-5-thinking": "claude-opus-4-8"
+  },
+  "effortLevel": "xhigh",
+  "modelSettings": {
+    "claude-opus-4-8": {
+      "effortLevel": "xhigh"
+    }
+  }
+}

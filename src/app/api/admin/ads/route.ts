@@ -210,6 +210,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
+    invalidateAdsCache();
     return NextResponse.json({ ad: data });
   } catch (err) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -243,6 +244,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
+    invalidateAdsCache();
     return NextResponse.json({ ad: data });
   } catch (err) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -269,6 +271,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
+    invalidateAdsCache();
     return NextResponse.json({ success: true });
   } catch (err) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

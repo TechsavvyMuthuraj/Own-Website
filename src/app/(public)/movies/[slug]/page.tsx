@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { MovieViewClient } from "./movie-view-client";
 import type { MovieItem, MovieDownloadLink } from "../movies-client";
+import { getActiveAd } from "@/lib/ads";
 
 interface MoviePageProps {
   params: Promise<{ slug: string }>;
@@ -270,14 +271,18 @@ export default async function MovieDetailPage({ params }: MoviePageProps) {
 
   const movieCategoryId = (item as any).category_id || movieCat?.id || "50e82476-24c6-498c-a703-49bbb96b0dcf";
 
-  const { data: relatedData } = await supabase
-    .from("resources")
-    .select("id, title, slug, version, created_at, size_bytes, tags, price, platform, thumbnail_url, category_id")
-    .eq("status", "PUBLISHED")
-    .eq("category_id", movieCategoryId)
-    .neq("id", item.id)
-    .order("published_at", { ascending: false })
-    .limit(4);
+  const [{ data: relatedData }, resourceAd, inFeedAd] = await Promise.all([
+    supabase
+      .from("resources")
+      .select("id, title, slug, version, created_at, size_bytes, tags, price, platform, thumbnail_url, category_id")
+      .eq("status", "PUBLISHED")
+      .eq("category_id", movieCategoryId)
+      .neq("id", item.id)
+      .order("published_at", { ascending: false })
+      .limit(4),
+    getActiveAd("RESOURCE_PAGE"),
+    getActiveAd("IN_FEED"),
+  ]);
 
   const relatedMovies: MovieItem[] = (relatedData || []).map((m: any) => ({
     id: m.id,
@@ -329,6 +334,8 @@ export default async function MovieDetailPage({ params }: MoviePageProps) {
         hasVipAccess={hasVipAccess}
         hasPendingOrder={hasPendingOrder}
         movieSlug={item.slug || item.id}
+        resourceAd={resourceAd}
+        inFeedAd={inFeedAd}
       />
     </div>
   );

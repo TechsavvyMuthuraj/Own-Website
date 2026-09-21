@@ -45,24 +45,44 @@ export default function AdminLayout({
     return <>{children}</>;
   }
 
-  const navItems = [
-    { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/admin/homepage", label: "Homepage Editor", icon: Home },
-    { href: "/admin/resources", label: "Resources", icon: Package },
-    { href: "/admin/movies", label: "Movies & Cinema", icon: Film },
-    { href: "/admin/articles", label: "Articles & News", icon: Newspaper },
-    { href: "/admin/wallpapers", label: "4K Wallpapers", icon: ImageIcon },
-    { href: "/admin/categories", label: "Categories", icon: Layers },
-    { href: "/admin/users", label: "Users & Verification", icon: Users },
-    { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
-    { href: "/admin/payments", label: "Payments", icon: CreditCard },
-    { href: "/admin/coupons", label: "Coupons", icon: Tag },
-    { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
-    { href: "/admin/ads", label: "Ad Placements", icon: Sliders },
-    { href: "/admin/messages", label: "Contact Inbox", icon: Mail },
-    { href: "/admin/requests", label: "Software Requests", icon: Compass },
-    { href: "/admin/audit-logs", label: "Audit Logs", icon: FileText },
-    { href: "/admin/settings", label: "System Settings", icon: Settings },
+  const navSections = [
+    {
+      title: "Core",
+      items: [
+        { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+        { href: "/admin/homepage", label: "Homepage Editor", icon: Home },
+      ],
+    },
+    {
+      title: "Catalog & Content",
+      items: [
+        { href: "/admin/resources", label: "Resources", icon: Package },
+        { href: "/admin/movies", label: "Movies & Cinema", icon: Film },
+        { href: "/admin/articles", label: "Articles & News", icon: Newspaper },
+        { href: "/admin/wallpapers", label: "4K Wallpapers", icon: ImageIcon },
+        { href: "/admin/categories", label: "Categories", icon: Layers },
+      ],
+    },
+    {
+      title: "Sales & Community",
+      items: [
+        { href: "/admin/users", label: "Users & Verification", icon: Users },
+        { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
+        { href: "/admin/payments", label: "Payments", icon: CreditCard },
+        { href: "/admin/coupons", label: "Coupons", icon: Tag },
+        { href: "/admin/messages", label: "Contact Inbox", icon: Mail },
+        { href: "/admin/requests", label: "Software Requests", icon: Compass },
+      ],
+    },
+    {
+      title: "System & Marketing",
+      items: [
+        { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
+        { href: "/admin/ads", label: "Ad Placements", icon: Sliders },
+        { href: "/admin/audit-logs", label: "Audit Logs", icon: FileText },
+        { href: "/admin/settings", label: "System Settings", icon: Settings },
+      ],
+    },
   ];
 
   return (
@@ -73,7 +93,7 @@ export default function AdminLayout({
           <button
             type="button"
             onClick={() => setMobileNavOpen(!mobileNavOpen)}
-            className="p-1.5 rounded-lg border border-[var(--border)] text-[var(--foreground)]"
+            className="p-1.5 rounded-lg border border-[var(--border)] text-[var(--foreground)] hover:bg-[var(--secondary)]"
           >
             {mobileNavOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -81,22 +101,22 @@ export default function AdminLayout({
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Link href="/" className="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
-            Site
+          <Link href="/" target="_blank" className="text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+            Site ↗
           </Link>
         </div>
       </div>
 
       {/* Admin Sidebar */}
       <aside
-        className={`fixed md:sticky top-0 left-0 z-40 h-screen w-64 border-r border-[var(--border)] bg-[var(--card)] flex flex-col transition-transform duration-300 md:translate-x-0 ${
-          mobileNavOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed md:sticky top-0 left-0 z-40 h-screen w-64 border-r border-[var(--border)] bg-[var(--card)]/95 backdrop-blur-xl flex flex-col transition-transform duration-300 md:translate-x-0 ${
+          mobileNavOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
         }`}
       >
         {/* Brand Header */}
-        <div className="p-5 border-b border-[var(--border)] flex items-center justify-between">
-          <Link href="/admin" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center shadow-md flex-shrink-0 ring-1 ring-[var(--border)]">
+        <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
+          <Link href="/admin" className="flex items-center gap-2.5 group">
+            <div className="w-8 h-8 rounded-xl overflow-hidden flex items-center justify-center shadow-md flex-shrink-0 ring-1 ring-[var(--border)] group-hover:scale-105 transition-transform">
               <Image
                 src="/images/nammatech-logo.png"
                 alt="NammaTech Logo"
@@ -107,47 +127,61 @@ export default function AdminLayout({
               />
             </div>
             <div>
-              <span className="font-bold text-sm text-[var(--foreground)] block">
+              <span className="font-black text-sm text-[var(--foreground)] tracking-tight block">
                 NammaTech
               </span>
-              <span className="text-[10px] text-[var(--muted-foreground)] font-mono">
-                Admin Console
+              <span className="text-[10px] text-[var(--muted-foreground)] font-mono flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Console v3.0
               </span>
             </div>
           </Link>
           <button
             type="button"
             onClick={() => setMobileNavOpen(false)}
-            className="md:hidden p-1 text-[var(--muted-foreground)]"
+            className="md:hidden p-1 text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Nav Links */}
-        <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-          {navItems.map((item) => {
-            const isActive =
-              item.href === "/admin"
-                ? pathname === "/admin"
-                : pathname.startsWith(item.href);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileNavOpen(false)}
-                className={`flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-medium transition-all ${
-                  isActive
-                    ? "bg-[var(--primary)] text-white shadow-sm font-semibold"
-                    : "text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--secondary)]"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
+        {/* Categorized Navigation */}
+        <nav className="flex-1 overflow-y-auto p-3 space-y-4 scrollbar-thin">
+          {navSections.map((sec, secIdx) => (
+            <div key={secIdx} className="space-y-1">
+              <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] opacity-70 mb-1">
+                {sec.title}
+              </div>
+              {sec.items.map((item) => {
+                const isActive =
+                  item.href === "/admin"
+                    ? pathname === "/admin"
+                    : pathname.startsWith(item.href);
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileNavOpen(false)}
+                    className={`group relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-150 ${
+                      isActive
+                        ? "bg-[var(--primary)] text-[var(--primary-foreground)] shadow-md shadow-[var(--primary)]/20 font-bold"
+                        : "text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--secondary)]"
+                    }`}
+                  >
+                    <Icon
+                      className={`w-4 h-4 transition-transform duration-200 group-hover:scale-110 flex-shrink-0 ${
+                        isActive
+                          ? "text-[var(--primary-foreground)]"
+                          : "text-[var(--muted-foreground)] group-hover:text-[var(--foreground)]"
+                      }`}
+                    />
+                    <span className="truncate">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         {/* Bottom User / Site Link */}

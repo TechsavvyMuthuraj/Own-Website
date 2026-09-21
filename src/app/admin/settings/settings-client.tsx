@@ -135,10 +135,10 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm space-y-6">
-      <div className="space-y-4">
+      <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl shadow-xl space-y-6">
+      <div className="space-y-5">
         <div>
-          <label className="block text-xs font-medium text-[var(--foreground)] mb-1.5">
+          <label className="block text-xs font-semibold text-neutral-300 mb-1.5">
             Platform Name
           </label>
           <input
@@ -146,19 +146,19 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
             required
             value={siteName}
             onChange={(e) => setSiteName(e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+            className="w-full px-4 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950/80 text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-violet-500 font-medium"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-[var(--foreground)] mb-1.5">
+          <label className="block text-xs font-semibold text-neutral-300 mb-1.5">
             Platform Meta Description
           </label>
           <textarea
             rows={2}
             value={siteDescription}
             onChange={(e) => setSiteDescription(e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+            className="w-full px-4 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950/80 text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-violet-500 font-medium"
           />
         </div>
 

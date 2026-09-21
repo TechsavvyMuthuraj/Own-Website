@@ -155,70 +155,85 @@ export function RequestsClient() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--foreground)] tracking-tight">
-            Software Requests
+      {/* ── SaaS Section Header ── */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl shadow-xl relative overflow-hidden">
+        <div className="absolute -top-16 -right-16 w-56 h-56 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[11px] font-semibold tracking-wide uppercase mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+            Software Requests Engine • Realtime Feedback
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2.5">
+            <Package className="w-7 h-7 text-cyan-400" />
+            <span>Community Software Requests</span>
           </h1>
-          <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1">
-            Review and manage user-submitted software addition requests.
+          <p className="text-xs sm:text-sm text-neutral-400 mt-1 max-w-xl">
+            Triage, investigate, prioritize, and fulfill user-submitted software requests and digital package additions.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => fetchRequests(true)}
-          disabled={refreshing}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--card)] text-xs font-medium hover:bg-[var(--secondary)] transition-colors"
-        >
-          <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-          <span>Refresh</span>
-        </button>
+
+        <div className="relative z-10 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => fetchRequests(true)}
+            disabled={refreshing}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-700/80 bg-neutral-800/60 hover:bg-neutral-800 text-xs font-semibold text-neutral-200 hover:text-white transition-all shadow-sm active:scale-95 cursor-pointer"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-cyan-400" : ""}`} />
+            <span>{refreshing ? "Syncing..." : "Sync Requests"}</span>
+          </button>
+        </div>
       </div>
 
       {/* Message */}
       {message && (
-        <div className={`p-3.5 rounded-2xl border text-xs flex items-center gap-2 animate-in fade-in duration-200 ${
+        <div className={`p-4 rounded-2xl border text-xs flex items-center gap-2 animate-in fade-in duration-200 ${
           message.type === "success"
-            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
-            : "bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400"
+            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+            : "bg-red-500/10 border-red-500/20 text-red-400"
         }`}>
           {message.type === "success" ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
           <span>{message.text}</span>
         </div>
       )}
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {/* Stats KPI Ribbon */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: "Total", value: stats.total, color: "text-[var(--foreground)]" },
-          { label: "Pending", value: stats.pending, color: "text-amber-600 dark:text-amber-400" },
-          { label: "In Review", value: stats.in_review, color: "text-indigo-600 dark:text-indigo-400" },
-          { label: "Fulfilled", value: stats.fulfilled, color: "text-emerald-600 dark:text-emerald-400" },
+          { label: "Total Requests", value: stats.total, color: "text-white", bg: "bg-blue-500/10 text-blue-400" },
+          { label: "Pending Review", value: stats.pending, color: "text-amber-400", bg: "bg-amber-500/10 text-amber-400" },
+          { label: "In Investigation", value: stats.in_review, color: "text-indigo-400", bg: "bg-indigo-500/10 text-indigo-400" },
+          { label: "Fulfilled Live", value: stats.fulfilled, color: "text-emerald-400", bg: "bg-emerald-500/10 text-emerald-400" },
         ].map((stat) => (
-          <div key={stat.label} className="p-4 rounded-2xl border border-[var(--border)] bg-[var(--card)]">
-            <p className="text-xs text-[var(--muted-foreground)]">{stat.label}</p>
-            <p className={`text-2xl font-extrabold mt-1 ${stat.color}`}>{stat.value}</p>
+          <div key={stat.label} className="p-4 rounded-2xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-md shadow-sm flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold ${stat.bg}`}>
+              <Package className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">{stat.label}</p>
+              <p className={`text-xl font-black mt-0.5 ${stat.color}`}>{stat.value}</p>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      {/* Filters Toolbar */}
+      <div className="p-4 rounded-3xl border border-neutral-800/80 bg-neutral-900/50 backdrop-blur-xl shadow-xl flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-2.5 w-4 h-4 text-[var(--muted-foreground)]" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
           <input
             type="text"
-            placeholder="Search by name, email, category..."
+            placeholder="Search requests by software, email, category..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--card)] text-sm text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950/80 text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 transition-all shadow-inner"
           />
         </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--card)] text-sm text-[var(--foreground)] focus:outline-none"
+          className="px-3.5 py-2 rounded-xl border border-neutral-800 bg-neutral-950 text-xs text-neutral-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/40 cursor-pointer"
         >
           <option value="ALL">All Status</option>
           <option value="PENDING">Pending</option>
@@ -231,7 +246,7 @@ export function RequestsClient() {
 
       <div className="flex gap-6">
         {/* Requests Table */}
-        <div className={`flex-1 rounded-2xl border border-[var(--border)] bg-[var(--card)] overflow-hidden ${selectedRequest ? "hidden lg:block" : ""}`}>
+        <div className={`flex-1 rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl shadow-2xl overflow-hidden ${selectedRequest ? "hidden lg:block" : ""}`}>
           {loading ? (
             <div className="flex items-center justify-center py-16">
               <Loader2 className="w-6 h-6 animate-spin text-[var(--muted-foreground)]" />

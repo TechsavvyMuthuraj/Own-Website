@@ -244,25 +244,35 @@ export function UsersClient() {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner & Refresh */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--foreground)] tracking-tight">
-            Users & Verification
+      {/* ── SaaS Section Header ── */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl shadow-xl relative overflow-hidden">
+        <div className="absolute -top-16 -right-16 w-56 h-56 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[11px] font-semibold tracking-wide uppercase mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+            Identity & Verification Engine • Supabase Auth
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2.5">
+            <Users className="w-7 h-7 text-indigo-400" />
+            <span>Users & Access Control</span>
           </h1>
-          <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1">
-            Real-time directory of all registered NammaTech accounts, activity presence, roles, and verification status.
+          <p className="text-xs sm:text-sm text-neutral-400 mt-1 max-w-xl">
+            Real-time directory of registered accounts, live activity presence, role elevations, and order histories.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={fetchUsers}
-          disabled={refreshing}
-          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--secondary)] text-xs font-semibold text-[var(--foreground)] transition-colors shadow-sm self-start sm:self-auto"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-indigo-500" : ""}`} />
-          <span>{refreshing ? "Refreshing..." : "Refresh Presence"}</span>
-        </button>
+
+        <div className="relative z-10 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={fetchUsers}
+            disabled={refreshing}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-700/80 bg-neutral-800/60 hover:bg-neutral-800 text-xs font-semibold text-neutral-200 hover:text-white transition-all shadow-sm active:scale-95 cursor-pointer"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-indigo-400" : ""}`} />
+            <span>{refreshing ? "Syncing..." : "Sync Presence"}</span>
+          </button>
+        </div>
       </div>
 
       {/* Feedback Toast */}
@@ -270,8 +280,8 @@ export function UsersClient() {
         <div
           className={`p-4 rounded-2xl text-xs flex items-center justify-between gap-3 border ${
             message.type === "success"
-              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
-              : "bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400"
+              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+              : "bg-red-500/10 border-red-500/20 text-red-400"
           }`}
         >
           <div className="flex items-center gap-2">
@@ -291,95 +301,86 @@ export function UsersClient() {
       {/* Metrics Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Users */}
-        <div className="p-5 rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
-          <div className="flex items-center justify-between text-[var(--muted-foreground)] mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Total Users</span>
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-              <Users className="w-4 h-4" />
-            </div>
+        <div className="p-4 rounded-2xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-md shadow-sm flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform">
+          <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold">
+            <Users className="w-5 h-5" />
           </div>
-          <div className="text-2xl sm:text-3xl font-extrabold text-[var(--foreground)]">
-            {stats.total_users}
+          <div>
+            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
+              Total Accounts
+            </span>
+            <span className="text-xl font-black text-white">
+              {stats.total_users}
+            </span>
           </div>
-          <p className="text-[10px] text-[var(--muted-foreground)] mt-1">
-            Registered on NammaTech
-          </p>
         </div>
 
         {/* Online Now */}
-        <div className="p-5 rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
-          <div className="flex items-center justify-between text-[var(--muted-foreground)] mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Online Now</span>
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-              <Activity className="w-4 h-4 animate-pulse" />
+        <div className="p-4 rounded-2xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-md shadow-sm flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
+            <Activity className="w-5 h-5 animate-pulse" />
+          </div>
+          <div>
+            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
+              Online Presence
+            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xl font-black text-emerald-400">{stats.online_users}</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl sm:text-3xl font-extrabold text-[var(--foreground)]">
-              {stats.online_users}
-            </span>
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
-          </div>
-          <p className="text-[10px] text-[var(--muted-foreground)] mt-1">
-            Active in the last 5 minutes
-          </p>
         </div>
 
         {/* Admins */}
-        <div className="p-5 rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
-          <div className="flex items-center justify-between text-[var(--muted-foreground)] mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Administrators</span>
-            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
-              <ShieldCheck className="w-4 h-4" />
-            </div>
+        <div className="p-4 rounded-2xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-md shadow-sm flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform">
+          <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center font-bold">
+            <ShieldCheck className="w-5 h-5" />
           </div>
-          <div className="text-2xl sm:text-3xl font-extrabold text-[var(--foreground)]">
-            {stats.admin_users}
+          <div>
+            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
+              Staff & Admins
+            </span>
+            <span className="text-xl font-black text-purple-400">
+              {stats.admin_users}
+            </span>
           </div>
-          <p className="text-[10px] text-[var(--muted-foreground)] mt-1">
-            Admins & Super Admins
-          </p>
         </div>
 
         {/* Email Verified */}
-        <div className="p-5 rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm">
-          <div className="flex items-center justify-between text-[var(--muted-foreground)] mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Verified Accounts</span>
-            <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
-              <UserCheck className="w-4 h-4" />
-            </div>
+        <div className="p-4 rounded-2xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-md shadow-sm flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform">
+          <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center font-bold">
+            <UserCheck className="w-5 h-5" />
           </div>
-          <div className="text-2xl sm:text-3xl font-extrabold text-[var(--foreground)]">
-            {stats.verified_users}
+          <div>
+            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
+              Verified Accounts
+            </span>
+            <span className="text-xl font-black text-cyan-400">
+              {stats.verified_users}
+            </span>
           </div>
-          <p className="text-[10px] text-[var(--muted-foreground)] mt-1">
-            Confirmed email addresses
-          </p>
         </div>
       </div>
 
       {/* Filter & Search Toolbar */}
-      <div className="p-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] flex flex-col md:flex-row items-center gap-3">
-        <div className="relative flex-1 w-full">
-          <Search className="absolute left-3.5 top-3 w-4 h-4 text-[var(--muted-foreground)]" />
+      <div className="p-4 rounded-3xl border border-neutral-800/80 bg-neutral-900/50 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-3 shadow-xl">
+        <div className="relative flex-1 w-full max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by name, email, or user UUID..."
-            className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+            className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-neutral-800 bg-neutral-950/80 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all shadow-inner"
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full md:w-auto">
+        <div className="flex items-center gap-2.5 w-full md:w-auto">
           {/* Role Filter */}
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] focus:outline-none"
+            className="px-3.5 py-2 text-xs rounded-xl border border-neutral-800 bg-neutral-950 text-neutral-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all cursor-pointer"
           >
             <option value="ALL">All Roles</option>
             <option value="SUPER_ADMIN">Super Admin</option>
@@ -391,7 +392,7 @@ export function UsersClient() {
           <select
             value={presenceFilter}
             onChange={(e) => setPresenceFilter(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] focus:outline-none"
+            className="px-3.5 py-2 text-xs rounded-xl border border-neutral-800 bg-neutral-950 text-neutral-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all cursor-pointer"
           >
             <option value="ALL">All Status</option>
             <option value="ONLINE">🟢 Online Now</option>
@@ -401,10 +402,10 @@ export function UsersClient() {
       </div>
 
       {/* Users Table */}
-      <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm overflow-hidden">
+      <div className="rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl shadow-2xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="border-b border-[var(--border)] bg-[var(--secondary)]/50 text-[var(--muted-foreground)] font-semibold uppercase tracking-wider">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead className="border-b border-neutral-800 bg-neutral-950/70 text-neutral-400 font-semibold uppercase tracking-wider text-[10px]">
               <tr>
                 <th className="py-3.5 px-4">User</th>
                 <th className="py-3.5 px-4">Status</th>
@@ -623,6 +624,19 @@ export function UsersClient() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* SaaS Table Footer */}
+        <div className="px-6 py-3.5 bg-neutral-950/80 border-t border-neutral-800 flex items-center justify-between text-[11px] text-neutral-400">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>
+              Showing <strong className="text-white">{filteredUsers.length}</strong> registered user profiles
+            </span>
+          </div>
+          <div className="font-mono text-[10px] text-neutral-400">
+            SUPABASE AUTH POSTGRESQL CLUSTER ACTIVE
+          </div>
         </div>
       </div>
 

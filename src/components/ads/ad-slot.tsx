@@ -61,13 +61,8 @@ export function AdSlot({
     return null;
   }
 
-  // 2. If ad prop is explicitly null (e.g. getActiveAd returned null or placement inactive), render nothing
-  if (ad === null) {
-    return null;
-  }
-
-  // 3. If ad is explicitly provided and inactive, render nothing
-  if (ad && !ad.is_active) {
+  // 2. If no ad placement is provided, or if the placement is null or inactive in database, render nothing
+  if (!ad || !ad.is_active) {
     return null;
   }
 

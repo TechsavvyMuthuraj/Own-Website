@@ -489,36 +489,49 @@ export function OrdersTableClient({ initialOrders }: { initialOrders: any[] }) {
   return (
     <div className="space-y-4">
       {pendingCount > 0 && (
-        <div className="flex items-start gap-3 px-4 py-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20">
-          <Clock className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 p-4 rounded-3xl bg-amber-500/10 border border-amber-500/25 backdrop-blur-md shadow-sm">
+          <Clock className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
           <div className="space-y-0.5">
-            <p className="text-xs font-bold text-amber-700 dark:text-amber-400">
-              {pendingCount} order{pendingCount > 1 ? "s" : ""} pending verification
+            <p className="text-xs font-bold text-amber-300">
+              {pendingCount} order{pendingCount > 1 ? "s" : ""} awaiting cross-verification
             </p>
             {noUtrCount > 0 && (
-              <p className="text-[11px] text-[var(--muted-foreground)]">
-                {noUtrCount} of them have no UTR yet — user needs to add it from their order history first.
+              <p className="text-[11px] text-neutral-400">
+                {noUtrCount} of them have no UTR yet — customer needs to submit their 12-digit transaction ID from their Order History.
               </p>
             )}
           </div>
         </div>
       )}
 
-      <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] overflow-hidden shadow-sm">
+      <div className="rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl overflow-hidden shadow-2xl">
         {/* Header */}
-        <div className="grid grid-cols-[1fr_1.4fr_auto_auto_auto_auto] gap-3 px-5 py-3.5 bg-[var(--secondary)]/60 border-b border-[var(--border)] text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
-          <span>Order</span>
-          <span>Customer</span>
-          <span>Amount</span>
-          <span className="hidden sm:block">User UTR</span>
+        <div className="grid grid-cols-[1fr_1.4fr_auto_auto_auto_auto] gap-3 px-6 py-4 bg-neutral-950/70 border-b border-neutral-800 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+          <span>Order Number</span>
+          <span>Customer Profile</span>
+          <span>Settled Amount</span>
+          <span className="hidden sm:block">Customer UTR</span>
           <span>Status</span>
           <span />
         </div>
 
-        <div>
+        <div className="divide-y divide-neutral-800/60">
           {initialOrders.map((order) => (
             <OrderRow key={order.id} order={order} />
           ))}
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-3.5 bg-neutral-950/80 border-t border-neutral-800 flex items-center justify-between text-[11px] text-neutral-400">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>
+              Total <strong className="text-white">{initialOrders.length}</strong> orders logged in PostgreSQL
+            </span>
+          </div>
+          <div className="font-mono text-[10px] text-neutral-400">
+            UPI / RAZORPAY / CASHFREE PIPELINE
+          </div>
         </div>
       </div>
     </div>

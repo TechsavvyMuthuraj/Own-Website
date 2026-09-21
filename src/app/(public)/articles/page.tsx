@@ -5,6 +5,7 @@ import type { Article } from "@/types/database";
 import { Newspaper, Sparkles, ArrowRight, Tag, Calendar, Clock, BookOpen } from "lucide-react";
 import type { Metadata } from "next";
 import { AdSlot } from "@/components/ads/ad-slot";
+import { getActiveAd } from "@/lib/ads";
 
 export const metadata: Metadata = {
   title: "Articles & News | NammaTech Journal",
@@ -45,17 +46,29 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
   let articles: Article[] = [];
   let featuredArticles: Article[] = [];
   let allTags: string[] = [];
+  let topAd: any = null;
+  let bottomAd: any = null;
 
   try {
-    const { data: featuredData } = await supabase
-      .from("articles")
-      .select("*")
-      .eq("status", "PUBLISHED")
-      .eq("featured", true)
-      .order("published_at", { ascending: false })
-      .limit(3);
+    const [featuredResult, tagResult, topAdResult, bottomAdResult] = await Promise.all([
+      supabase
+        .from("articles")
+        .select("*")
+        .eq("status", "PUBLISHED")
+        .eq("featured", true)
+        .order("published_at", { ascending: false })
+        .limit(3),
+      supabase
+        .from("articles")
+        .select("tags")
+        .eq("status", "PUBLISHED"),
+      getActiveAd("HOMEPAGE"),
+      getActiveAd("FOOTER"),
+    ]);
 
-    if (featuredData) featuredArticles = featuredData as Article[];
+    if (featuredResult.data) featuredArticles = featuredResult.data as Article[];
+    topAd = topAdResult;
+    bottomAd = bottomAdResult;
 
     let query = supabase
       .from("articles")
@@ -72,10 +85,7 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
     if (data) articles = data as Article[];
 
     // Extract unique tags
-    const { data: tagData } = await supabase
-      .from("articles")
-      .select("tags")
-      .eq("status", "PUBLISHED");
+    const tagData = tagResult.data;
     if (tagData) {
       const tagSet = new Set<string>();
       tagData.forEach((row: any) => {
@@ -95,10 +105,12 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-[120px] pointer-events-none -z-10" />
       <div className="absolute top-1/2 right-10 w-96 h-96 bg-yellow-500/8 rounded-full blur-[130px] pointer-events-none -z-10" />
 
-      {/* Top AdSlot */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <AdSlot location="HOMEPAGE" format="auto" slotId="6779758190" />
-      </div>
+      {/* Top AdSlot (only rendered if active in admin) */}
+      {topAd && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <AdSlot ad={topAd} location="HOMEPAGE" format="auto" />
+        </div>
+      )}
 
       {/* 1. HERO BANNER FOR JOURNAL */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
@@ -334,10 +346,12 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
         )}
       </section>
 
-      {/* Bottom AdSlot */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <AdSlot location="FOOTER" format="auto" slotId="2029994396" />
-      </div>
+      {/* Bottom AdSlot (only rendered if active in admin) */}
+      {bottomAd && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <AdSlot ad={bottomAd} location="FOOTER" format="auto" />
+        </div>
+      )}
     </div>
   );
 }

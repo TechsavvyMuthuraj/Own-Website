@@ -194,21 +194,21 @@ export function CouponsClient({ initialCoupons }: { initialCoupons: Coupon[] }) 
         <button
           type="button"
           onClick={() => setShowAddForm(!showAddForm)}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] transition-all shadow-sm"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white font-bold text-xs transition-all shadow-lg shadow-purple-500/20 active:scale-95 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>{showAddForm ? "Cancel" : "Add Coupon"}</span>
+          <span>{showAddForm ? "Cancel" : "+ Create Coupon Code"}</span>
         </button>
       </div>
 
       {showAddForm && (
-        <form onSubmit={handleCreate} className="p-6 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm space-y-4 max-w-2xl">
-          <h3 className="text-sm font-bold text-[var(--foreground)] uppercase tracking-wider">
-            Create Discount Code
+        <form onSubmit={handleCreate} className="p-6 rounded-3xl border border-neutral-800/80 bg-neutral-900/50 backdrop-blur-xl shadow-2xl space-y-4 max-w-2xl">
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+            Create Promotional Voucher
           </h3>
 
           {errorMsg && (
-            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs flex items-center gap-2">
+            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
               <span>{errorMsg}</span>
             </div>
@@ -319,77 +319,93 @@ export function CouponsClient({ initialCoupons }: { initialCoupons: Coupon[] }) 
       )}
 
       {initialCoupons.length > 0 ? (
-        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] overflow-hidden shadow-sm">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-[var(--secondary)]/60 text-[var(--muted-foreground)] uppercase font-semibold border-b border-[var(--border)]">
-              <tr>
-                <th className="px-5 py-3.5">Code</th>
-                <th className="px-4 py-3.5">Discount</th>
-                <th className="px-4 py-3.5">Min Order</th>
-                <th className="px-4 py-3.5">Usage</th>
-                <th className="px-4 py-3.5">Expires</th>
-                <th className="px-4 py-3.5">Status</th>
-                <th className="px-5 py-3.5 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--border)]">
-              {initialCoupons.map((c) => (
-                <tr key={c.id} className="hover:bg-[var(--secondary)]/30 transition-colors">
-                  <td className="px-5 py-3.5 font-mono font-bold text-[var(--foreground)]">
-                    {c.code}
-                  </td>
-                  <td className="px-4 py-3.5 font-semibold text-emerald-600">
-                    {c.discount_type === "PERCENTAGE"
-                      ? `${c.discount_value}%`
-                      : `₹${c.discount_value}`}
-                  </td>
-                  <td className="px-4 py-3.5 font-mono">₹{c.min_order}</td>
-                  <td className="px-4 py-3.5 font-mono">
-                    {c.times_used} / {c.usage_limit ?? "∞"}
-                  </td>
-                  <td className="px-4 py-3.5 text-[var(--muted-foreground)]">
-                    {c.expires_at ? formatDate(c.expires_at) : "Never"}
-                  </td>
-                  <td className="px-4 py-3.5">
-                    {c.is_active ? (
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600">
-                        ACTIVE
-                      </span>
-                    ) : (
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-500/10 text-slate-500">
-                        DISABLED
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3.5 text-right">
-                    <div className="inline-flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => openEditModal(c)}
-                        className="p-1.5 text-[var(--foreground)] hover:text-[var(--primary)] hover:bg-[var(--secondary)] rounded-lg transition-colors"
-                        title="Edit coupon"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(c.id, c.code)}
-                        disabled={deletingId === c.id}
-                        className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                        title="Delete coupon"
-                      >
-                        {deletingId === c.id ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-3.5 h-3.5" />
-                        )}
-                      </button>
-                    </div>
-                  </td>
+        <div className="rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl overflow-hidden shadow-2xl">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead className="bg-neutral-950/70 text-neutral-400 uppercase font-semibold border-b border-neutral-800 text-[10px]">
+                <tr>
+                  <th className="px-6 py-4">Voucher Code</th>
+                  <th className="px-4 py-4">Discount Value</th>
+                  <th className="px-4 py-4">Min Spend</th>
+                  <th className="px-4 py-4">Redemptions</th>
+                  <th className="px-4 py-4">Validity</th>
+                  <th className="px-4 py-4">Status</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-neutral-800/60">
+                {initialCoupons.map((c) => (
+                  <tr key={c.id} className="hover:bg-neutral-800/30 transition-colors group">
+                    <td className="px-6 py-4 font-mono font-black text-white text-sm">
+                      <span className="px-2.5 py-1 rounded-lg bg-neutral-950 border border-neutral-800 text-purple-300">
+                        {c.code}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 font-bold text-emerald-400 font-mono">
+                      {c.discount_type === "PERCENTAGE"
+                        ? `${c.discount_value}% OFF`
+                        : `₹${c.discount_value} FLAT`}
+                    </td>
+                    <td className="px-4 py-4 font-mono text-neutral-300">₹{c.min_order}</td>
+                    <td className="px-4 py-4 font-mono text-neutral-400">
+                      <span className="text-white font-bold">{c.times_used}</span> / {c.usage_limit ?? "∞"}
+                    </td>
+                    <td className="px-4 py-4 text-neutral-400 text-[11px] font-mono">
+                      {c.expires_at ? formatDate(c.expires_at) : "Never Expires"}
+                    </td>
+                    <td className="px-4 py-4">
+                      {c.is_active ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          ACTIVE
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-neutral-800 text-neutral-400 border border-neutral-700">
+                          <span className="w-1.5 h-1.5 rounded-full bg-neutral-500" />
+                          DISABLED
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="inline-flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => openEditModal(c)}
+                          className="p-2 rounded-xl border border-neutral-700/80 bg-neutral-800/60 hover:bg-purple-500/15 text-neutral-300 hover:text-purple-400 hover:border-purple-500/30 transition-all shadow-xs"
+                          title="Edit coupon"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(c.id, c.code)}
+                          disabled={deletingId === c.id}
+                          className="p-2 rounded-xl border border-neutral-700/80 bg-neutral-800/60 hover:bg-red-500/15 text-neutral-400 hover:text-red-400 hover:border-red-500/30 transition-all shadow-xs cursor-pointer"
+                          title="Delete coupon"
+                        >
+                          {deletingId === c.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="px-6 py-3.5 bg-neutral-950/80 border-t border-neutral-800 flex items-center justify-between text-[11px] text-neutral-400">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+              <span>Total <strong className="text-white">{initialCoupons.length}</strong> promotion vouchers logged</span>
+            </div>
+            <div className="font-mono text-[10px] text-neutral-400">
+              COMMERCE ENGINE ACTIVE
+            </div>
+          </div>
         </div>
       ) : (
         <EmptyState

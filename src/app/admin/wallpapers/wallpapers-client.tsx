@@ -203,43 +203,47 @@ export function WallpapersClient({
   });
 
   return (
-    <div className="p-4 sm:p-8 space-y-8 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-[var(--border)] pb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
-              <ImageIcon className="w-5 h-5" />
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-black text-[var(--foreground)] tracking-tight">
-              4K Wallpapers Manager
-            </h1>
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* ── SaaS Section Header ── */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl shadow-xl relative overflow-hidden">
+        <div className="absolute -top-16 -right-16 w-56 h-56 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[11px] font-semibold tracking-wide uppercase mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+            4K UHD Visual Engine • S3 Presigned Node
           </div>
-          <p className="text-sm text-[var(--muted-foreground)]">
-            Create, curate, and distribute verified Ultra HD desktop and mobile wallpapers.
+          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2.5">
+            <ImageIcon className="w-7 h-7 text-amber-400" />
+            <span>4K Wallpapers Manager</span>
+          </h1>
+          <p className="text-xs sm:text-sm text-neutral-400 mt-1 max-w-xl">
+            Curate, configure resolution tags, and distribute watermark-free Ultra HD desktop and mobile backgrounds.
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={handleOpenCreate}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 text-sm font-bold shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add 4K Wallpaper</span>
-        </button>
+        <div className="relative z-10 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleOpenCreate}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:brightness-110 text-neutral-950 font-black text-xs transition-all shadow-lg shadow-amber-500/25 active:scale-95 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>+ Add 4K Wallpaper</span>
+          </button>
+        </div>
       </div>
 
-      {/* Search & Categories Bar */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 text-[var(--muted-foreground)] absolute left-3.5 top-1/2 -translate-y-1/2" />
+      {/* ── SaaS Search & Categories Bar ── */}
+      <div className="p-4 rounded-3xl border border-neutral-800/80 bg-neutral-900/50 backdrop-blur-xl shadow-xl flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="relative w-full md:max-w-sm">
+          <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             placeholder="Search wallpapers by title..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--card)] text-sm text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-amber-500/50"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950/80 text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 transition-all shadow-inner"
           />
         </div>
 
@@ -251,7 +255,7 @@ export function WallpapersClient({
             className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
               selectedCategory === "ALL"
                 ? "bg-amber-500 text-neutral-950 shadow-sm"
-                : "bg-[var(--secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-[var(--border)]"
+                : "bg-neutral-950 text-neutral-400 hover:text-white border border-neutral-800"
             }`}
           >
             All Wallpapers ({wallpapers.length})
@@ -264,7 +268,7 @@ export function WallpapersClient({
               className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
                 selectedCategory === cat
                   ? "bg-amber-500 text-neutral-950 font-bold shadow-sm"
-                  : "bg-[var(--secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] border border-[var(--border)]"
+                  : "bg-neutral-950 text-neutral-400 hover:text-white border border-neutral-800"
               }`}
             >
               {cat}

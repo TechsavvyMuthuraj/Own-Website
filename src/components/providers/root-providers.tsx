@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "./theme-provider";
+import { StyleProvider } from "@/components/theme/style-context";
 import { AuthProvider } from "@/lib/auth/auth-context";
 import { CartProvider } from "@/lib/cart/cart-store";
 import { ClickSoundProvider } from "@/components/ui/click-sound-provider";
@@ -28,17 +29,19 @@ export function RootProviders({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-        <AuthProvider>
-          <CartProvider>
-            <ClickSoundProvider>
-              <ToastProvider>
-                {children}
-                <ScrollToTop />
-                <CookieConsent />
-              </ToastProvider>
-            </ClickSoundProvider>
-          </CartProvider>
-        </AuthProvider>
+        <StyleProvider>
+          <AuthProvider>
+            <CartProvider>
+              <ClickSoundProvider>
+                <ToastProvider>
+                  {children}
+                  <ScrollToTop />
+                  <CookieConsent />
+                </ToastProvider>
+              </ClickSoundProvider>
+            </CartProvider>
+          </AuthProvider>
+        </StyleProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

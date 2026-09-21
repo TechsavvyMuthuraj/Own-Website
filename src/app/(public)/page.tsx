@@ -24,6 +24,12 @@ import { AdSlot } from "@/components/ads/ad-slot";
 import { getActiveAd } from "@/lib/ads";
 import { FounderProfile } from "@/components/home/founder-profile";
 import { HomepageWallpapers } from "@/components/wallpapers/homepage-wallpapers";
+import { LiveStatsBar } from "@/components/home/live-stats-bar";
+import { InteractivePlatformStrip } from "@/components/home/interactive-platform-strip";
+import { FeaturesGrid } from "@/components/home/features-grid";
+import { HomepageFaq } from "@/components/home/homepage-faq";
+import { ThemeCustomizer } from "@/components/theme/theme-customizer";
+import { HeroInteractiveBanner } from "@/components/home/hero-interactive-banner";
 
 import type { Metadata } from "next";
 
@@ -45,6 +51,10 @@ export default async function HomePage() {
   let inFeedAd: any = null;
   let hpSettings: Record<string, any> = {};
   let wallpapers: Wallpaper[] = [];
+  let totalResourcesCount = 0;
+  let totalCategoriesCount = 0;
+  let totalWallpapersCount = 0;
+  let totalMoviesCount = 0;
 
   try {
     const CARD_FIELDS =
@@ -59,6 +69,9 @@ export default async function HomePage() {
       categoriesResult,
       hpSettingsResult,
       wallpapersResult,
+      resCountResult,
+      catCountResult,
+      wpCountResult,
     ] = await Promise.all([
       getActiveAd("HOMEPAGE"),
       getActiveAd("IN_FEED"),
@@ -93,7 +106,23 @@ export default async function HomePage() {
         .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false })
         .limit(9),
+      supabase
+        .from("resources")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "PUBLISHED"),
+      supabase
+        .from("categories")
+        .select("*", { count: "exact", head: true })
+        .eq("is_active", true),
+      supabase
+        .from("wallpapers")
+        .select("*", { count: "exact", head: true })
+        .eq("is_active", true),
     ]);
+
+    totalResourcesCount = resCountResult?.count ?? 0;
+    totalCategoriesCount = catCountResult?.count ?? 0;
+    totalWallpapersCount = wpCountResult?.count ?? 0;
 
     if (hpSettingsResult?.data?.value) {
       try {
@@ -179,101 +208,39 @@ export default async function HomePage() {
     "Recently verified releases, updates, and open-source packages.";
 
   return (
-    <div className="flex flex-col gap-16 py-8 sm:py-12">
+    <div className="relative flex flex-col gap-16 py-8 sm:py-12 overflow-hidden">
+      {/* Background Ambient Mesh Light */}
+      <div className="namma-ambient-mesh" />
+
       {/* 1. HERO SECTION WITH FOUNDER GRAPHIC */}
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-neutral-950 shadow-2xl">
-          {/* Full resolution graphic banner */}
-          <div className="relative w-full aspect-[1983/793]">
-            <Image
-              src={heroImageUrl}
-              alt="NammaTech - Everything You Need In One Place. Founder Muthuraj"
-              fill
-              priority
-              sizes="(max-width: 640px) 100vw, (max-width: 1280px) 1200px, 1280px"
-              className="object-cover object-center select-none"
-            />
-
-            {/* Desktop Interactive Search Overlay positioned at reference x: 17.2%, y: 89.5% */}
-            {showSearchBar && (
-              <div
-                className="hidden md:flex flex-col justify-center absolute z-10"
-                style={{
-                  left: "17.2%",
-                  top: "89.5%",
-                  transform: "translateY(-50%)",
-                  width: "36%",
-                }}
-              >
-                <form
-                  action="/search"
-                  method="GET"
-                  className="relative flex items-center w-full"
-                >
-                  <div className="relative w-full flex items-center shadow-2xl">
-                    <input
-                      type="text"
-                      name="q"
-                      placeholder={searchPlaceholder}
-                      aria-label="Search resources"
-                      className="w-full py-3.5 pl-12 pr-28 rounded-full bg-black/70 hover:bg-black/85 focus:bg-neutral-950 text-white placeholder-neutral-300 text-xs sm:text-sm font-medium border-2 border-amber-500/50 focus:border-amber-400 focus:outline-none focus:ring-4 focus:ring-amber-500/30 transition-all backdrop-blur-md"
-                    />
-                    <Search className="absolute left-4 w-4 h-4 text-amber-400 pointer-events-none" />
-                    <button
-                      type="submit"
-                      className="absolute right-1.5 px-6 py-2 rounded-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:brightness-110 text-neutral-950 text-xs font-black transition-all shadow-lg shadow-amber-500/30 active:scale-95 cursor-pointer"
-                    >
-                      Search
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
-          </div>
-
-          {/* Mobile-Friendly Search Bar Below Graphic */}
-          {showSearchBar && (
-            <div className="md:hidden p-4 bg-neutral-900/90 border-t border-neutral-800">
-              <form action="/search" method="GET" className="relative flex items-center">
-                <Search className="absolute left-3.5 w-4 h-4 text-neutral-400" />
-                <input
-                  type="text"
-                  name="q"
-                  placeholder={searchPlaceholder}
-                  className="w-full pl-10 pr-24 py-2.5 rounded-2xl border border-amber-500/30 bg-neutral-950 text-xs text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-amber-500/40 shadow-inner"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-1.5 px-3.5 py-1.5 rounded-xl bg-amber-400 text-neutral-950 text-xs font-bold hover:bg-amber-300 transition-all cursor-pointer"
-                >
-                  Search
-                </button>
-              </form>
-            </div>
-          )}
-        </div>
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
+        <HeroInteractiveBanner
+          heroImageUrl={heroImageUrl}
+          showSearchBar={showSearchBar}
+          searchPlaceholder={searchPlaceholder}
+        />
 
         {/* Quick Trending / Quick-Access Pills */}
         {showTrending && (
-          <div className="flex items-center gap-2 overflow-x-auto py-3 px-1 text-xs font-semibold text-neutral-300">
+          <div className="flex items-center gap-2 overflow-x-auto py-3 px-1 text-xs font-semibold text-[var(--foreground)]">
             <span className="text-[var(--muted-foreground)] text-xs flex-shrink-0 font-medium">
               {trendingLabel}
             </span>
             <Link
               href="/movies"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 whitespace-nowrap transition-all shadow-sm"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-500 dark:text-amber-400 whitespace-nowrap transition-all shadow-sm"
             >
               <span>🎬 Movies (Free & 4K VIP)</span>
             </Link>
             <Link
               href="/free"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 whitespace-nowrap transition-all"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 whitespace-nowrap transition-all"
             >
               <span>⚡ Free Downloads</span>
             </Link>
             <Link
               href="/premium"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 whitespace-nowrap transition-all"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-600 dark:text-amber-300 whitespace-nowrap transition-all"
             >
               <span>👑 VIP Premium</span>
             </Link>
@@ -287,9 +254,20 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* 2. CATEGORIES PREVIEW */}
+      {/* 2. REAL-TIME PLATFORM METRICS COUNTER */}
+      <LiveStatsBar
+        totalResources={totalResourcesCount}
+        totalCategories={totalCategoriesCount}
+        totalWallpapers={totalWallpapersCount}
+        totalMovies={totalMoviesCount}
+      />
+
+      {/* 3. INTERACTIVE ECOSYSTEM & OS NAVIGATOR */}
+      <InteractivePlatformStrip />
+
+      {/* 4. CATEGORIES PREVIEW */}
       {showCategories && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-[var(--foreground)] tracking-tight">
@@ -314,7 +292,7 @@ export default async function HomePage() {
                 <Link
                   key={cat.id}
                   href={`/category/${cat.slug}`}
-                  className="group flex flex-col p-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] hover:border-[var(--ring)]/50 hover:bg-[var(--secondary)]/40 transition-all shadow-sm"
+                  className="group flex flex-col p-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] hover:border-[var(--ring)]/50 hover:bg-[var(--secondary)]/40 transition-all shadow-sm card-hover-lift"
                 >
                   <div className="w-10 h-10 rounded-xl bg-[var(--secondary)] border border-[var(--border)] flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
                     {categoryIcons[cat.slug] || <Layers className="w-5 h-5 text-[var(--primary)]" />}
@@ -340,14 +318,14 @@ export default async function HomePage() {
 
       {/* HOMEPAGE FEATURE AD BANNER */}
       {homepageAd && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
           <AdSlot ad={homepageAd} location="HOMEPAGE" format="auto" />
         </section>
       )}
 
-      {/* 3. FEATURED RESOURCES (IF ANY PUBLISHED) */}
+      {/* 5. FEATURED RESOURCES (IF ANY PUBLISHED) */}
       {showFeatured && featuredResources.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-amber-400" />
@@ -365,9 +343,9 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 4. LATEST RELEASES */}
+      {/* 6. LATEST RELEASES */}
       {showLatest && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-[var(--foreground)] tracking-tight">
@@ -396,18 +374,27 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* 7. WHY NAMMATECH - SECURITY & SPEED STANDARDS */}
+      <FeaturesGrid />
+
       {/* IN-FEED AD BANNER */}
       {inFeedAd && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
           <AdSlot ad={inFeedAd} location="IN_FEED" format="auto" showLabel={false} />
         </section>
       )}
 
-      {/* 5. 4K & ULTRA HD WALLPAPERS SHOWCASE */}
+      {/* 8. 4K & ULTRA HD WALLPAPERS SHOWCASE */}
       <HomepageWallpapers wallpapers={wallpapers} />
 
-      {/* 6. FOUNDER & LEAD DEVELOPER PROFILE */}
+      {/* 9. FREQUENTLY ASKED QUESTIONS */}
+      <HomepageFaq />
+
+      {/* 10. FOUNDER & LEAD DEVELOPER PROFILE */}
       <FounderProfile settings={hpSettings} />
+
+      {/* 11. FLOATING THEME & FONT CUSTOMIZER */}
+      <ThemeCustomizer />
     </div>
   );
 }
