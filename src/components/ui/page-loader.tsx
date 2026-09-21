@@ -13,7 +13,7 @@ interface PageLoaderProps {
 }
 
 export function PageLoader({
-  duration = 500,
+  duration = 850,
   forceShow = false,
 }: PageLoaderProps) {
   const [visible, setVisible] = useState(false);
@@ -39,27 +39,13 @@ export function PageLoader({
     setIsFadingOut(true);
     setTimeout(() => {
       setVisible(false);
-      try {
-        sessionStorage.setItem("nammatech_loader_shown", "true");
-      } catch {}
-    }, 300);
+    }, 400);
   }, []);
 
   useEffect(() => {
-    if (!forceShow) {
-      try {
-        if (sessionStorage.getItem("nammatech_loader_shown") === "true") {
-          return;
-        }
-      } catch {}
-    }
-
     setVisible(true);
-
-    if (typeof document !== "undefined" && document.readyState === "complete") {
-      finishLoading();
-      return;
-    }
+    setIsFadingOut(false);
+    setProgress(0);
 
     const startTime = performance.now();
     let animationFrameId: number;
@@ -69,9 +55,9 @@ export function PageLoader({
       const pct = Math.min((elapsed / duration) * 100, 100);
       setProgress(Math.round(pct));
 
-      if (pct < 30) {
+      if (pct < 35) {
         setStatusText("INITIALIZING NAMMATECH CORE...");
-      } else if (pct < 65) {
+      } else if (pct < 70) {
         setStatusText("VERIFYING SECURE DIGITAL ASSETS...");
       } else if (pct < 95) {
         setStatusText("OPTIMIZING 4K VISUALS & TOOLS...");
@@ -85,9 +71,6 @@ export function PageLoader({
 
     animationFrameId = requestAnimationFrame(tick);
 
-    const handleLoad = () => finishLoading();
-    window.addEventListener("load", handleLoad);
-
     const handleReplay = () => {
       setVisible(true);
       setIsFadingOut(false);
@@ -97,10 +80,9 @@ export function PageLoader({
 
     return () => {
       cancelAnimationFrame(animationFrameId);
-      window.removeEventListener("load", handleLoad);
       window.removeEventListener("replay-namma-loader", handleReplay);
     };
-  }, [duration, finishLoading, forceShow]);
+  }, [duration, finishLoading]);
 
   if (!visible) return null;
 

@@ -82,12 +82,12 @@ export function InteractivePlatformStrip() {
         </div>
 
         {/* Horizontal Scroll Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
+        <div className="flex sm:grid sm:grid-cols-4 lg:grid-cols-7 gap-2.5 overflow-x-auto pb-2 sm:pb-0 scrollbar-none snap-x">
           {platforms.map((p) => (
             <Link
               key={p.label}
               href={p.href}
-              className="group flex flex-col p-3 rounded-2xl border border-[var(--border)] bg-[var(--secondary)]/40 hover:bg-[var(--secondary)] hover:border-[var(--primary)]/50 transition-all duration-200 card-hover-lift"
+              className="group flex flex-col p-3 rounded-2xl border border-[var(--border)] bg-[var(--secondary)]/40 hover:bg-[var(--secondary)] hover:border-[var(--primary)]/50 transition-all duration-200 card-hover-lift min-w-[140px] sm:min-w-0 flex-shrink-0 sm:flex-shrink snap-start"
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="w-8 h-8 rounded-xl bg-[var(--card)] border border-[var(--border)] flex items-center justify-center group-hover:scale-110 transition-transform">

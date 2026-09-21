@@ -19,7 +19,7 @@ export function HeroInteractiveBanner({
   return (
     <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-neutral-950 shadow-2xl">
       {/* Full resolution graphic banner with WebGL GridDistortion permanently active */}
-      <div className="relative w-full aspect-[1983/793] overflow-hidden group">
+      <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] md:aspect-[1983/793] min-h-[220px] sm:min-h-[260px] md:min-h-0 overflow-hidden group">
         <div className="absolute inset-0 w-full h-full">
           <GridDistortion
             imageSrc={heroImageUrl}

@@ -14,6 +14,8 @@ import { GoogleAdSense } from "@/components/ads/google-adsense";
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { getAdsGlobalSettings } from "@/lib/ads";
 import { AdsProvider } from "@/components/providers/ads-provider";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -211,6 +213,8 @@ export default async function RootLayout({
       </head>
       <body className="min-h-full flex flex-col font-sans bg-[var(--background)] text-[var(--foreground)] antialiased">
         <GoogleAnalytics />
+        <SpeedInsights />
+        <Analytics />
         <AdsProvider adsEnabled={adsEnabled} autoAds={autoAds}>
           <GoogleAdSense autoAds={autoAds} />
           <RootProviders>{children}</RootProviders>

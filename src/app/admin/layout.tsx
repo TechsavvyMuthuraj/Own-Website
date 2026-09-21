@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { TopLoader } from "@/components/navigation/top-loader";
 
 export default function AdminLayout({
   children,
@@ -87,6 +88,9 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-[var(--background)]">
+      <Suspense fallback={null}>
+        <TopLoader />
+      </Suspense>
       {/* Mobile Top Navbar */}
       <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-[var(--border)] bg-[var(--card)] sticky top-0 z-50">
         <div className="flex items-center gap-2">
@@ -219,8 +223,17 @@ export default function AdminLayout({
         </div>
       </aside>
 
+      {/* Mobile Backdrop Overlay */}
+      {mobileNavOpen && (
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-xs z-30 md:hidden animate-in fade-in duration-200"
+          onClick={() => setMobileNavOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Main Admin Content Canvas */}
-      <main className="flex-1 overflow-x-hidden p-4 sm:p-8 md:p-10">{children}</main>
+      <main className="flex-1 w-full max-w-full overflow-x-hidden p-3.5 sm:p-6 md:p-10">{children}</main>
     </div>
   );
 }

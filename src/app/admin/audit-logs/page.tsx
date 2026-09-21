@@ -55,7 +55,7 @@ export default async function AdminAuditLogsPage() {
       {allLogs.length > 0 ? (
         <div className="rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl overflow-hidden shadow-xl">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs min-w-[700px]">
               <thead className="bg-neutral-950/80 text-neutral-400 uppercase font-semibold border-b border-neutral-800 tracking-wider text-[10px]">
                 <tr>
                   <th className="px-6 py-4">Action</th>

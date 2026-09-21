@@ -404,7 +404,7 @@ export function UsersClient() {
       {/* Users Table */}
       <div className="rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl shadow-2xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full text-left text-xs border-collapse min-w-[750px]">
             <thead className="border-b border-neutral-800 bg-neutral-950/70 text-neutral-400 font-semibold uppercase tracking-wider text-[10px]">
               <tr>
                 <th className="py-3.5 px-4">User</th>

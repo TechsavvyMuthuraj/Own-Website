@@ -317,83 +317,85 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
 
       {initialAnnouncements.length > 0 ? (
         <div className="rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl overflow-hidden shadow-xl">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-neutral-950/80 text-neutral-400 uppercase font-semibold border-b border-neutral-800 tracking-wider text-[10px]">
-              <tr>
-                <th className="px-6 py-4">Headline</th>
-                <th className="px-4 py-4">CTA Link</th>
-                <th className="px-4 py-4">Priority</th>
-                <th className="px-4 py-4">Status</th>
-                <th className="px-6 py-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-800/60">
-              {initialAnnouncements.map((a) => (
-                <tr key={a.id} className="hover:bg-neutral-800/30 transition-colors">
-                  <td className="px-6 py-4 font-semibold text-white">
-                    <div className="text-sm font-bold text-white flex items-center gap-2">
-                      <Megaphone className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                      <span>{a.title}</span>
-                    </div>
-                    {a.content && (
-                      <div className="text-[11px] text-neutral-400 line-clamp-1 mt-0.5">
-                        {a.content}
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-4 py-4 font-mono text-neutral-400">
-                    {a.cta_url ? (
-                      <span className="truncate max-w-[150px] inline-block text-sky-400">{a.cta_url}</span>
-                    ) : (
-                      <span className="text-neutral-600">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-4 font-mono font-bold text-neutral-300">
-                    <span className="px-2 py-0.5 rounded-lg bg-neutral-800 text-neutral-300">
-                      P-{a.priority}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4">
-                    {a.is_active ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                        ACTIVE
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-neutral-800 text-neutral-500">
-                        INACTIVE
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="inline-flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => openEditModal(a)}
-                        className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-xl transition-colors border border-neutral-800"
-                        title="Edit announcement"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(a.id)}
-                        disabled={deletingId === a.id}
-                        className="p-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition-colors border border-rose-500/20"
-                        title="Delete announcement"
-                      >
-                        {deletingId === a.id ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-3.5 h-3.5" />
-                        )}
-                      </button>
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs min-w-[650px]">
+              <thead className="bg-neutral-950/80 text-neutral-400 uppercase font-semibold border-b border-neutral-800 tracking-wider text-[10px]">
+                <tr>
+                  <th className="px-6 py-4">Headline</th>
+                  <th className="px-4 py-4">CTA Link</th>
+                  <th className="px-4 py-4">Priority</th>
+                  <th className="px-4 py-4">Status</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-neutral-800/60">
+                {initialAnnouncements.map((a) => (
+                  <tr key={a.id} className="hover:bg-neutral-800/30 transition-colors">
+                    <td className="px-6 py-4 font-semibold text-white">
+                      <div className="text-sm font-bold text-white flex items-center gap-2">
+                        <Megaphone className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                        <span>{a.title}</span>
+                      </div>
+                      {a.content && (
+                        <div className="text-[11px] text-neutral-400 line-clamp-1 mt-0.5">
+                          {a.content}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-4 py-4 font-mono text-neutral-400">
+                      {a.cta_url ? (
+                        <span className="truncate max-w-[150px] inline-block text-sky-400">{a.cta_url}</span>
+                      ) : (
+                        <span className="text-neutral-600">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-4 font-mono font-bold text-neutral-300">
+                      <span className="px-2 py-0.5 rounded-lg bg-neutral-800 text-neutral-300">
+                        P-{a.priority}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4">
+                      {a.is_active ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          ACTIVE
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-neutral-800 text-neutral-500">
+                          INACTIVE
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="inline-flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => openEditModal(a)}
+                          className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-xl transition-colors border border-neutral-800"
+                          title="Edit announcement"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(a.id)}
+                          disabled={deletingId === a.id}
+                          className="p-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition-colors border border-rose-500/20"
+                          title="Delete announcement"
+                        >
+                          {deletingId === a.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       ) : (
         <EmptyState
