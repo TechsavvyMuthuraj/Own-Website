@@ -62,7 +62,14 @@ export const SupportChatStore = {
 
   // Get or initialize a session
   getSession(sessionId: string): SupportSession | null {
-    return sessionsStore.get(sessionId) || null;
+    const session = sessionsStore.get(sessionId);
+    if (!session) return null;
+    // Auto-expire stale typing state after 3.5 seconds of inactivity
+    if (session.lastTypingTimestamp && Date.now() - session.lastTypingTimestamp > 3500) {
+      session.isUserTyping = false;
+      session.isAdminTyping = false;
+    }
+    return session;
   },
 
   // Create or join session

@@ -106,7 +106,11 @@ export function TechnicalSupportClient() {
   };
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const pollIntervalRef = useRef<any>(null);
+  const prevTotalUnreadRef = useRef<number>(-1);
+  const isTypingEmittedRef = useRef(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Restore existing specialist session on mount
   useEffect(() => {
@@ -143,6 +147,18 @@ export function TechnicalSupportClient() {
         const data = await res.json();
         if (Array.isArray(data.sessions)) {
           setSessions(data.sessions);
+
+          // Audio notification & title flash for incoming user messages
+          const newTotalUnread = data.sessions.reduce(
+            (acc: number, s: SupportSession) => acc + (s.unreadAdminCount || 0),
+            0
+          );
+          if (prevTotalUnreadRef.current >= 0 && newTotalUnread > prevTotalUnreadRef.current) {
+            if (!isMuted) chatAudio.playIncoming();
+            chatAudio.flashTitle(`(${newTotalUnread}) New Live Chat Message!`);
+          }
+          prevTotalUnreadRef.current = newTotalUnread;
+
           if (selectedSessionId) {
             const found = data.sessions.find((s: SupportSession) => s.id === selectedSessionId);
             if (found) setActiveSession(found);
@@ -150,7 +166,7 @@ export function TechnicalSupportClient() {
         }
       }
     } catch {}
-  }, [selectedSessionId]);
+  }, [selectedSessionId, isMuted]);
 
   // Fetch user resource requests
   const fetchResourceRequests = useCallback(async () => {
@@ -296,7 +312,10 @@ export function TechnicalSupportClient() {
     } catch {}
   };
 
-  // Polling when authenticated
+  // Fast polling when specialist is authenticated
+  // - Queue list + resource requests: 800ms (near-realtime queue awareness)
+  // - Active session messages: 500ms (chat feels instant to both parties)
+  const activePollRef = useRef<any>(null);
   useEffect(() => {
     if (!specialist) return;
 
@@ -304,19 +323,53 @@ export function TechnicalSupportClient() {
     fetchLiveSessions();
     fetchResourceRequests();
 
+    // Queue-level poll: every 800ms
     pollIntervalRef.current = setInterval(() => {
       fetchLiveSessions();
       fetchResourceRequests();
-    }, 2000);
+    }, 800);
 
     return () => {
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
     };
   }, [specialist, fetchLiveSessions, fetchTeamRoster, fetchResourceRequests]);
 
+  // Dedicated fast-polling for active session (500ms)
+  useEffect(() => {
+    if (!selectedSessionId || !specialist) {
+      if (activePollRef.current) {
+        clearInterval(activePollRef.current);
+        activePollRef.current = null;
+      }
+      return;
+    }
+
+    const fetchActiveSessionOnly = async () => {
+      try {
+        const res = await fetch(`/api/support/chat?sessionId=${encodeURIComponent(selectedSessionId)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.session) {
+            setActiveSession(data.session);
+          }
+        }
+      } catch {}
+    };
+
+    activePollRef.current = setInterval(fetchActiveSessionOnly, 500);
+
+    return () => {
+      if (activePollRef.current) {
+        clearInterval(activePollRef.current);
+        activePollRef.current = null;
+      }
+    };
+  }, [selectedSessionId, specialist]);
+
   // Select a user session
   const handleSelectSession = (sid: string) => {
     setSelectedSessionId(sid);
+    chatAudio.clearTitleFlash();
     const found = sessions.find((s) => s.id === sid);
     if (found) {
       setActiveSession(found);
@@ -329,10 +382,66 @@ export function TechnicalSupportClient() {
     }
   };
 
+  // Specialist debounced typing emitter
+  const handleReplyInputChange = (val: string) => {
+    setReplyText(val);
+
+    if (activeSession?.id) {
+      if (!isTypingEmittedRef.current) {
+        isTypingEmittedRef.current = true;
+        fetch("/api/support/chat", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sessionId: activeSession.id,
+            action: "typing",
+            sender: "admin",
+            isTyping: true,
+          }),
+        }).catch(() => {});
+      }
+
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      typingTimeoutRef.current = setTimeout(() => {
+        isTypingEmittedRef.current = false;
+        if (activeSession?.id) {
+          fetch("/api/support/chat", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sessionId: activeSession.id,
+              action: "typing",
+              sender: "admin",
+              isTyping: false,
+            }),
+          }).catch(() => {});
+        }
+      }, 1800);
+    }
+  };
+
   // Send reply to user
   const handleSendReply = async (customText?: string) => {
     const textToSend = customText !== undefined ? customText : replyText;
     if ((!textToSend.trim() && !codeSnippet.trim()) || isSending || !activeSession) return;
+
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    if (isTypingEmittedRef.current && activeSession?.id) {
+      isTypingEmittedRef.current = false;
+      fetch("/api/support/chat", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId: activeSession.id,
+          action: "typing",
+          sender: "admin",
+          isTyping: false,
+        }),
+      }).catch(() => {});
+    }
 
     setIsSending(true);
     const msg = textToSend.trim();
@@ -659,12 +768,15 @@ export function TechnicalSupportClient() {
     return `https://wa.me/?text=${encodeURIComponent(receiverMessage)}`;
   };
 
-  // Auto scroll to latest message
+  // Auto scroll inside message container without jumping parent window
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
     }
-  }, [activeSession?.messages?.length]);
+  }, [activeSession?.messages?.length, activeSession?.id]);
 
   // Filtered Sessions
   const filteredSessions = sessions.filter((s) => {
@@ -1440,7 +1552,10 @@ export function TechnicalSupportClient() {
               </div>
 
               {/* Message Transcript */}
-              <div className={`flex-1 overflow-y-auto p-4 space-y-3.5 ${isLight ? "bg-slate-100/60" : "bg-black/20"}`}>
+              <div
+                ref={chatContainerRef}
+                className={`flex-1 overflow-y-auto p-4 space-y-3.5 ${isLight ? "bg-slate-100/60" : "bg-black/20"}`}
+              >
                 {activeSession.messages.map((msg) => {
                   const isSpecialist = msg.sender === "admin";
                   const isSystem = msg.sender === "system";
@@ -1496,6 +1611,29 @@ export function TechnicalSupportClient() {
                     </div>
                   );
                 })}
+
+                {/* User Typing Indicator */}
+                {activeSession.isUserTyping && (
+                  <div className="flex items-center gap-2 text-xs py-1 animate-in fade-in duration-200">
+                    <div className={`w-7 h-7 rounded-lg border flex items-center justify-center ${
+                      isLight ? "bg-slate-200 border-slate-300 text-slate-700" : "bg-neutral-800 border-neutral-700 text-neutral-300"
+                    }`}>
+                      <User className="w-3.5 h-3.5" />
+                    </div>
+                    <div className={`px-3 py-1.5 rounded-xl border flex items-center gap-1.5 shadow-xs ${
+                      isLight ? "bg-white border-slate-200 text-slate-700" : "bg-neutral-900 border-neutral-800 text-neutral-300"
+                    }`}>
+                      <span className="font-semibold">{activeSession.userName}</span>
+                      <span className="text-[11px] opacity-75">is typing</span>
+                      <span className="inline-flex gap-0.5 ml-0.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce [animation-delay:-0.3s]" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce [animation-delay:-0.15s]" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-bounce" />
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 <div ref={messagesEndRef} />
               </div>
 
@@ -1558,7 +1696,7 @@ export function TechnicalSupportClient() {
                 <input
                   type="text"
                   value={replyText}
-                  onChange={(e) => setReplyText(e.target.value)}
+                  onChange={(e) => handleReplyInputChange(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();

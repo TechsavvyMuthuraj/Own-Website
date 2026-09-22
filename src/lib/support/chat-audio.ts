@@ -13,7 +13,16 @@ class ChatAudioManager {
 
   constructor() {
     if (typeof window !== "undefined") {
-      this.originalTitle = document.title;
+      this.originalTitle = document.title || "NammaTech";
+      const unlockAudio = () => {
+        this.getContext();
+        window.removeEventListener("click", unlockAudio);
+        window.removeEventListener("keydown", unlockAudio);
+        window.removeEventListener("touchstart", unlockAudio);
+      };
+      window.addEventListener("click", unlockAudio, { passive: true });
+      window.addEventListener("keydown", unlockAudio, { passive: true });
+      window.addEventListener("touchstart", unlockAudio, { passive: true });
     }
   }
 
@@ -116,11 +125,15 @@ class ChatAudioManager {
     if (typeof window === "undefined") return;
     if (document.hasFocus()) return;
 
+    if (document.title && !document.title.startsWith("🔔") && !document.title.startsWith("💬")) {
+      this.originalTitle = document.title;
+    }
+
     this.clearTitleFlash();
     let toggle = false;
 
     this.titleFlashInterval = setInterval(() => {
-      document.title = toggle ? alertText : this.originalTitle;
+      document.title = toggle ? alertText : (this.originalTitle || "NammaTech");
       toggle = !toggle;
     }, 1000);
 

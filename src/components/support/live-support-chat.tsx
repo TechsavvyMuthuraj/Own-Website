@@ -25,6 +25,7 @@ import {
   Bot,
   User as UserIcon,
   XCircle,
+  Loader2,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { chatAudio } from "@/lib/support/chat-audio";
@@ -81,73 +82,81 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
   const [dutyStatus, setDutyStatus] = useState<"ON_DUTY" | "BUSY" | "OFF_DUTY">("ON_DUTY");
   const [queuePosition, setQueuePosition] = useState<number>(1);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const pollIntervalRef = useRef<any>(null);
   const lastKnownMessageCountRef = useRef<number>(0);
   const typingTimeoutRef = useRef<any>(null);
+  const isTypingEmittedRef = useRef<boolean>(false);
 
-  // Initialize identity from auth or localStorage
+  // Initialize identity from auth or localStorage (Supports both authenticated users and guests)
   useEffect(() => {
     if (typeof window === "undefined" || authLoading) return;
-
-    // When signed out, ALWAYS clear previous user session and reset live chat state
-    if (!user) {
-      try {
-        localStorage.removeItem(STORAGE_SESSION_KEY);
-        localStorage.removeItem("nammatech_support_session_id");
-        localStorage.removeItem("nammatech_support_username");
-        localStorage.removeItem("nammatech_support_email");
-        localStorage.removeItem("nammatech_support_category");
-        localStorage.removeItem("nammatech_support_user_id");
-      } catch {}
-      setSessionId("");
-      setSession(null);
-      setHasJoined(false);
-      setUserName("");
-      setUserEmail("");
-      lastKnownMessageCountRef.current = 0;
-      return;
-    }
 
     const savedUserId = localStorage.getItem("nammatech_support_user_id");
     const savedSessionId =
       localStorage.getItem(STORAGE_SESSION_KEY) || localStorage.getItem("nammatech_support_session_id");
+    const savedName = localStorage.getItem("nammatech_support_username");
+    const savedEmail = localStorage.getItem("nammatech_support_email");
     const savedCat = localStorage.getItem("nammatech_support_category");
 
-    // If storage has a session from another user or previous session without this user ID, clear it
-    if (savedUserId && savedUserId !== user.id) {
-      try {
-        localStorage.removeItem(STORAGE_SESSION_KEY);
-        localStorage.removeItem("nammatech_support_session_id");
-        localStorage.removeItem("nammatech_support_username");
-        localStorage.removeItem("nammatech_support_email");
-        localStorage.removeItem("nammatech_support_category");
-        localStorage.removeItem("nammatech_support_user_id");
-      } catch {}
-      setSessionId("");
-      setSession(null);
-      setHasJoined(false);
-      setUserName("");
-      setUserEmail("");
-      lastKnownMessageCountRef.current = 0;
-      return;
-    }
+    if (user) {
+      // Authenticated User: Check if previous session belonged to a different account
+      if (savedUserId && savedUserId !== user.id) {
+        try {
+          localStorage.removeItem(STORAGE_SESSION_KEY);
+          localStorage.removeItem("nammatech_support_session_id");
+          localStorage.removeItem("nammatech_support_username");
+          localStorage.removeItem("nammatech_support_email");
+          localStorage.removeItem("nammatech_support_category");
+          localStorage.removeItem("nammatech_support_user_id");
+        } catch {}
+        setSessionId("");
+        setSession(null);
+        setHasJoined(false);
+        lastKnownMessageCountRef.current = 0;
+      }
 
-    const defaultName =
-      profile?.full_name ||
-      (user?.user_metadata as any)?.full_name ||
-      user?.email?.split("@")[0] ||
-      "";
-    const defaultEmail = user?.email || "";
+      const defaultName =
+        profile?.full_name ||
+        (user?.user_metadata as any)?.full_name ||
+        user?.email?.split("@")[0] ||
+        "";
+      const defaultEmail = user?.email || "";
 
-    setUserName(defaultName);
-    setUserEmail(defaultEmail);
-    if (savedCat) setCategory(savedCat);
+      setUserName(defaultName);
+      setUserEmail(defaultEmail);
+      if (savedCat) setCategory(savedCat);
 
-    // Only resume active session if it matches current authenticated user
-    if (savedSessionId && savedUserId === user.id) {
-      setSessionId(savedSessionId);
-      setHasJoined(true);
+      if (savedSessionId && (!savedUserId || savedUserId === user.id)) {
+        setSessionId(savedSessionId);
+        setHasJoined(true);
+      }
+    } else {
+      // Guest / Visitor User: Do NOT wipe session; allow guests on /contact to use live chat smoothly
+      if (savedUserId) {
+        // A previous authenticated user logged out, clear their chat for privacy
+        try {
+          localStorage.removeItem(STORAGE_SESSION_KEY);
+          localStorage.removeItem("nammatech_support_session_id");
+          localStorage.removeItem("nammatech_support_username");
+          localStorage.removeItem("nammatech_support_email");
+          localStorage.removeItem("nammatech_support_category");
+          localStorage.removeItem("nammatech_support_user_id");
+        } catch {}
+        setSessionId("");
+        setSession(null);
+        setHasJoined(false);
+        return;
+      }
+
+      if (savedName) setUserName(savedName);
+      if (savedEmail) setUserEmail(savedEmail);
+      if (savedCat) setCategory(savedCat);
+
+      if (savedSessionId) {
+        setSessionId(savedSessionId);
+        setHasJoined(true);
+      }
     }
   }, [user, profile, authLoading]);
 
@@ -175,17 +184,24 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
     return () => window.removeEventListener("nammatech-user-signed-out", handleSignOutReset);
   }, []);
 
-  // Scroll to bottom helper
+  // Check if user is near bottom of chat stream
+  const isNearBottom = useCallback(() => {
+    if (!chatContainerRef.current) return true;
+    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+    return scrollHeight - scrollTop - clientHeight < 150;
+  }, []);
+
+  // Smooth scroll directly to bottom of container (Never jumps or glitches parent webpage)
   const scrollToBottom = useCallback((smooth = true) => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
         behavior: smooth ? "smooth" : "auto",
-        block: "end",
       });
     }
   }, []);
 
-  // Poll chat session
+  // Poll chat session with auto-recovery
   const fetchSession = useCallback(
     async (sid: string, silent = false) => {
       if (!sid) return;
@@ -201,14 +217,11 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
             if (previousCount > 0 && currentCount > previousCount) {
               const latestMessage = data.session.messages[currentCount - 1];
               if (latestMessage.sender === "admin") {
-                // Trigger audio chime
                 chatAudio.playIncoming();
-                // Alert tab title
                 chatAudio.flashTitle(`🔔 Support: ${latestMessage.senderName} replied!`);
-                // Visual toast
                 showToast({
                   type: "info",
-                  title: `Support Agent (${latestMessage.senderName})`,
+                  title: `Support Specialist (${latestMessage.senderName})`,
                   message: latestMessage.text || "Sent a code/instruction snippet",
                 });
               }
@@ -233,12 +246,45 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
               }).catch(() => {});
             }
           }
+        } else if (res.status === 404) {
+          // Auto recover session if server restarted
+          const currentName =
+            userName ||
+            (typeof window !== "undefined" ? localStorage.getItem("nammatech_support_username") : "") ||
+            "User";
+          const currentEmail =
+            userEmail ||
+            (typeof window !== "undefined" ? localStorage.getItem("nammatech_support_email") : "") ||
+            "";
+          const currentCat =
+            category ||
+            (typeof window !== "undefined" ? localStorage.getItem("nammatech_support_category") : "") ||
+            "Software Installation";
+
+          fetch("/api/support/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sessionId: sid,
+              userName: currentName,
+              userEmail: currentEmail,
+              category: currentCat,
+              sender: "user",
+              senderName: currentName,
+              text: `👋 Reconnected technical support session: ${currentCat}`,
+            }),
+          })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((d) => {
+              if (d?.session) setSession(d.session);
+            })
+            .catch(() => {});
         }
       } catch {
-        // network hiccup, retry next tick
+        // Network retry on next interval
       }
     },
-    [showToast]
+    [showToast, userName, userEmail, category]
   );
 
   // Polling loop when joined
@@ -250,7 +296,7 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
 
     pollIntervalRef.current = setInterval(() => {
       fetchSession(sessionId, true);
-    }, 1200);
+    }, 600);
 
     return () => {
       if (pollIntervalRef.current) {
@@ -259,27 +305,34 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
     };
   }, [hasJoined, sessionId, fetchSession, scrollToBottom]);
 
-  // Auto scroll when messages change
+  // Auto scroll when messages change, only if already near bottom (no jarring jump)
   useEffect(() => {
     if (session?.messages?.length) {
-      scrollToBottom(true);
+      if (isNearBottom()) {
+        scrollToBottom(true);
+      }
     }
-  }, [session?.messages?.length, scrollToBottom]);
+  }, [session?.messages?.length, isNearBottom, scrollToBottom]);
 
-  // Handle typing state
+  // Handle debounced typing state (avoids spamming server on every keystroke)
   const handleInputChange = (val: string) => {
     setInputText(val);
 
     if (!sessionId) return;
+
+    if (!isTypingEmittedRef.current) {
+      isTypingEmittedRef.current = true;
+      fetch("/api/support/chat", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId, action: "typing", sender: "user", isTyping: true }),
+      }).catch(() => {});
+    }
+
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
 
-    fetch("/api/support/chat", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessionId, action: "typing", sender: "user", isTyping: true }),
-    }).catch(() => {});
-
     typingTimeoutRef.current = setTimeout(() => {
+      isTypingEmittedRef.current = false;
       fetch("/api/support/chat", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -888,7 +941,7 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
           )}
 
           {/* Message Stream Area */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-[var(--background)]/40">
+          <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-[var(--background)]/40">
             {session?.messages.map((msg: SupportMessage) => {
               const isUser = msg.sender === "user";
               const isSystem = msg.sender === "system";
@@ -910,6 +963,10 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
                 );
               }
 
+              const cleanSenderName = msg.senderName?.replace(/\s*\((Technical Team|Technical Specialist|Support Agent)\)/i, "") ||
+                session?.assignedSpecialistName ||
+                "Specialist";
+
               return (
                 <div
                   key={msg.id}
@@ -918,9 +975,7 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
                   {/* Sender Badge */}
                   <div className="flex items-center gap-1.5 mb-1 px-1">
                     <span className="text-[11px] font-semibold text-[var(--muted-foreground)]">
-                      {isUser
-                        ? "You"
-                        : (msg.senderName || (session?.assignedSpecialistName ? `${session.assignedSpecialistName} (Technical Team)` : "Technical Team"))}
+                      {isUser ? "You" : cleanSenderName}
                     </span>
                     {!isUser && (
                       <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-emerald-500/15 text-emerald-500 uppercase">
@@ -1038,7 +1093,10 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
                   <Headphones className="w-4 h-4 animate-pulse" />
                 </div>
                 <div className="px-3.5 py-2 rounded-2xl bg-[var(--card)] border border-[var(--border)] flex items-center gap-1.5 shadow-sm">
-                  <span className="font-semibold text-[var(--foreground)]">Support Specialist</span> is typing
+                  <span className="font-semibold text-[var(--foreground)]">
+                    {session.assignedSpecialistName ? session.assignedSpecialistName : "Support Specialist"}
+                  </span>{" "}
+                  is typing
                   <span className="inline-flex gap-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)] animate-bounce [animation-delay:-0.3s]" />
                     <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)] animate-bounce [animation-delay:-0.15s]" />
@@ -1048,7 +1106,6 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
               </div>
             )}
 
-            <div ref={messagesEndRef} />
           </div>
 
           {/* Quick Troubleshooting Chips */}
@@ -1166,7 +1223,11 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
                 disabled={(!inputText.trim() && !codeSnippet.trim()) || isSending}
                 className="p-3 rounded-2xl bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md shadow-[var(--primary)]/25 flex-shrink-0 cursor-pointer"
               >
-                <Send className="w-4 h-4" />
+                {isSending ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-white" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
               </button>
             </div>
 
