@@ -93,8 +93,21 @@ export async function GET(request: NextRequest) {
     const dutyInfo = await getTeamDutyStatus();
 
     if (all === "true" || !sessionId) {
-      // Admin request: get all active sessions
-      const sessions = SupportChatStore.getAllSessions();
+      // Sync deleted sessions from Supabase into memory blacklist
+      try {
+        const supabase = createAdminClient();
+        const { data: delData } = await supabase
+          .from("site_settings")
+          .select("value")
+          .eq("key", "deleted_support_sessions")
+          .maybeSingle();
+        if (Array.isArray(delData?.value)) {
+          delData.value.forEach((id: string) => SupportChatStore.deleteSession(id));
+        }
+      } catch {}
+
+      // Admin request: get all active sessions (excluding deleted)
+      const sessions = SupportChatStore.getAllSessions().filter((s) => !SupportChatStore.isDeleted(s.id));
       return NextResponse.json({
         sessions,
         specialistDutyStatus: dutyInfo.overallStatus,
@@ -330,6 +343,31 @@ export async function DELETE(request: NextRequest) {
     }
 
     SupportChatStore.deleteSession(sessionId);
+
+    // Persist deleted sessionId into Supabase site_settings so all serverless lambdas remember it
+    try {
+      const supabase = createAdminClient();
+      const { data: existing } = await supabase
+        .from("site_settings")
+        .select("value")
+        .eq("key", "deleted_support_sessions")
+        .maybeSingle();
+
+      const list: string[] = Array.isArray(existing?.value) ? existing.value : [];
+      if (!list.includes(sessionId)) {
+        list.push(sessionId);
+        await supabase
+          .from("site_settings")
+          .upsert({
+            key: "deleted_support_sessions",
+            value: list.slice(-500),
+            updated_at: new Date().toISOString(),
+          });
+      }
+    } catch (dbErr) {
+      console.error("[Persist Deleted Session Error]:", dbErr);
+    }
+
     return NextResponse.json({ success: true });
   } catch (err: any) {
     console.error("[Support Chat DELETE Error]:", err);

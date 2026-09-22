@@ -111,7 +111,22 @@ export function TechnicalSupportClient() {
   const prevTotalUnreadRef = useRef<number>(-1);
   const isTypingEmittedRef = useRef(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const SPECIALIST_DELETED_KEY = "nammatech_specialist_deleted_sessions";
   const deletedSessionIdsRef = useRef<Set<string>>(new Set());
+
+  // Restore deleted sessions blacklist from localStorage on mount so refresh never brings them back
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const saved = localStorage.getItem(SPECIALIST_DELETED_KEY);
+      if (saved) {
+        const arr = JSON.parse(saved);
+        if (Array.isArray(arr)) {
+          deletedSessionIdsRef.current = new Set(arr);
+        }
+      }
+    } catch {}
+  }, []);
 
   // Restore existing specialist session on mount
   useEffect(() => {
@@ -143,6 +158,17 @@ export function TechnicalSupportClient() {
   // Fetch live chat sessions
   const fetchLiveSessions = useCallback(async () => {
     try {
+      // Sync from localStorage if ref is empty
+      if (typeof window !== "undefined" && deletedSessionIdsRef.current.size === 0) {
+        try {
+          const saved = localStorage.getItem(SPECIALIST_DELETED_KEY);
+          if (saved) {
+            const arr = JSON.parse(saved);
+            if (Array.isArray(arr)) deletedSessionIdsRef.current = new Set(arr);
+          }
+        } catch {}
+      }
+
       const res = await fetch("/api/support/chat?all=true");
       if (res.ok) {
         const data = await res.json();
@@ -757,8 +783,14 @@ export function TechnicalSupportClient() {
       cancelText: "Cancel",
       variant: "danger",
       onConfirm: async () => {
-        // Immediately blacklist and remove from UI so it never flickers or reflects back
+        // Immediately blacklist and persist to localStorage so even after page refresh it never returns!
         deletedSessionIdsRef.current.add(targetId);
+        if (typeof window !== "undefined") {
+          try {
+            const arr = Array.from(deletedSessionIdsRef.current);
+            localStorage.setItem(SPECIALIST_DELETED_KEY, JSON.stringify(arr));
+          } catch {}
+        }
         setSessions((prev) => prev.filter((s) => s.id !== targetId));
         if (selectedSessionId === targetId) {
           setSelectedSessionId(null);

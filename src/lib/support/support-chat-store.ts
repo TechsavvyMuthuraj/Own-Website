@@ -59,11 +59,13 @@ const sessionsStore = global.__nammatech_support_sessions__;
 const deletedSessions = global.__nammatech_deleted_sessions__;
 
 export const SupportChatStore = {
-  // Get all sessions (sorted newest active first)
+  // Get all sessions (sorted newest active first, excluding deleted)
   getAllSessions(): SupportSession[] {
-    return Array.from(sessionsStore.values()).sort(
-      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    );
+    return Array.from(sessionsStore.values())
+      .filter((s) => !deletedSessions.has(s.id))
+      .sort(
+        (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      );
   },
 
   // Check if a session was permanently deleted
