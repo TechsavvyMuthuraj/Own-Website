@@ -11,15 +11,10 @@ import { PageLoader } from "@/components/ui/page-loader";
 import { YouTubeMiniPlayer } from "@/components/media/youtube-mini-player";
 import { GlobalSiteMascot } from "@/components/mascot/global-site-mascot";
 
-// In-memory cache for maintenance mode and navbar links (60s TTL)
-let cachedMaintenance: { value: boolean; expiresAt: number } | null = null;
-let cachedNavLinks: { links: NavLinkItem[]; expiresAt: number } | null = null;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 async function checkMaintenanceMode(): Promise<boolean> {
-  const now = Date.now();
-  if (cachedMaintenance && cachedMaintenance.expiresAt > now) {
-    return cachedMaintenance.value;
-  }
   try {
     const supabaseAdmin = createAdminClient();
     const { data } = await supabaseAdmin
@@ -36,7 +31,6 @@ async function checkMaintenanceMode(): Promise<boolean> {
         isMaintenanceActive = data.value === "true";
       }
     }
-    cachedMaintenance = { value: isMaintenanceActive, expiresAt: now + 60000 };
     return isMaintenanceActive;
   } catch {
     return false;
@@ -44,10 +38,6 @@ async function checkMaintenanceMode(): Promise<boolean> {
 }
 
 async function getNavbarLinks(): Promise<NavLinkItem[]> {
-  const now = Date.now();
-  if (cachedNavLinks && cachedNavLinks.expiresAt > now) {
-    return cachedNavLinks.links;
-  }
   try {
     const supabaseAdmin = createAdminClient();
     const { data } = await supabaseAdmin
@@ -58,13 +48,11 @@ async function getNavbarLinks(): Promise<NavLinkItem[]> {
 
     if (data?.value) {
       const parsed = typeof data.value === "string" ? JSON.parse(data.value) : data.value;
-      if (parsed?.navbar_items && Array.isArray(parsed.navbar_items) && parsed.navbar_items.length > 0) {
-        cachedNavLinks = { links: parsed.navbar_items, expiresAt: now + 60000 };
+      if (parsed?.navbar_items && Array.isArray(parsed.navbar_items)) {
         return parsed.navbar_items;
       }
     }
   } catch {}
-  cachedNavLinks = { links: DEFAULT_NAV_LINKS, expiresAt: now + 60000 };
   return DEFAULT_NAV_LINKS;
 }
 

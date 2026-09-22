@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Settings, Save, Check, AlertCircle, Loader2, Power, Wrench, Trash2, AlertTriangle, ShieldAlert, QrCode, Phone } from "lucide-react";
+import { Settings, Save, Check, AlertCircle, Loader2, Power, Wrench, Trash2, AlertTriangle, ShieldAlert, QrCode, Phone, Headphones } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 
 export function SettingsClient({ initialSettings }: { initialSettings: Record<string, any> }) {
@@ -23,6 +23,20 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
     initialSettings.maintenance_mode === true || initialSettings.maintenance_mode === "true"
   );
   const [togglingMaintenance, setTogglingMaintenance] = useState(false);
+
+  // Technical Support Team Configuration
+  const [techSupportEmail, setTechSupportEmail] = useState(
+    initialSettings.technical_support_email || "techsavvy.muthuraj.dev@gmail.com"
+  );
+  const [techSupportPhone, setTechSupportPhone] = useState(
+    initialSettings.technical_support_phone || "+91 91764 43726"
+  );
+  const [techSupportWhatsApp, setTechSupportWhatsApp] = useState(
+    initialSettings.technical_support_whatsapp || "919176443726"
+  );
+  const [techSupportHours, setTechSupportHours] = useState(
+    initialSettings.technical_support_hours || "Mon–Sat, 9AM–6PM IST"
+  );
 
   const [newDays, setNewDays] = useState(
     initialSettings.new_resource_threshold_days || "14"
@@ -110,6 +124,10 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
           site_name: siteName.trim(),
           site_description: siteDescription.trim(),
           contact_email: contactEmail.trim(),
+          technical_support_email: techSupportEmail.trim(),
+          technical_support_phone: techSupportPhone.trim(),
+          technical_support_whatsapp: techSupportWhatsApp.trim(),
+          technical_support_hours: techSupportHours.trim(),
           default_currency: defaultCurrency,
           maintenance_mode: maintenanceMode,
           new_resource_threshold_days: Number(newDays) || 14,
@@ -180,7 +198,7 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-medium text-[var(--foreground)] mb-1.5">
-              Support / Contact Email
+              General Contact Email
             </label>
             <input
               type="email"
@@ -201,6 +219,72 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
               onChange={(e) => setDefaultCurrency(e.target.value.toUpperCase())}
               className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-mono"
             />
+          </div>
+        </div>
+
+        {/* ── Technical Support Team & Help Desk Configuration ── */}
+        <div className="p-5 rounded-2xl border border-sky-500/20 bg-sky-500/5 space-y-4">
+          <div className="flex items-center gap-2 text-sky-400 font-bold text-xs uppercase tracking-wider">
+            <Headphones className="w-4 h-4" />
+            <span>Technical Support Team &amp; Helpline Configuration</span>
+          </div>
+          <p className="text-xs text-neutral-400 leading-relaxed">
+            Configure the official technical support email, direct phone/helpline, WhatsApp channel, and availability hours shown to users across the technical support dashboard and contact pages.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-neutral-300 mb-1.5">
+                Technical Support Team Email
+              </label>
+              <input
+                type="email"
+                required
+                value={techSupportEmail}
+                onChange={(e) => setTechSupportEmail(e.target.value)}
+                placeholder="techsavvy.muthuraj.dev@gmail.com"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950/80 text-xs text-white focus:outline-none focus:ring-1 focus:ring-sky-500 font-mono"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-neutral-300 mb-1.5">
+                Technical Helpline / Support Phone
+              </label>
+              <input
+                type="text"
+                value={techSupportPhone}
+                onChange={(e) => setTechSupportPhone(e.target.value)}
+                placeholder="+91 91764 43726"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950/80 text-xs text-white focus:outline-none focus:ring-1 focus:ring-sky-500 font-mono"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-neutral-300 mb-1.5">
+                WhatsApp Direct Number / Link
+              </label>
+              <input
+                type="text"
+                value={techSupportWhatsApp}
+                onChange={(e) => setTechSupportWhatsApp(e.target.value)}
+                placeholder="919176443726"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950/80 text-xs text-white focus:outline-none focus:ring-1 focus:ring-sky-500 font-mono"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-neutral-300 mb-1.5">
+                Support Team Working Hours
+              </label>
+              <input
+                type="text"
+                value={techSupportHours}
+                onChange={(e) => setTechSupportHours(e.target.value)}
+                placeholder="Mon–Sat, 9AM–6PM IST"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950/80 text-xs text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+              />
+            </div>
           </div>
         </div>
 

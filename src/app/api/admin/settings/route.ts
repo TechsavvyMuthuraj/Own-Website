@@ -67,6 +67,12 @@ export async function POST(request: Request) {
       );
     }
 
+    try {
+      const { revalidatePath } = await import("next/cache");
+      revalidatePath("/", "layout");
+      revalidatePath("/account", "layout");
+    } catch {}
+
     return NextResponse.json({ success: true });
   } catch (err) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

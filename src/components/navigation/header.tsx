@@ -15,6 +15,7 @@ import {
   Layers,
   LogOut,
   Settings,
+  Headphones,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -43,19 +44,62 @@ export const DEFAULT_NAV_LINKS: NavLinkItem[] = [
   { id: "nav-articles", href: "/articles", label: "Articles", active: true },
   { id: "nav-premium", href: "/premium", label: "Premium", active: true, badge: "VIP" },
   { id: "nav-request", href: "/request", label: "Request", active: true },
+  { id: "nav-contact", href: "/contact", label: "Contact", active: true, badge: "LIVE" },
 ];
 
 interface HeaderProps {
   navLinks?: NavLinkItem[];
 }
 
-export function Header({ navLinks = DEFAULT_NAV_LINKS }: HeaderProps) {
+export function Header({ navLinks }: HeaderProps) {
   const pathname = usePathname();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { itemCount } = useCart();
   const { user, profile, isAdmin, signOut } = useAuth();
+
+  const [links, setLinks] = useState<NavLinkItem[]>(() => {
+    if (navLinks !== undefined) return navLinks;
+    return DEFAULT_NAV_LINKS;
+  });
+
+  // Sync if navLinks prop changes from server layout
+  useEffect(() => {
+    if (navLinks !== undefined) {
+      setLinks(navLinks);
+    }
+  }, [navLinks]);
+
+  // Fetch dynamic nav links when not passed by layout (e.g. AccountLayout) and listen to admin updates
+  useEffect(() => {
+    let isMounted = true;
+    const fetchLatestNav = async () => {
+      try {
+        const res = await fetch("/api/navigation", { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && Array.isArray(data.navLinks)) {
+            setLinks(data.navLinks);
+          }
+        }
+      } catch {}
+    };
+
+    if (navLinks === undefined) {
+      fetchLatestNav();
+    }
+
+    const onNavUpdated = () => {
+      fetchLatestNav();
+    };
+    window.addEventListener("nammatech-nav-updated", onNavUpdated);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("nammatech-nav-updated", onNavUpdated);
+    };
+  }, [navLinks]);
 
   // Close mobile navigation drawer, user menu, and search modal whenever route changes
   useEffect(() => {
@@ -64,9 +108,8 @@ export function Header({ navLinks = DEFAULT_NAV_LINKS }: HeaderProps) {
     setIsSearchOpen(false);
   }, [pathname]);
 
-  const activeLinks = (navLinks && navLinks.length > 0 ? navLinks : DEFAULT_NAV_LINKS).filter(
-    (l) => l.active !== false
-  );
+  // Strictly filter out any item that is inactive or hidden
+  const activeLinks = links.filter((l) => l.active !== false);
 
   return (
     <>
@@ -198,6 +241,13 @@ export function Header({ navLinks = DEFAULT_NAV_LINKS }: HeaderProps) {
                     >
                       <Sparkles className="w-3.5 h-3.5 text-[#FD1843]" />
                       <span>My Downloads</span>
+                    </Link>
+                    <Link
+                      href="/contact"
+                      className="flex items-center gap-2 px-3 py-2 rounded-xl text-[var(--foreground)] hover:bg-[var(--secondary)] transition-colors"
+                    >
+                      <Headphones className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>Contact &amp; Live Support</span>
                     </Link>
 
                     {isAdmin && (

@@ -28,8 +28,12 @@ interface FormState {
   message: string;
 }
 
+import { LiveSupportChat } from "@/components/support/live-support-chat";
+import { Zap } from "lucide-react";
+
 export default function ContactPage() {
   const router = useRouter();
+  const [contactMode, setContactMode] = useState<"live_chat" | "email">("live_chat");
 
   const [formState, setFormState] = useState<FormState>({
     name: "",
@@ -149,21 +153,89 @@ export default function ContactPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
       {/* ── Page Header ───────────────────────────────────────────────────── */}
-      <div className="text-center mb-12">
+      <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[var(--border)] bg-[var(--card)] text-xs font-semibold text-[var(--primary)] mb-4">
           <Mail className="w-3.5 h-3.5" aria-hidden="true" />
-          <span>Support &amp; Inquiries</span>
+          <span>Support &amp; Inquiries Hub</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-[var(--foreground)] tracking-tight mb-3">
           Get in Touch
         </h1>
-        <p className="text-sm text-[var(--muted-foreground)] max-w-md mx-auto leading-relaxed">
-          Have questions about a resource, partnership inquiry, or technical
-          feedback? We&apos;d love to hear from you.
+        <p className="text-sm text-[var(--muted-foreground)] max-w-lg mx-auto leading-relaxed">
+          Need instant technical assistance, software installation guidance, or partnership inquiries? Connect via real-time 1-on-1 chat or send a traditional ticket.
         </p>
+
+        {/* ── Mode Switcher: Live 1-on-1 Support vs Traditional Email Form ── */}
+        <div className="flex justify-center mt-6">
+          <div className="inline-flex p-1.5 rounded-2xl bg-[var(--card)] border border-[var(--border)] shadow-lg gap-2">
+            <button
+              type="button"
+              onClick={() => setContactMode("live_chat")}
+              className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                contactMode === "live_chat"
+                  ? "bg-gradient-to-r from-[var(--primary)] to-rose-600 text-white shadow-md shadow-[var(--primary)]/20"
+                  : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <Zap className="w-3.5 h-3.5" />
+              <span>⚡ Live Support Chat (Instant)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setContactMode("email")}
+              className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                contactMode === "email"
+                  ? "bg-[var(--secondary)] text-[var(--foreground)] border border-[var(--border)] shadow-sm"
+                  : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              <Mail className="w-3.5 h-3.5" />
+              <span>✉️ Traditional Email Ticket</span>
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {contactMode === "live_chat" ? (
+        <div className="space-y-8">
+          <LiveSupportChat />
+
+          {/* Quick info strip below chat */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-[var(--border)]">
+            <div className="p-4 rounded-2xl bg-[var(--card)] border border-[var(--border)] flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[var(--primary)]/10 text-[var(--primary)] flex items-center justify-center flex-shrink-0">
+                <Mail className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-[var(--foreground)]">Direct Email</p>
+                <p className="text-[11px] text-[var(--muted-foreground)] truncate">techsavvy.muthuraj.dev@gmail.com</p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-[var(--card)] border border-[var(--border)] flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center flex-shrink-0">
+                <MessageSquare className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-[var(--foreground)]">Live Response Hours</p>
+                <p className="text-[11px] text-[var(--muted-foreground)]">Mon–Sat, 9AM–6PM IST</p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-[var(--card)] border border-[var(--border)] flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center flex-shrink-0">
+                <MapPin className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-[var(--foreground)]">Headquarters</p>
+                <p className="text-[11px] text-[var(--muted-foreground)]">Tamil Nadu, India 🇮🇳</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* ── Info Cards ─────────────────────────────────────────────────── */}
         <div className="space-y-4" aria-label="Contact information">
           {/* Email */}
@@ -408,6 +480,7 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

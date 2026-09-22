@@ -1,10 +1,10 @@
-﻿import { NextResponse, NextRequest } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { NextResponse, NextRequest } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 // In-memory rate limiting (resets on cold-start / serverless spin-up)
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute window
-const RATE_LIMIT_MAX = 3; // max 3 submissions per IP per minute
+const RATE_LIMIT_MAX = 5; // max 5 submissions per IP per minute
 
 function getRateLimitKey(request: NextRequest): string {
   return (
@@ -60,66 +60,63 @@ export async function POST(request: NextRequest) {
     if (!subject?.trim()) {
       return NextResponse.json({ error: "Subject is required." }, { status: 400 });
     }
-    if (!message?.trim() || message.trim().length < 10) {
+    if (!message?.trim() || message.trim().length < 5) {
       return NextResponse.json(
-        { error: "Message must be at least 10 characters." },
+        { error: "Message must be at least 5 characters." },
         { status: 400 }
       );
     }
 
-    // ── Web3Forms submission (server-side — access key never leaves server) ────
-    const web3FormsKey = process.env.WEB3FORMS_ACCESS_KEY;
-    if (!web3FormsKey) {
-      console.error("[Contact] WEB3FORMS_ACCESS_KEY is not configured.");
-      return NextResponse.json(
-        { error: "Server configuration error. Please contact support." },
-        { status: 500 }
-      );
-    }
-
-    const formPayload = new FormData();
-    formPayload.append("access_key", web3FormsKey);
-    formPayload.append("subject", "NammaTech - New Contact Form Message");
-    formPayload.append("from_name", "NammaTech Website");
-    formPayload.append("name", name.trim());
-    formPayload.append("email", email.trim());
-    formPayload.append("message", `Subject: ${subject.trim()}\n\n${message.trim()}`);
-    formPayload.append("redirect", "false");
-
-    const web3Res = await fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      body: formPayload,
-    });
-
-    const web3Data = await web3Res.json();
-
-    if (!web3Res.ok || !web3Data.success) {
-      console.error("[Contact] Web3Forms error:", web3Data);
-      return NextResponse.json(
-        { error: web3Data.message || "Failed to deliver your message. Please try again shortly." },
-        { status: 502 }
-      );
-    }
-
-    // ── Also log to Supabase contact_messages (best-effort, non-blocking) ─────
+    // ── 1. Save directly to Supabase via Admin Client ─────────────────────────
+    let dbSuccess = false;
     try {
-      const supabase = await createClient();
-      await supabase.from("contact_messages").insert({
+      const supabaseAdmin = createAdminClient();
+      const { error: insertErr } = await supabaseAdmin.from("contact_messages").insert({
         name: name.trim(),
         email: email.trim().toLowerCase(),
         subject: subject.trim(),
         message: message.trim(),
         status: "UNREAD",
       });
+
+      if (!insertErr) {
+        dbSuccess = true;
+      } else {
+        console.error("[Contact] Database insert error:", insertErr);
+      }
     } catch (dbErr) {
-      // Don't fail the response if DB insert fails — email was already sent
-      console.warn("[Contact] Supabase log failed (non-fatal):", dbErr);
+      console.error("[Contact] Supabase client exception:", dbErr);
     }
 
-    return NextResponse.json({ success: true });
+    // ── 2. Web3Forms submission (Optional email delivery) ─────────────────────
+    const web3FormsKey = process.env.WEB3FORMS_ACCESS_KEY;
+    if (web3FormsKey) {
+      try {
+        const formPayload = new FormData();
+        formPayload.append("access_key", web3FormsKey);
+        formPayload.append("subject", `NammaTech - ${subject.trim()}`);
+        formPayload.append("from_name", "NammaTech Website");
+        formPayload.append("name", name.trim());
+        formPayload.append("email", email.trim());
+        formPayload.append("message", `Subject: ${subject.trim()}\n\n${message.trim()}`);
+        formPayload.append("redirect", "false");
+
+        await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          body: formPayload,
+        });
+      } catch (mailErr) {
+        console.warn("[Contact] Web3Forms delivery warning (non-fatal):", mailErr);
+      }
+    }
+
+    // Return success if stored in DB or processed
+    return NextResponse.json({ success: true, saved: dbSuccess });
   } catch (err: any) {
     console.error("[Contact] Unexpected error:", err);
-    return NextResponse.json({ error: "An unexpected error occurred. Please try again." }, { status: 500 });
+    return NextResponse.json(
+      { error: "An unexpected error occurred. Please try again." },
+      { status: 500 }
+    );
   }
 }
-

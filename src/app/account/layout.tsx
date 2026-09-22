@@ -14,10 +14,13 @@ import {
   ShieldCheck,
   ChevronRight,
   MessageSquarePlus,
+  Headphones,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
+import { useRouter } from "next/navigation";
 import { Header } from "@/components/navigation/header";
 import { Footer } from "@/components/navigation/footer";
+import { Loader2 } from "lucide-react";
 
 export default function AccountLayout({
   children,
@@ -25,16 +28,41 @@ export default function AccountLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { user, profile, isAdmin, signOut } = useAuth();
+  const router = useRouter();
+  const { user, profile, isAdmin, loading, signOut } = useAuth();
+
+  React.useEffect(() => {
+    if (!loading && !user) {
+      router.push(`/auth/login?redirect=${encodeURIComponent(pathname)}`);
+    }
+  }, [loading, user, pathname, router]);
 
   const navItems = [
     { href: "/account", label: "Overview", icon: User },
+    { href: "/account/support", label: "Technical Support", icon: Headphones, badge: "LIVE" },
     { href: "/account/requests", label: "My Requests", icon: MessageSquarePlus },
     { href: "/account/downloads", label: "My Downloads", icon: Download },
     { href: "/account/orders", label: "Order History", icon: ShoppingBag },
     { href: "/account/favorites", label: "Saved Favorites", icon: Heart },
     { href: "/account/profile", label: "Profile & Security", icon: Settings },
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[var(--background)]">
+        <Header />
+        <main className="flex-1 flex flex-col items-center justify-center p-12">
+          <Loader2 className="w-8 h-8 animate-spin text-[var(--primary)] mb-3" />
+          <p className="text-xs text-[var(--muted-foreground)]">Verifying account session...</p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--background)]">
@@ -97,7 +125,14 @@ export default function AccountLayout({
                       <Icon className="w-3.5 h-3.5" />
                       <span>{item.label}</span>
                     </div>
-                    {isActive && <ChevronRight className="w-3.5 h-3.5 hidden md:inline" />}
+                    <div className="flex items-center gap-1.5">
+                      {item.badge && (
+                        <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                          {item.badge}
+                        </span>
+                      )}
+                      {isActive && <ChevronRight className="w-3.5 h-3.5 hidden md:inline" />}
+                    </div>
                   </Link>
                 );
               })}

@@ -45,6 +45,7 @@ export const DEFAULT_NAVBAR_ITEMS: NavbarMenuItem[] = [
   { id: "nav-articles", label: "Articles", href: "/articles", active: true },
   { id: "nav-premium", label: "Premium", href: "/premium", active: true, badge: "VIP" },
   { id: "nav-request", label: "Request", href: "/request", active: true },
+  { id: "nav-contact", label: "Contact", href: "/contact", active: true, badge: "LIVE" },
 ];
 
 interface HomepageClientProps {
@@ -58,6 +59,12 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
   // Hero & Search
   const [heroImageUrl, setHeroImageUrl] = useState(
     initialSettings.hero_image_url || "/images/hero-clean.png"
+  );
+  const [heroTitle, setHeroTitle] = useState(
+    initialSettings.hero_title || "Explore High Performance Computing Resources"
+  );
+  const [heroSubtitle, setHeroSubtitle] = useState(
+    initialSettings.hero_subtitle || "Curated, verified, virus-free tools, repacks, and development utilities."
   );
   const [showSearchBar, setShowSearchBar] = useState(
     initialSettings.show_search_bar !== false
@@ -74,7 +81,15 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
       Array.isArray(initialSettings.navbar_items) &&
       initialSettings.navbar_items.length > 0
     ) {
-      return initialSettings.navbar_items;
+      const items: NavbarMenuItem[] = initialSettings.navbar_items;
+      const hrefs = new Set(items.map((i) => i.href));
+      const merged = [...items];
+      for (const def of DEFAULT_NAVBAR_ITEMS) {
+        if (!hrefs.has(def.href)) {
+          merged.push(def);
+        }
+      }
+      return merged;
     }
     return DEFAULT_NAVBAR_ITEMS;
   });
@@ -343,6 +358,9 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
           message:
             "Homepage sections have been updated and are now live on the public site.",
         });
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("nammatech-nav-updated"));
+        }
         router.refresh();
       } else {
         const data = await res.json();
