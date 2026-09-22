@@ -88,6 +88,10 @@ export function ContactSupportPopup() {
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
+  if (isDedicatedSupportPage) {
+    return null;
+  }
+
   return (
     <>
       {/* ── 1. FLOATING LAUNCHER BUTTON ── */}

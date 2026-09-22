@@ -135,23 +135,8 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
         setHasJoined(true);
       }
     } else {
-      // Guest / Visitor User: Do NOT wipe session; allow guests on /contact to use live chat smoothly
-      if (savedUserId) {
-        // A previous authenticated user logged out, clear their chat for privacy
-        try {
-          localStorage.removeItem(STORAGE_SESSION_KEY);
-          localStorage.removeItem("nammatech_support_session_id");
-          localStorage.removeItem("nammatech_support_username");
-          localStorage.removeItem("nammatech_support_email");
-          localStorage.removeItem("nammatech_support_category");
-          localStorage.removeItem("nammatech_support_user_id");
-        } catch {}
-        setSessionId("");
-        setSession(null);
-        setHasJoined(false);
-        return;
-      }
-
+      // Guest / Visitor User (Without Signing In):
+      // Full access to 1-on-1 live technical support without requiring any login or account creation
       if (savedName) setUserName(savedName);
       if (savedEmail) setUserEmail(savedEmail);
       if (savedCat) setCategory(savedCat);
