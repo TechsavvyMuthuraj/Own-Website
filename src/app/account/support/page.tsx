@@ -204,7 +204,7 @@ export default function TechnicalSupportDashboardPage() {
             </a>
 
             <a
-              href="https://wa.me/919176443726?text=Hi%20NammaTech%20Technical%20Support,%20I%20need%20assistance:"
+              href="https://wa.me/919944875726?text=Hi%20NammaTech%20Technical%20Support,%20I%20need%20assistance:"
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 transition-all flex items-center gap-2"

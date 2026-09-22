@@ -26,6 +26,7 @@ import {
   Newspaper,
   Home,
   Image as ImageIcon,
+  Headphones,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -71,6 +72,8 @@ export default function AdminLayout({
         { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
         { href: "/admin/payments", label: "Payments", icon: CreditCard },
         { href: "/admin/coupons", label: "Coupons", icon: Tag },
+        { href: "/admin/support-team", label: "Support Team & Roster", icon: Headphones },
+        { href: "/technicalsupport", label: "Specialist Terminal ⚡", icon: Headphones },
         { href: "/admin/messages", label: "Contact Inbox", icon: Mail },
         { href: "/admin/requests", label: "Resource Requests", icon: Compass },
       ],

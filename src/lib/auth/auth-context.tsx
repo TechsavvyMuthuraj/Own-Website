@@ -67,13 +67,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event: any, session: any) => {
+    } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
       const current = session?.user ?? null;
       setUser(current);
       if (current) {
         await fetchProfile(current.id);
       } else {
         setProfile(null);
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.removeItem("nammatech_support_session_id_v2");
+            localStorage.removeItem("nammatech_support_session_id");
+            localStorage.removeItem("nammatech_support_username");
+            localStorage.removeItem("nammatech_support_email");
+            localStorage.removeItem("nammatech_support_category");
+            localStorage.removeItem("nammatech_support_user_id");
+          } catch {}
+          window.dispatchEvent(new CustomEvent("nammatech-user-signed-out"));
+        }
       }
       setLoading(false);
     });
@@ -101,9 +112,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user?.id]);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch {}
     setUser(null);
     setProfile(null);
+
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem("nammatech_support_session_id_v2");
+        localStorage.removeItem("nammatech_support_session_id");
+        localStorage.removeItem("nammatech_support_username");
+        localStorage.removeItem("nammatech_support_email");
+        localStorage.removeItem("nammatech_support_category");
+        localStorage.removeItem("nammatech_support_user_id");
+        sessionStorage.clear();
+      } catch {}
+
+      window.dispatchEvent(new CustomEvent("nammatech-user-signed-out"));
+
+      // Clean refresh to home page clearing all in-memory state
+      window.location.href = "/";
+    }
   };
 
   const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || "techsavvy.muthuraj.dev@gmail.com")

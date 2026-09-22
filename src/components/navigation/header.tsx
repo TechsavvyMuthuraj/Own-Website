@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -101,10 +101,40 @@ export function Header({ navLinks }: HeaderProps) {
     };
   }, [navLinks]);
 
-  // Close mobile navigation drawer, user menu, and search modal whenever route changes
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const userBtnRef = useRef<HTMLButtonElement>(null);
+
+  // Close user profile dropdown on outside click or Escape key
   useEffect(() => {
-    setIsMobileMenuOpen(false);
+    if (!isUserMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(target) &&
+        userBtnRef.current &&
+        !userBtnRef.current.contains(target)
+      ) {
+        setIsUserMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isUserMenuOpen]);
+
+  // Close on route change
+  useEffect(() => {
     setIsUserMenuOpen(false);
+    setIsMobileMenuOpen(false);
     setIsSearchOpen(false);
   }, [pathname]);
 
@@ -196,10 +226,13 @@ export function Header({ navLinks }: HeaderProps) {
             {user ? (
               <div className="relative">
                 <button
+                  ref={userBtnRef}
                   type="button"
                   id="user-menu-trigger"
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-[var(--border)] hover:bg-[var(--secondary)] text-xs font-medium text-[var(--foreground)] transition-colors"
+                  onClick={() => setIsUserMenuOpen((prev) => !prev)}
+                  className="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-[var(--border)] hover:bg-[var(--secondary)] text-xs font-medium text-[var(--foreground)] transition-colors cursor-pointer"
+                  aria-expanded={isUserMenuOpen}
+                  aria-haspopup="true"
                 >
                   <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#FD1843] to-[#ff4d6d] flex items-center justify-center text-white text-[11px] font-bold">
                     {profile?.full_name ? profile.full_name.charAt(0).toUpperCase() : "U"}
@@ -211,6 +244,7 @@ export function Header({ navLinks }: HeaderProps) {
 
                 {isUserMenuOpen && (
                   <div
+                    ref={userMenuRef}
                     className="absolute right-0 mt-2 w-52 rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150 text-xs"
                     onClick={() => setIsUserMenuOpen(false)}
                   >

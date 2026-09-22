@@ -220,8 +220,12 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sessionId: activeSession.id,
+          userName: activeSession.userName,
           sender: "admin",
-          senderName: "Support Team",
+          senderName: activeSession.assignedSpecialistName
+            ? `${activeSession.assignedSpecialistName} (Technical Team)`
+            : "Muthuraj C (Head of Support)",
+          specialistName: activeSession.assignedSpecialistName || "Muthuraj C",
           text: textToSend.trim(),
           codeSnippet: code.trim() || undefined,
         }),
@@ -258,6 +262,32 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
     } catch {
       showToast({ type: "error", message: "Failed to update session status" });
     }
+  };
+
+  // Clear live session messages
+  const handleClearSession = (sessionId: string) => {
+    confirm({
+      title: "Clear Support Chat History?",
+      message: "Are you sure you want to clear all message bubbles in this session?",
+      confirmText: "Clear History",
+      cancelText: "Cancel",
+      variant: "danger",
+      onConfirm: async () => {
+        try {
+          const res = await fetch("/api/support/chat", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sessionId, action: "clear" }),
+          });
+          if (res.ok) {
+            fetchLiveSessions();
+            showToast({ type: "success", message: "Conversation history cleared" });
+          }
+        } catch {
+          showToast({ type: "error", message: "Failed to clear conversation" });
+        }
+      },
+    });
   };
 
   // Delete live session
@@ -634,6 +664,16 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                       <ExternalLink className="w-4 h-4" />
                     </a>
 
+                    {/* Clear Chat History */}
+                    <button
+                      type="button"
+                      onClick={() => handleClearSession(activeSession.id)}
+                      className="p-2 rounded-xl text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition-colors cursor-pointer"
+                      title="Clear Chat History"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                    </button>
+
                     {/* Delete Session */}
                     <button
                       type="button"
@@ -675,7 +715,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                         {/* Sender Label */}
                         <div className="flex items-center gap-1.5 mb-1 px-1 text-[10px] text-neutral-400">
                           <span className="font-semibold text-neutral-300">
-                            {isUser ? activeSession.userName : "Support Specialist"}
+                            {isUser ? activeSession.userName : (msg.senderName || activeSession.assignedSpecialistName || "Specialist (Technical Team)")}
                           </span>
                           <span>&bull;</span>
                           <span>{timeString}</span>

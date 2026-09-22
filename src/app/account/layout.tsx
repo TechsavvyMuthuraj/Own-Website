@@ -20,6 +20,7 @@ import { useAuth } from "@/lib/auth/auth-context";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/navigation/header";
 import { Footer } from "@/components/navigation/footer";
+import { ContactSupportPopup } from "@/components/support/contact-support-popup";
 import { Loader2 } from "lucide-react";
 
 export default function AccountLayout({
@@ -153,6 +154,7 @@ export default function AccountLayout({
         </div>
       </main>
 
+      <ContactSupportPopup />
       <Footer />
     </div>
   );

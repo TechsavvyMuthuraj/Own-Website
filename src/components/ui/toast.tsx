@@ -94,9 +94,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const handleConfirmAction = async () => {
     if (!confirmModal) return;
+    const action = confirmModal.onConfirm;
     setConfirmModal((prev) => (prev ? { ...prev, loading: true } : null));
     try {
-      await confirmModal.onConfirm();
+      if (typeof action === "function") {
+        await action();
+      }
+    } catch (err) {
+      console.error("Confirm callback execution error:", err);
     } finally {
       setConfirmModal(null);
     }

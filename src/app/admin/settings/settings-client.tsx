@@ -29,10 +29,10 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
     initialSettings.technical_support_email || "techsavvy.muthuraj.dev@gmail.com"
   );
   const [techSupportPhone, setTechSupportPhone] = useState(
-    initialSettings.technical_support_phone || "+91 91764 43726"
+    initialSettings.technical_support_phone || "+91 99448 75726"
   );
   const [techSupportWhatsApp, setTechSupportWhatsApp] = useState(
-    initialSettings.technical_support_whatsapp || "919176443726"
+    initialSettings.technical_support_whatsapp || "919944875726"
   );
   const [techSupportHours, setTechSupportHours] = useState(
     initialSettings.technical_support_hours || "Mon–Sat, 9AM–6PM IST"
@@ -52,7 +52,7 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
     initialPayment.merchant_name || "NammaTech Digital / Muthuraj C"
   );
   const [receiverPhone, setReceiverPhone] = useState(
-    initialPayment.receiver_phone || "+91 91764 43726"
+    initialPayment.receiver_phone || "+91 99448 75726"
   );
 
   const [loading, setLoading] = useState(false);
@@ -268,7 +268,7 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
                 type="text"
                 value={techSupportWhatsApp}
                 onChange={(e) => setTechSupportWhatsApp(e.target.value)}
-                placeholder="919176443726"
+                placeholder="919944875726"
                 className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950/80 text-xs text-white focus:outline-none focus:ring-1 focus:ring-sky-500 font-mono"
               />
             </div>

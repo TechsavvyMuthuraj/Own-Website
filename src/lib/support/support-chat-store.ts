@@ -20,7 +20,12 @@ export interface SupportSession {
   id: string;
   userName: string;
   userEmail?: string;
+  userPhone?: string;
   category?: string;
+  assignedSpecialistName?: string;
+  assignedSpecialistEmail?: string;
+  assignedSpecialistRole?: string;
+  specialistDutyStatus?: "ON_DUTY" | "BUSY" | "OFF_DUTY";
   status: "ACTIVE" | "WAITING" | "RESOLVED";
   unreadAdminCount: number;
   unreadUserCount: number;
@@ -43,42 +48,6 @@ declare global {
 
 if (!global.__nammatech_support_sessions__) {
   global.__nammatech_support_sessions__ = new Map<string, SupportSession>();
-
-  // Add initial sample demo session so admin immediately sees the studio in action
-  const sampleId = "session_welcome_demo";
-  const now = new Date().toISOString();
-  global.__nammatech_support_sessions__.set(sampleId, {
-    id: sampleId,
-    userName: "Alex Explorer",
-    userEmail: "alex@example.com",
-    category: "Software Installation Help",
-    status: "ACTIVE",
-    unreadAdminCount: 1,
-    unreadUserCount: 0,
-    createdAt: now,
-    updatedAt: now,
-    lastMessage: "Hi support team! I need help setting up OBS virtual camera on Windows 11.",
-    messages: [
-      {
-        id: "msg_init_sys",
-        sessionId: sampleId,
-        sender: "system",
-        senderName: "NammaTech Bot",
-        text: "⚡ Connected to NammaTech 1-on-1 Technical Support. An administrator has been alerted.",
-        timestamp: new Date(Date.now() - 120000).toISOString(),
-        status: "read",
-      },
-      {
-        id: "msg_init_user",
-        sessionId: sampleId,
-        sender: "user",
-        senderName: "Alex Explorer",
-        text: "Hi support team! I need help setting up OBS virtual camera on Windows 11. Is there an official legal bypass or config?",
-        timestamp: new Date(Date.now() - 60000).toISOString(),
-        status: "delivered",
-      },
-    ],
-  });
 }
 
 const sessionsStore = global.__nammatech_support_sessions__;
@@ -97,16 +66,36 @@ export const SupportChatStore = {
   },
 
   // Create or join session
-  getOrCreateSession(sessionId: string, userName: string, category?: string, userEmail?: string): SupportSession {
+  getOrCreateSession(
+    sessionId: string,
+    userName?: string,
+    category?: string,
+    userEmail?: string,
+    sender?: string,
+    assignedSpecialist?: { name: string; email?: string; role?: string }
+  ): SupportSession {
     let session = sessionsStore.get(sessionId);
     const now = new Date().toISOString();
 
+    const cleanInputName = userName?.trim();
+    const isGenericFallback = !cleanInputName || cleanInputName === "Explorer" || cleanInputName === "Guest Explorer" || cleanInputName === "Guest";
+    const derivedName = !isGenericFallback ? cleanInputName : (userEmail?.split("@")[0] || "User");
+
+    const specialistName = assignedSpecialist?.name?.trim() || "";
+
     if (!session) {
+      const specGreeting = specialistName
+        ? `${specialistName} (Technical Team) has connected to your session.`
+        : `NammaTech Technical Support Specialist is connected.`;
+
       session = {
         id: sessionId,
-        userName: userName.trim() || "Guest Explorer",
+        userName: derivedName,
         userEmail: userEmail?.trim(),
         category: category || "General Support",
+        assignedSpecialistName: specialistName || undefined,
+        assignedSpecialistEmail: assignedSpecialist?.email?.trim() || undefined,
+        assignedSpecialistRole: assignedSpecialist?.role?.trim() || "Technical Support Specialist",
         status: "ACTIVE",
         unreadAdminCount: 0,
         unreadUserCount: 0,
@@ -117,8 +106,8 @@ export const SupportChatStore = {
             id: `sys_${Date.now()}`,
             sessionId,
             sender: "system",
-            senderName: "NammaTech Bot",
-            text: `👋 Welcome ${userName.trim()}! You are connected to NammaTech Realtime Technical Support. An administrator has been notified. How can we help you today?`,
+            senderName: specialistName ? `${specialistName} (Technical Team)` : "Technical Team",
+            text: `👋 Welcome ${derivedName}! ${specGreeting} How can we help you today?`,
             timestamp: now,
             status: "read",
           },
@@ -126,12 +115,20 @@ export const SupportChatStore = {
       };
       sessionsStore.set(sessionId, session);
     } else {
-      // Update username if provided
-      if (userName && userName !== "Guest Explorer") {
-        session.userName = userName.trim();
+      // Only update username if a valid real name is provided from the user, and NOT from admin replies or generic fallbacks
+      if (sender !== "admin" && !isGenericFallback) {
+        session.userName = cleanInputName;
+      }
+      if (userEmail && !session.userEmail) {
+        session.userEmail = userEmail.trim();
       }
       if (category) {
         session.category = category;
+      }
+      if (specialistName) {
+        session.assignedSpecialistName = specialistName;
+        if (assignedSpecialist?.email) session.assignedSpecialistEmail = assignedSpecialist.email;
+        if (assignedSpecialist?.role) session.assignedSpecialistRole = assignedSpecialist.role;
       }
     }
 
@@ -213,20 +210,48 @@ export const SupportChatStore = {
     }
   },
 
-  // Update session status (e.g. resolve)
-  updateStatus(sessionId: string, status: "ACTIVE" | "WAITING" | "RESOLVED") {
+  // Update session status (e.g. ACTIVE, WAITING, RESOLVED)
+  updateStatus(
+    sessionId: string,
+    status: "ACTIVE" | "WAITING" | "RESOLVED",
+    specialistName?: string,
+    customNote?: string
+  ) {
     const session = sessionsStore.get(sessionId);
     if (!session) return;
+    const prevStatus = session.status;
     session.status = status;
     session.updatedAt = new Date().toISOString();
+
+    const effectiveSpecialist = specialistName || session.assignedSpecialistName || "Technical Specialist";
 
     if (status === "RESOLVED") {
       session.messages.push({
         id: `sys_resolved_${Date.now()}`,
         sessionId,
         sender: "system",
-        senderName: "System",
-        text: "✅ This technical support ticket was marked as resolved. You can still message anytime if you need more assistance!",
+        senderName: effectiveSpecialist,
+        text: customNote || `✅ Technical support session closed and marked as resolved by ${effectiveSpecialist}. Thank you!`,
+        timestamp: new Date().toISOString(),
+        status: "read",
+      });
+    } else if (status === "WAITING") {
+      session.messages.push({
+        id: `sys_waiting_${Date.now()}`,
+        sessionId,
+        sender: "system",
+        senderName: effectiveSpecialist,
+        text: customNote || `⏳ Specialist ${effectiveSpecialist} is waiting for user response / diagnostic details.`,
+        timestamp: new Date().toISOString(),
+        status: "read",
+      });
+    } else if (status === "ACTIVE" && prevStatus !== "ACTIVE") {
+      session.messages.push({
+        id: `sys_active_${Date.now()}`,
+        sessionId,
+        sender: "system",
+        senderName: effectiveSpecialist,
+        text: customNote || `⚡ Session is now active. Specialist ${effectiveSpecialist} is responding.`,
         timestamp: new Date().toISOString(),
         status: "read",
       });
@@ -259,6 +284,48 @@ export const SupportChatStore = {
     if (!session) return;
     session.rating = rating;
     if (feedback) session.feedback = feedback;
+  },
+
+  // Clear conversation messages
+  clearSessionMessages(sessionId: string, specialistName?: string) {
+    const session = sessionsStore.get(sessionId);
+    if (!session) return;
+    const now = new Date().toISOString();
+    const effectiveName = specialistName || session.assignedSpecialistName || "Technical Team";
+    session.messages = [
+      {
+        id: `sys_cleared_${Date.now()}`,
+        sessionId,
+        sender: "system",
+        senderName: `${effectiveName} (Technical Team)`,
+        text: `🧹 Conversation history cleared by ${effectiveName}. How can we help you?`,
+        timestamp: now,
+        status: "read",
+      },
+    ];
+    session.lastMessage = "Conversation cleared";
+    session.updatedAt = now;
+    session.unreadAdminCount = 0;
+    session.unreadUserCount = 0;
+  },
+
+  // Update assigned specialist & duty status
+  updateSpecialist(
+    sessionId: string,
+    specialist: {
+      name: string;
+      email?: string;
+      role?: string;
+      dutyStatus?: "ON_DUTY" | "BUSY" | "OFF_DUTY";
+    }
+  ) {
+    const session = sessionsStore.get(sessionId);
+    if (!session) return;
+    if (specialist.name) session.assignedSpecialistName = specialist.name;
+    if (specialist.email) session.assignedSpecialistEmail = specialist.email;
+    if (specialist.role) session.assignedSpecialistRole = specialist.role;
+    if (specialist.dutyStatus) session.specialistDutyStatus = specialist.dutyStatus;
+    session.updatedAt = new Date().toISOString();
   },
 
   // Delete session

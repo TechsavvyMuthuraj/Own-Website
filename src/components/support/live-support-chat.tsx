@@ -24,6 +24,7 @@ import {
   ExternalLink,
   Bot,
   User as UserIcon,
+  XCircle,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { chatAudio } from "@/lib/support/chat-audio";
@@ -51,8 +52,12 @@ const QUICK_EMOJIS = ["👍", "🔥", "❤️", "🚀", "💻", "⚡", "🙏", "
 
 const STORAGE_SESSION_KEY = "nammatech_support_session_id_v2";
 
-export function LiveSupportChat() {
-  const { user, profile } = useAuth();
+export interface LiveSupportChatProps {
+  compact?: boolean;
+}
+
+export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) {
+  const { user, profile, loading: authLoading } = useAuth();
   const { showToast, confirm } = useToast();
 
   // Session state
@@ -73,6 +78,8 @@ export function LiveSupportChat() {
   const [userRating, setUserRating] = useState<number>(0);
   const [ratingFeedback, setRatingFeedback] = useState<string>("");
   const [hasRated, setHasRated] = useState<boolean>(false);
+  const [dutyStatus, setDutyStatus] = useState<"ON_DUTY" | "BUSY" | "OFF_DUTY">("ON_DUTY");
+  const [queuePosition, setQueuePosition] = useState<number>(1);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const pollIntervalRef = useRef<any>(null);
@@ -81,30 +88,92 @@ export function LiveSupportChat() {
 
   // Initialize identity from auth or localStorage
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || authLoading) return;
 
-    const savedSessionId = localStorage.getItem(STORAGE_SESSION_KEY);
-    const savedName = localStorage.getItem("nammatech_support_username");
-    const savedEmail = localStorage.getItem("nammatech_support_email");
+    // When signed out, ALWAYS clear previous user session and reset live chat state
+    if (!user) {
+      try {
+        localStorage.removeItem(STORAGE_SESSION_KEY);
+        localStorage.removeItem("nammatech_support_session_id");
+        localStorage.removeItem("nammatech_support_username");
+        localStorage.removeItem("nammatech_support_email");
+        localStorage.removeItem("nammatech_support_category");
+        localStorage.removeItem("nammatech_support_user_id");
+      } catch {}
+      setSessionId("");
+      setSession(null);
+      setHasJoined(false);
+      setUserName("");
+      setUserEmail("");
+      lastKnownMessageCountRef.current = 0;
+      return;
+    }
+
+    const savedUserId = localStorage.getItem("nammatech_support_user_id");
+    const savedSessionId =
+      localStorage.getItem(STORAGE_SESSION_KEY) || localStorage.getItem("nammatech_support_session_id");
     const savedCat = localStorage.getItem("nammatech_support_category");
+
+    // If storage has a session from another user or previous session without this user ID, clear it
+    if (savedUserId && savedUserId !== user.id) {
+      try {
+        localStorage.removeItem(STORAGE_SESSION_KEY);
+        localStorage.removeItem("nammatech_support_session_id");
+        localStorage.removeItem("nammatech_support_username");
+        localStorage.removeItem("nammatech_support_email");
+        localStorage.removeItem("nammatech_support_category");
+        localStorage.removeItem("nammatech_support_user_id");
+      } catch {}
+      setSessionId("");
+      setSession(null);
+      setHasJoined(false);
+      setUserName("");
+      setUserEmail("");
+      lastKnownMessageCountRef.current = 0;
+      return;
+    }
 
     const defaultName =
       profile?.full_name ||
       (user?.user_metadata as any)?.full_name ||
       user?.email?.split("@")[0] ||
-      savedName ||
       "";
-    const defaultEmail = user?.email || savedEmail || "";
+    const defaultEmail = user?.email || "";
 
     setUserName(defaultName);
     setUserEmail(defaultEmail);
     if (savedCat) setCategory(savedCat);
 
-    if (savedSessionId) {
+    // Only resume active session if it matches current authenticated user
+    if (savedSessionId && savedUserId === user.id) {
       setSessionId(savedSessionId);
       setHasJoined(true);
     }
-  }, [user, profile]);
+  }, [user, profile, authLoading]);
+
+  // Reset live chat when user signs out anywhere on the website
+  useEffect(() => {
+    const handleSignOutReset = () => {
+      setSessionId("");
+      setSession(null);
+      setHasJoined(false);
+      setUserName("");
+      setUserEmail("");
+      lastKnownMessageCountRef.current = 0;
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.removeItem(STORAGE_SESSION_KEY);
+          localStorage.removeItem("nammatech_support_session_id");
+          localStorage.removeItem("nammatech_support_username");
+          localStorage.removeItem("nammatech_support_email");
+          localStorage.removeItem("nammatech_support_category");
+          localStorage.removeItem("nammatech_support_user_id");
+        } catch {}
+      }
+    };
+    window.addEventListener("nammatech-user-signed-out", handleSignOutReset);
+    return () => window.removeEventListener("nammatech-user-signed-out", handleSignOutReset);
+  }, []);
 
   // Scroll to bottom helper
   const scrollToBottom = useCallback((smooth = true) => {
@@ -147,6 +216,13 @@ export function LiveSupportChat() {
 
             lastKnownMessageCountRef.current = currentCount;
             setSession(data.session);
+
+            if (data.specialistDutyStatus) {
+              setDutyStatus(data.specialistDutyStatus);
+            }
+            if (data.queuePosition !== undefined) {
+              setQueuePosition(data.queuePosition);
+            }
 
             // Mark user read
             if (data.session.unreadUserCount > 0) {
@@ -212,10 +288,14 @@ export function LiveSupportChat() {
     }, 1800);
   };
 
-  // Start chat session
   const handleStartSession = async (e: React.FormEvent) => {
     e.preventDefault();
-    const finalName = userName.trim() || "Guest Specialist";
+    const finalName =
+      userName.trim() ||
+      profile?.full_name ||
+      (user?.user_metadata as any)?.full_name ||
+      user?.email?.split("@")[0] ||
+      "User";
     const newSid = `chat_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 
     setSessionId(newSid);
@@ -226,6 +306,7 @@ export function LiveSupportChat() {
       localStorage.setItem("nammatech_support_username", finalName);
       if (userEmail) localStorage.setItem("nammatech_support_email", userEmail);
       localStorage.setItem("nammatech_support_category", category);
+      if (user?.id) localStorage.setItem("nammatech_support_user_id", user.id);
     }
 
     try {
@@ -279,17 +360,24 @@ export function LiveSupportChat() {
     // Optimistic message
     chatAudio.playSent();
 
+    const effectiveName =
+      userName.trim() ||
+      profile?.full_name ||
+      (user?.user_metadata as any)?.full_name ||
+      user?.email?.split("@")[0] ||
+      "User";
+
     try {
       const res = await fetch("/api/support/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           sessionId: activeSid,
-          userName: userName.trim() || "Guest",
+          userName: effectiveName,
           userEmail: userEmail.trim(),
           category,
           sender: "user",
-          senderName: userName.trim() || "Guest",
+          senderName: effectiveName,
           text: textToSend.trim(),
           codeSnippet: currentCode.trim() || undefined,
         }),
@@ -357,6 +445,66 @@ export function LiveSupportChat() {
     }
   };
 
+  // User explicitly closes / ends chat session
+  const handleCloseChatSession = () => {
+    if (!sessionId || !session) return;
+    confirm({
+      title: "End Support Chat?",
+      message: "Are you satisfied with the solution or wish to close this session? Closing marks the issue resolved and opens your rating feedback.",
+      confirmText: "End Chat",
+      cancelText: "Keep Chatting",
+      variant: "warning",
+      onConfirm: async () => {
+        try {
+          const res = await fetch("/api/support/chat", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sessionId,
+              action: "status",
+              status: "RESOLVED",
+              specialistName: session.assignedSpecialistName || "User",
+              customNote: `✅ Support session closed by ${userName || "User"}. Ticket marked as resolved.`,
+            }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.session) setSession(data.session);
+            showToast({
+              type: "success",
+              title: "Session Resolved & Closed",
+              message: "Thank you! Please rate your technical support experience.",
+            });
+          }
+        } catch {
+          showToast({ type: "error", message: "Failed to close support chat." });
+        }
+      },
+    });
+  };
+
+  // Start fresh support inquiry
+  const handleStartNewInquiry = () => {
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem(STORAGE_SESSION_KEY);
+        localStorage.removeItem("nammatech_support_session_id");
+        localStorage.removeItem("nammatech_support_username");
+        localStorage.removeItem("nammatech_support_email");
+        localStorage.removeItem("nammatech_support_category");
+        localStorage.removeItem("nammatech_support_user_id");
+      } catch {}
+    }
+    setSessionId("");
+    setSession(null);
+    setHasJoined(false);
+    setUserRating(0);
+    setRatingFeedback("");
+    setHasRated(false);
+    lastKnownMessageCountRef.current = 0;
+    showToast({ message: "Ready to start a new support inquiry.", type: "info" });
+  };
+
   // Reset / Clear chat
   const handleResetChat = () => {
     confirm({
@@ -365,16 +513,7 @@ export function LiveSupportChat() {
       confirmText: "End & Reset",
       cancelText: "Stay in Chat",
       variant: "warning",
-      onConfirm: () => {
-        if (typeof window !== "undefined") {
-          localStorage.removeItem(STORAGE_SESSION_KEY);
-        }
-        setSessionId("");
-        setSession(null);
-        setHasJoined(false);
-        lastKnownMessageCountRef.current = 0;
-        showToast({ message: "Support session reset successfully", type: "info" });
-      },
+      onConfirm: handleStartNewInquiry,
     });
   };
 
@@ -427,35 +566,50 @@ export function LiveSupportChat() {
     <div className="w-full">
       {!hasJoined ? (
         /* ── STEP 1: ONBOARDING / NAME & CATEGORY ENTRY ── */
-        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-10 shadow-2xl relative overflow-hidden">
+        <div className={compact ? "rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5 shadow-lg relative overflow-hidden text-left" : "rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-10 shadow-2xl relative overflow-hidden"}>
           <div className="absolute -top-24 -right-24 w-72 h-72 bg-gradient-to-br from-emerald-500/10 via-sky-500/10 to-transparent rounded-full blur-3xl pointer-events-none" />
 
           {/* Header Banner */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border)] pb-6 mb-8 relative z-10">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block" />
-                Specialist Desk Live
+          {!compact ? (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border)] pb-6 mb-8 relative z-10">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block" />
+                  Specialist Desk Live
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--foreground)] tracking-tight flex items-center gap-2.5">
+                  <Headphones className="w-7 h-7 text-[var(--primary)]" />
+                  <span>1-on-1 Realtime Technical Support</span>
+                </h2>
+                <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1 max-w-lg leading-relaxed">
+                  Connect directly with our engineering team for instant troubleshooting, software
+                  installation fixes, game crash logs, and direct mirror links.
+                </p>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--foreground)] tracking-tight flex items-center gap-2.5">
-                <Headphones className="w-7 h-7 text-[var(--primary)]" />
-                <span>1-on-1 Realtime Technical Support</span>
-              </h2>
-              <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1 max-w-lg leading-relaxed">
-                Connect directly with our engineering team for instant troubleshooting, software
-                installation fixes, game crash logs, and direct mirror links.
-              </p>
-            </div>
 
-            <div className="flex items-center gap-3 self-start sm:self-auto">
-              <div className="px-4 py-2.5 rounded-2xl bg-[var(--secondary)] border border-[var(--border)] text-xs text-[var(--foreground)] flex items-center gap-2 shadow-sm">
-                <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                <span className="font-semibold">Direct Admin Channel</span>
+              <div className="flex items-center gap-3 self-start sm:self-auto">
+                <div className="px-4 py-2.5 rounded-2xl bg-[var(--secondary)] border border-[var(--border)] text-xs text-[var(--foreground)] flex items-center gap-2 shadow-sm">
+                  <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                  <span className="font-semibold">Direct Admin Channel</span>
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex items-center justify-between pb-3 mb-4 border-b border-[var(--border)] relative z-10">
+              <div>
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-bold uppercase tracking-wider mb-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Support Specialist Live
+                </span>
+                <h3 className="text-sm font-bold text-[var(--foreground)] flex items-center gap-1.5">
+                  <Headphones className="w-4 h-4 text-[var(--primary)]" />
+                  Start Live Chat Session
+                </h3>
+              </div>
+            </div>
+          )}
 
-          <form onSubmit={handleStartSession} className="space-y-6 relative z-10">
+          <form onSubmit={handleStartSession} className={compact ? "space-y-4 relative z-10" : "space-y-6 relative z-10"}>
             {/* Name and Email */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
@@ -556,7 +710,7 @@ export function LiveSupportChat() {
         </div>
       ) : (
         /* ── STEP 2: ACTIVE LIVE TECHNICAL SUPPORT CONSOLE ── */
-        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-2xl overflow-hidden flex flex-col h-[760px] relative">
+        <div className={compact ? "rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xl overflow-hidden flex flex-col h-[500px] relative text-left" : "rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-2xl overflow-hidden flex flex-col h-[760px] relative"}>
           {/* Top Control Bar */}
           <div className="px-5 py-3.5 border-b border-[var(--border)] bg-[var(--card)]/90 backdrop-blur-md flex items-center justify-between gap-3 z-10">
             <div className="flex items-center gap-3 min-w-0">
@@ -564,17 +718,56 @@ export function LiveSupportChat() {
                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[var(--primary)] to-rose-600 flex items-center justify-center text-white font-black text-sm shadow-md">
                   <Headphones className="w-5 h-5" />
                 </div>
-                <span className="w-3 h-3 rounded-full bg-emerald-500 border-2 border-[var(--card)] absolute -bottom-0.5 -right-0.5 animate-pulse" />
+                <span
+                  className={`w-3 h-3 rounded-full border-2 border-[var(--card)] absolute -bottom-0.5 -right-0.5 ${
+                    dutyStatus === "ON_DUTY"
+                      ? "bg-emerald-500 animate-pulse"
+                      : dutyStatus === "BUSY"
+                      ? "bg-amber-500 animate-ping"
+                      : "bg-purple-500"
+                  }`}
+                />
               </div>
 
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <h3 className="font-bold text-sm text-[var(--foreground)] truncate">
-                    NammaTech Live Support
+                    {session?.assignedSpecialistName ? (
+                      <span className="flex items-center gap-1.5">
+                        <span className="text-emerald-500 font-extrabold">{session.assignedSpecialistName}</span>
+                        <span className="text-xs font-semibold text-[var(--muted-foreground)]">(Technical Team)</span>
+                      </span>
+                    ) : dutyStatus === "BUSY" ? (
+                      <span className="text-amber-500 font-bold">Waiting for Next Specialist...</span>
+                    ) : (
+                      "NammaTech Live Support"
+                    )}
                   </h3>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                    Online
-                  </span>
+
+                  {session?.status === "RESOLVED" ? (
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1 shadow-xs">
+                      <CheckCheck className="w-3 h-3" />
+                      Issue Resolved
+                    </span>
+                  ) : session?.status === "WAITING" ? (
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30 flex items-center gap-1 animate-pulse shadow-xs">
+                      ⏳ Specialist Waiting
+                    </span>
+                  ) : dutyStatus === "ON_DUTY" ? (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Connected
+                    </span>
+                  ) : dutyStatus === "BUSY" ? (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping" />
+                      Queue #{queuePosition}
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/15 text-purple-400 border border-purple-500/30">
+                      Offline Desk
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 text-[11px] text-[var(--muted-foreground)]">
                   <span>Chatting as <strong className="text-[var(--foreground)]">{session?.userName || userName}</strong></span>
@@ -586,6 +779,29 @@ export function LiveSupportChat() {
 
             {/* Quick Action Tools */}
             <div className="flex items-center gap-1.5 flex-shrink-0">
+              {/* User Close / End Chat Button */}
+              {session?.status !== "RESOLVED" ? (
+                <button
+                  type="button"
+                  onClick={handleCloseChatSession}
+                  title="Close & End this support session"
+                  className="px-2.5 py-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                >
+                  <XCircle className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Close Chat</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleStartNewInquiry}
+                  title="Start a new support inquiry"
+                  className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-black text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer shadow-sm hover:opacity-90 active:scale-95"
+                >
+                  <Zap className="w-3.5 h-3.5 fill-current" />
+                  <span>New Inquiry</span>
+                </button>
+              )}
+
               {/* Audio Toggle */}
               <button
                 type="button"
@@ -622,18 +838,54 @@ export function LiveSupportChat() {
             </div>
           </div>
 
-          {/* Session Banner / Status Notification */}
-          <div className="bg-sky-500/10 border-b border-sky-500/20 px-4 py-2 flex items-center justify-between text-xs text-sky-600 dark:text-sky-300">
-            <div className="flex items-center gap-2 truncate">
-              <Zap className="w-3.5 h-3.5 flex-shrink-0 text-sky-500" />
-              <span className="truncate">
-                Session Active: Realtime notifications enabled. Audio chimes on admin responses.
+          {/* Dynamic Duty & Queue Banner */}
+          {dutyStatus === "BUSY" ? (
+            <div className="bg-amber-500/10 border-b border-amber-500/25 px-4 py-2.5 flex items-center justify-between gap-3 text-xs text-amber-600 dark:text-amber-300">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-2 h-2 rounded-full bg-amber-500 animate-ping flex-shrink-0" />
+                <span className="truncate">
+                  <strong>Technical Team High Volume:</strong> Specialists are currently assisting other users. You are queued for the next on-duty specialist...
+                </span>
+              </div>
+              <span className="font-mono text-[10px] font-bold bg-amber-500/20 px-2 py-0.5 rounded-md flex-shrink-0">
+                Queue #{queuePosition}
               </span>
             </div>
-            <span className="font-mono text-[10px] opacity-75 hidden sm:inline-block">
-              Ping: 1.2s
-            </span>
-          </div>
+          ) : dutyStatus === "OFF_DUTY" ? (
+            <div className="bg-purple-500/10 border-b border-purple-500/25 px-4 py-2.5 flex items-center justify-between gap-3 text-xs text-purple-600 dark:text-purple-300">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-sm flex-shrink-0">🌙</span>
+                <span className="truncate">
+                  <strong>After Hours:</strong> Live desk is currently offline (Shift: 9:00 AM - 6:00 PM IST). You can post your question here or reach WhatsApp.
+                </span>
+              </div>
+              <a
+                href="https://wa.me/919944875726?text=Hi%20NammaTech%20Technical%20Support,%20I%20need%20assistance:"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-2.5 py-1 rounded-lg bg-[#25D366] text-black font-bold text-[11px] flex items-center gap-1 flex-shrink-0 shadow-xs hover:opacity-90 transition-opacity"
+              >
+                <span>WhatsApp Helpline</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          ) : (
+            <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-2 flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-300">
+              <div className="flex items-center gap-2 truncate">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
+                <span className="truncate">
+                  {session?.assignedSpecialistName ? (
+                    <span>Connected to <strong>{session.assignedSpecialistName}</strong> (Technical Support Specialist). Live 1-on-1 session active.</span>
+                  ) : (
+                    <span>Connected to <strong>Technical Support Team</strong>. Specialist on duty.</span>
+                  )}
+                </span>
+              </div>
+              <span className="font-mono text-[10px] opacity-75 hidden sm:inline-block">
+                Sync: 1.2s
+              </span>
+            </div>
+          )}
 
           {/* Message Stream Area */}
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-[var(--background)]/40">
@@ -666,11 +918,13 @@ export function LiveSupportChat() {
                   {/* Sender Badge */}
                   <div className="flex items-center gap-1.5 mb-1 px-1">
                     <span className="text-[11px] font-semibold text-[var(--muted-foreground)]">
-                      {isUser ? "You" : msg.senderName}
+                      {isUser
+                        ? "You"
+                        : (msg.senderName || (session?.assignedSpecialistName ? `${session.assignedSpecialistName} (Technical Team)` : "Technical Team"))}
                     </span>
                     {!isUser && (
-                      <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-[var(--primary)]/15 text-[var(--primary)] uppercase">
-                        Admin Team
+                      <span className="px-1.5 py-0.2 rounded text-[9px] font-black bg-emerald-500/15 text-emerald-500 uppercase">
+                        Technical Team
                       </span>
                     )}
                     <span className="text-[10px] text-[var(--muted-foreground)] opacity-70">
@@ -916,28 +1170,58 @@ export function LiveSupportChat() {
               </button>
             </div>
 
-            {/* Rating / Feedback bar if session resolved */}
-            {session?.status === "RESOLVED" && !hasRated && (
-              <div className="mt-3 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold">
-                  <CheckCheck className="w-4 h-4" />
-                  <span>Issue marked resolved. How was your support experience?</span>
+            {/* Rating / Feedback Card if session resolved */}
+            {session?.status === "RESOLVED" && (
+              <div className="mt-3 p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs animate-in fade-in duration-200">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center flex-shrink-0">
+                    <CheckCheck className="w-4 h-4 stroke-[2.5]" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400 block">
+                      Support Ticket Marked as Resolved
+                    </span>
+                    <span className="text-[11px] text-[var(--muted-foreground)]">
+                      {hasRated
+                        ? `Thank you for rating us ${userRating}/5 stars!`
+                        : "How was your troubleshooting experience with our technical team?"}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => handleRateSession(star)}
-                      className="p-1 hover:scale-110 transition-transform text-amber-400 cursor-pointer"
-                    >
-                      <Star
-                        className={`w-4 h-4 ${
-                          userRating >= star ? "fill-amber-400" : "opacity-40"
-                        }`}
-                      />
-                    </button>
-                  ))}
+
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  {!hasRated ? (
+                    <div className="flex items-center gap-1 bg-[var(--card)] px-2.5 py-1 rounded-xl border border-[var(--border)] shadow-xs">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => handleRateSession(star)}
+                          title={`Rate ${star} star${star > 1 ? "s" : ""}`}
+                          className="p-1 hover:scale-125 transition-transform text-amber-400 cursor-pointer"
+                        >
+                          <Star
+                            className={`w-4 h-4 ${
+                              userRating >= star ? "fill-amber-400" : "opacity-35"
+                            }`}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="px-2.5 py-1 rounded-xl bg-amber-400/10 text-amber-500 border border-amber-400/20 text-xs font-bold">
+                      ⭐ {userRating} / 5 Stars
+                    </span>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handleStartNewInquiry}
+                    className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-black font-extrabold text-xs shadow-sm hover:opacity-90 active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
+                  >
+                    <Zap className="w-3.5 h-3.5 fill-current" />
+                    <span>New Ticket</span>
+                  </button>
                 </div>
               </div>
             )}

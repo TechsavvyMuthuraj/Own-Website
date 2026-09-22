@@ -10,6 +10,7 @@ import { TopLoader } from "@/components/navigation/top-loader";
 import { PageLoader } from "@/components/ui/page-loader";
 import { YouTubeMiniPlayer } from "@/components/media/youtube-mini-player";
 import { GlobalSiteMascot } from "@/components/mascot/global-site-mascot";
+import { ContactSupportPopup } from "@/components/support/contact-support-popup";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -75,6 +76,7 @@ export default async function PublicLayout({
         <TopLoader />
         <YouTubeMiniPlayer />
         <GlobalSiteMascot />
+        <ContactSupportPopup />
       </Suspense>
       <AdminMaintenanceBanner isMaintenanceActive={isMaintenanceActive} />
       <AnnouncementBar />

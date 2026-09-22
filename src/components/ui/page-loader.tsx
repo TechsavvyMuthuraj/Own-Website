@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import "./page-loader.css";
 
 interface PageLoaderProps {
-  /** Minimum duration for the animation in milliseconds (default: 6000 for 6s load) */
+  /** Minimum duration for the animation in milliseconds (default: 3000 for 3s load) */
   duration?: number;
   /** Force show regardless of session or path */
   forceShow?: boolean;
@@ -18,14 +18,15 @@ interface PageLoaderProps {
 let hasShownInThisSession = false;
 
 export function PageLoader({
-  duration = 6000,
+  duration = 3000,
   forceShow = false,
 }: PageLoaderProps) {
   const pathname = usePathname();
   const isMainPage = pathname === "/";
 
-  // Only the main page shows the loader on initial load / refresh
-  const shouldShow = forceShow || (isMainPage && !hasShownInThisSession);
+  // Show loading animation on initial site load / browser refresh across the website,
+  // without re-triggering on internal client-side SPA navigations.
+  const shouldShow = forceShow || !hasShownInThisSession;
 
   const [visible, setVisible] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
