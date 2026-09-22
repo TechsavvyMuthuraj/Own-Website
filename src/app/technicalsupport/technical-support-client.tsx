@@ -111,6 +111,7 @@ export function TechnicalSupportClient() {
   const prevTotalUnreadRef = useRef<number>(-1);
   const isTypingEmittedRef = useRef(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const deletedSessionIdsRef = useRef<Set<string>>(new Set());
 
   // Restore existing specialist session on mount
   useEffect(() => {
@@ -146,10 +147,13 @@ export function TechnicalSupportClient() {
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data.sessions)) {
-          setSessions(data.sessions);
+          const filtered = data.sessions.filter(
+            (s: SupportSession) => !deletedSessionIdsRef.current.has(s.id)
+          );
+          setSessions(filtered);
 
           // Audio notification & title flash for incoming user messages
-          const newTotalUnread = data.sessions.reduce(
+          const newTotalUnread = filtered.reduce(
             (acc: number, s: SupportSession) => acc + (s.unreadAdminCount || 0),
             0
           );
@@ -323,18 +327,18 @@ export function TechnicalSupportClient() {
     fetchLiveSessions();
     fetchResourceRequests();
 
-    // Queue-level poll: every 800ms
+    // Queue-level poll: every 500ms
     pollIntervalRef.current = setInterval(() => {
       fetchLiveSessions();
       fetchResourceRequests();
-    }, 800);
+    }, 500);
 
     return () => {
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
     };
   }, [specialist, fetchLiveSessions, fetchTeamRoster, fetchResourceRequests]);
 
-  // Dedicated fast-polling for active session (500ms)
+  // Dedicated fast-polling for active session (300ms near-instant sync)
   useEffect(() => {
     if (!selectedSessionId || !specialist) {
       if (activePollRef.current) {
@@ -356,7 +360,7 @@ export function TechnicalSupportClient() {
       } catch {}
     };
 
-    activePollRef.current = setInterval(fetchActiveSessionOnly, 500);
+    activePollRef.current = setInterval(fetchActiveSessionOnly, 300);
 
     return () => {
       if (activePollRef.current) {
@@ -423,10 +427,12 @@ export function TechnicalSupportClient() {
     }
   };
 
-  // Send reply to user
+  // Send reply to user with INSTANT 0ms Optimistic UI
   const handleSendReply = async (customText?: string) => {
     const textToSend = customText !== undefined ? customText : replyText;
-    if ((!textToSend.trim() && !codeSnippet.trim()) || isSending || !activeSession) return;
+    const msg = textToSend.trim();
+    const code = codeSnippet.trim();
+    if ((!msg && !code) || !activeSession) return;
 
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     if (isTypingEmittedRef.current && activeSession?.id) {
@@ -443,13 +449,38 @@ export function TechnicalSupportClient() {
       }).catch(() => {});
     }
 
-    setIsSending(true);
-    const msg = textToSend.trim();
-    const code = codeSnippet.trim();
+    // Instantly clear inputs & play sound (0ms response)
     setReplyText("");
     setCodeSnippet("");
     setShowCodeInput(false);
+    if (!isMuted) chatAudio.playSent();
 
+    const senderDisplayName = `${specialist?.name || "Support Specialist"} (Technical Team)`;
+
+    // Optimistic message rendered in 0ms
+    const optimisticMsg: SupportMessage = {
+      id: `opt_admin_${Date.now()}`,
+      sessionId: activeSession.id,
+      sender: "admin",
+      senderName: senderDisplayName,
+      text: msg,
+      codeSnippet: code || undefined,
+      timestamp: new Date().toISOString(),
+      status: "sent",
+      reactions: {},
+    };
+
+    setActiveSession((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        messages: [...prev.messages, optimisticMsg],
+        lastMessage: msg,
+        updatedAt: optimisticMsg.timestamp,
+      };
+    });
+
+    setIsSending(true);
     try {
       const res = await fetch("/api/support/chat", {
         method: "POST",
@@ -460,7 +491,7 @@ export function TechnicalSupportClient() {
           userEmail: activeSession.userEmail,
           category: activeSession.category,
           sender: "admin",
-          senderName: `${specialist?.name || "Support Specialist"} (Technical Team)`,
+          senderName: senderDisplayName,
           specialistName: specialist?.name,
           specialistEmail: specialist?.email,
           specialistRole: specialist?.role,
@@ -471,14 +502,13 @@ export function TechnicalSupportClient() {
 
       if (res.ok) {
         const data = await res.json();
-        setActiveSession(data.session);
-        if (!isMuted) chatAudio.playSent();
-        fetchLiveSessions();
-      } else {
-        showToast({ type: "error", message: "Failed to transmit message." });
+        if (data?.session) {
+          setActiveSession(data.session);
+          fetchLiveSessions();
+        }
       }
     } catch {
-      showToast({ type: "error", message: "Network error sending response." });
+      // background
     } finally {
       setIsSending(false);
     }
@@ -727,20 +757,23 @@ export function TechnicalSupportClient() {
       cancelText: "Cancel",
       variant: "danger",
       onConfirm: async () => {
+        // Immediately blacklist and remove from UI so it never flickers or reflects back
+        deletedSessionIdsRef.current.add(targetId);
+        setSessions((prev) => prev.filter((s) => s.id !== targetId));
+        if (selectedSessionId === targetId) {
+          setSelectedSessionId(null);
+          setActiveSession(null);
+        }
+
         try {
           const res = await fetch(`/api/support/chat?sessionId=${encodeURIComponent(targetId)}`, {
             method: "DELETE",
           });
           if (res.ok) {
-            setSessions((prev) => prev.filter((s) => s.id !== targetId));
-            if (selectedSessionId === targetId) {
-              setSelectedSessionId(null);
-              setActiveSession(null);
-            }
             showToast({
               type: "info",
               title: "Session Deleted",
-              message: "Support ticket deleted from queue.",
+              message: "Support ticket permanently removed from queue.",
             });
           }
         } catch {

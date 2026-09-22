@@ -151,14 +151,14 @@ export default function ContactPage() {
   const ErrorIcon = activeErrorConfig?.icon ?? AlertCircle;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
+    <div className={`max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full ${contactMode === "live_chat" ? "py-4 sm:py-6" : "py-12"}`}>
       {/* ── Page Header ───────────────────────────────────────────────────── */}
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[var(--border)] bg-[var(--card)] text-xs font-semibold text-[var(--primary)] mb-4">
+      <div className={`text-center ${contactMode === "live_chat" ? "mb-4" : "mb-8"}`}>
+        <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[var(--border)] bg-[var(--card)] text-xs font-semibold text-[var(--primary)] ${contactMode === "live_chat" ? "mb-2" : "mb-4"}`}>
           <Mail className="w-3.5 h-3.5" aria-hidden="true" />
           <span>Support &amp; Inquiries Hub</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-[var(--foreground)] tracking-tight mb-3">
+        <h1 className={`font-extrabold text-[var(--foreground)] tracking-tight ${contactMode === "live_chat" ? "text-2xl sm:text-3xl mb-1.5" : "text-3xl sm:text-4xl mb-3"}`}>
           Get in Touch
         </h1>
         <p className="text-sm text-[var(--muted-foreground)] max-w-lg mx-auto leading-relaxed">
@@ -166,7 +166,7 @@ export default function ContactPage() {
         </p>
 
         {/* ── Mode Switcher: Live 1-on-1 Support vs Traditional Email Form ── */}
-        <div className="flex justify-center mt-6">
+        <div className={`flex justify-center ${contactMode === "live_chat" ? "mt-3" : "mt-6"}`}>
           <div className="inline-flex p-1.5 rounded-2xl bg-[var(--card)] border border-[var(--border)] shadow-lg gap-2">
             <button
               type="button"

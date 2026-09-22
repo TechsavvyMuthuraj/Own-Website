@@ -44,13 +44,19 @@ export interface SupportSession {
 declare global {
   // eslint-disable-next-line no-var
   var __nammatech_support_sessions__: Map<string, SupportSession> | undefined;
+  // eslint-disable-next-line no-var
+  var __nammatech_deleted_sessions__: Set<string> | undefined;
 }
 
 if (!global.__nammatech_support_sessions__) {
   global.__nammatech_support_sessions__ = new Map<string, SupportSession>();
 }
+if (!global.__nammatech_deleted_sessions__) {
+  global.__nammatech_deleted_sessions__ = new Set<string>();
+}
 
 const sessionsStore = global.__nammatech_support_sessions__;
+const deletedSessions = global.__nammatech_deleted_sessions__;
 
 export const SupportChatStore = {
   // Get all sessions (sorted newest active first)
@@ -60,8 +66,14 @@ export const SupportChatStore = {
     );
   },
 
+  // Check if a session was permanently deleted
+  isDeleted(sessionId: string): boolean {
+    return deletedSessions.has(sessionId);
+  },
+
   // Get or initialize a session
   getSession(sessionId: string): SupportSession | null {
+    if (deletedSessions.has(sessionId)) return null;
     const session = sessionsStore.get(sessionId);
     if (!session) return null;
     // Auto-expire stale typing state after 3.5 seconds of inactivity
@@ -157,20 +169,37 @@ export const SupportChatStore = {
       throw new Error(`Session ${sessionId} not found`);
     }
 
+    const cleanText = text.trim();
+    const cleanCode = codeSnippet?.trim();
+
+    // Prevent duplicate spam (e.g. from network retries or simultaneous polls)
+    if (session.messages.length > 0) {
+      const lastMsg = session.messages[session.messages.length - 1];
+      if (
+        lastMsg &&
+        lastMsg.sender === sender &&
+        lastMsg.text === cleanText &&
+        (lastMsg.codeSnippet || "") === (cleanCode || "") &&
+        Date.now() - new Date(lastMsg.timestamp).getTime() < 3000
+      ) {
+        return lastMsg;
+      }
+    }
+
     const newMessage: SupportMessage = {
       id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       sessionId,
       sender,
       senderName,
-      text: text.trim(),
-      codeSnippet: codeSnippet?.trim(),
+      text: cleanText,
+      codeSnippet: cleanCode,
       timestamp: now,
       status: "sent",
       reactions: {},
     };
 
     session.messages.push(newMessage);
-    session.lastMessage = text.trim();
+    session.lastMessage = cleanText;
     session.updatedAt = now;
 
     if (sender === "user") {
@@ -335,8 +364,9 @@ export const SupportChatStore = {
     session.updatedAt = new Date().toISOString();
   },
 
-  // Delete session
+  // Delete session permanently
   deleteSession(sessionId: string) {
     sessionsStore.delete(sessionId);
+    deletedSessions.add(sessionId);
   },
 };

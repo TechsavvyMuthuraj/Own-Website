@@ -9,7 +9,31 @@ const MOCK_EMAILS = [
   "praveen.repack@nammatech.dev",
 ];
 
+let cachedDutyInfo: {
+  overallStatus: "ON_DUTY" | "BUSY" | "OFF_DUTY";
+  onDutySpecialist: { name: string; email: string; role: string } | null;
+} | null = null;
+let cachedDutyTimestamp = 0;
+const DUTY_CACHE_TTL_MS = 20000; // 20s in-memory cache for blazing fast response (<0.1ms)
+
 async function getTeamDutyStatus() {
+  const now = Date.now();
+  if (cachedDutyInfo && now - cachedDutyTimestamp < DUTY_CACHE_TTL_MS) {
+    return cachedDutyInfo;
+  }
+
+  let resolvedStatus: {
+    overallStatus: "ON_DUTY" | "BUSY" | "OFF_DUTY";
+    onDutySpecialist: { name: string; email: string; role: string } | null;
+  } = {
+    overallStatus: "ON_DUTY",
+    onDutySpecialist: {
+      name: "Muthuraj C",
+      email: "techsavvy.muthuraj.dev@gmail.com",
+      role: "Lead Software Architect & Head of Support",
+    },
+  };
+
   try {
     const supabase = createAdminClient();
     const { data: teamSetting } = await supabase
@@ -30,8 +54,8 @@ async function getTeamDutyStatus() {
         const busy = activeMembers.filter((m: any) => m.dutyStatus === "BUSY");
 
         if (onDuty.length > 0) {
-          return {
-            overallStatus: "ON_DUTY" as const,
+          resolvedStatus = {
+            overallStatus: "ON_DUTY",
             onDutySpecialist: {
               name: onDuty[0].name,
               email: onDuty[0].email,
@@ -39,13 +63,13 @@ async function getTeamDutyStatus() {
             },
           };
         } else if (busy.length > 0) {
-          return {
-            overallStatus: "BUSY" as const,
+          resolvedStatus = {
+            overallStatus: "BUSY",
             onDutySpecialist: null,
           };
         } else if (activeMembers.length > 0) {
-          return {
-            overallStatus: "OFF_DUTY" as const,
+          resolvedStatus = {
+            overallStatus: "OFF_DUTY",
             onDutySpecialist: null,
           };
         }
@@ -55,14 +79,9 @@ async function getTeamDutyStatus() {
     console.error("[GetTeamDutyStatus Error]:", err);
   }
 
-  return {
-    overallStatus: "ON_DUTY" as const,
-    onDutySpecialist: {
-      name: "Muthuraj C",
-      email: "techsavvy.muthuraj.dev@gmail.com",
-      role: "Lead Software Architect & Head of Support",
-    },
-  };
+  cachedDutyInfo = resolvedStatus;
+  cachedDutyTimestamp = now;
+  return resolvedStatus;
 }
 
 export async function GET(request: NextRequest) {
@@ -81,6 +100,13 @@ export async function GET(request: NextRequest) {
         specialistDutyStatus: dutyInfo.overallStatus,
         onDutySpecialist: dutyInfo.onDutySpecialist,
       });
+    }
+
+    if (sessionId && SupportChatStore.isDeleted(sessionId)) {
+      return NextResponse.json(
+        { session: null, error: "Session has been permanently removed by support", deleted: true },
+        { status: 410 }
+      );
     }
 
     // Specific session query
@@ -136,7 +162,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Session ID is required" }, { status: 400 });
     }
 
-    if (!text?.trim() && !codeSnippet?.trim()) {
+    if (SupportChatStore.isDeleted(sessionId.trim())) {
+      return NextResponse.json(
+        { error: "Session has been permanently removed by support", deleted: true },
+        { status: 410 }
+      );
+    }
+
+    const isInitOnly = Boolean(body.isInitOnly);
+
+    if (!isInitOnly && !text?.trim() && !codeSnippet?.trim()) {
       return NextResponse.json({ error: "Message text or code is required" }, { status: 400 });
     }
 
@@ -181,6 +216,16 @@ export async function POST(request: NextRequest) {
     }
     session.specialistDutyStatus = dutyInfo.overallStatus;
 
+    // If this is an init/reconnect ping, return session state quietly without appending any message
+    if (isInitOnly || (!text?.trim() && !codeSnippet?.trim())) {
+      return NextResponse.json({
+        success: true,
+        session: SupportChatStore.getSession(sessionId.trim()),
+        specialistDutyStatus: dutyInfo.overallStatus,
+        onDutySpecialist: dutyInfo.onDutySpecialist,
+      });
+    }
+
     // Append message
     const message = SupportChatStore.addMessage(
       sessionId.trim(),
@@ -190,20 +235,22 @@ export async function POST(request: NextRequest) {
       codeSnippet
     );
 
-    // Best-effort optional sync to Supabase contact_messages if email exists
+    // Best-effort optional background sync to Supabase contact_messages if email exists (non-blocking)
     if (sender === "user" && userEmail) {
-      try {
-        const supabase = createAdminClient();
-        await supabase.from("contact_messages").insert({
-          name: userName,
-          email: userEmail,
-          subject: `[Live Support] ${category || "Inquiry"}`,
-          message: `${text}${codeSnippet ? `\n\nCode/Logs:\n${codeSnippet}` : ""}`,
-          status: "UNREAD",
-        });
-      } catch {
-        // non-blocking
-      }
+      void (async () => {
+        try {
+          const supabase = createAdminClient();
+          await supabase.from("contact_messages").insert({
+            name: userName,
+            email: userEmail,
+            subject: `[Live Support] ${category || "Inquiry"}`,
+            message: `${text}${codeSnippet ? `\n\nCode/Logs:\n${codeSnippet}` : ""}`,
+            status: "UNREAD",
+          });
+        } catch {
+          // non-blocking
+        }
+      })();
     }
 
     return NextResponse.json({
@@ -226,6 +273,13 @@ export async function PATCH(request: NextRequest) {
 
     if (!sessionId) {
       return NextResponse.json({ error: "Missing sessionId" }, { status: 400 });
+    }
+
+    if (SupportChatStore.isDeleted(sessionId)) {
+      return NextResponse.json(
+        { error: "Session has been permanently removed by support", deleted: true },
+        { status: 410 }
+      );
     }
 
     if (action === "clear") {

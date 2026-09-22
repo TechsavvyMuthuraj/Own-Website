@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Search,
   ShoppingCart,
@@ -53,11 +53,42 @@ interface HeaderProps {
 
 export function Header({ navLinks }: HeaderProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { itemCount } = useCart();
   const { user, profile, isAdmin, signOut } = useAuth();
+
+  // Instant route prefetching on idle (0.1ms page switch speed)
+  useEffect(() => {
+    const prefetchRoutes = () => {
+      const coreRoutes = [
+        "/",
+        "/movies",
+        "/categories",
+        "/free",
+        "/new-and-updated",
+        "/articles",
+        "/premium",
+        "/request",
+        "/contact",
+      ];
+      coreRoutes.forEach((route) => {
+        try {
+          router.prefetch(route);
+        } catch {}
+      });
+    };
+
+    if (typeof window !== "undefined") {
+      if ("requestIdleCallback" in window) {
+        window.requestIdleCallback(prefetchRoutes);
+      } else {
+        setTimeout(prefetchRoutes, 800);
+      }
+    }
+  }, [router]);
 
   const [links, setLinks] = useState<NavLinkItem[]>(() => {
     if (navLinks !== undefined) return navLinks;

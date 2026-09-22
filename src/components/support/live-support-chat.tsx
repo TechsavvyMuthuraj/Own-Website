@@ -87,6 +87,7 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
   const lastKnownMessageCountRef = useRef<number>(0);
   const typingTimeoutRef = useRef<any>(null);
   const isTypingEmittedRef = useRef<boolean>(false);
+  const isRecoveringRef = useRef<boolean>(false);
 
   // Initialize identity from auth or localStorage (Supports both authenticated users and guests)
   useEffect(() => {
@@ -218,10 +219,13 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
               const latestMessage = data.session.messages[currentCount - 1];
               if (latestMessage.sender === "admin") {
                 chatAudio.playIncoming();
-                chatAudio.flashTitle(`🔔 Support: ${latestMessage.senderName} replied!`);
+                const cleanSenderName = latestMessage.senderName
+                  ? latestMessage.senderName.replace(/\(Technical Team\)/i, "").replace(/\(Technical Support\)/i, "").trim()
+                  : "Specialist";
+                chatAudio.flashTitle(`🔔 Support: ${cleanSenderName} replied!`);
                 showToast({
                   type: "info",
-                  title: `Support Specialist (${latestMessage.senderName})`,
+                  title: `Support Specialist (${cleanSenderName})`,
                   message: latestMessage.text || "Sent a code/instruction snippet",
                 });
               }
@@ -246,39 +250,27 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
               }).catch(() => {});
             }
           }
-        } else if (res.status === 404) {
-          // Auto recover session if server restarted
-          const currentName =
-            userName ||
-            (typeof window !== "undefined" ? localStorage.getItem("nammatech_support_username") : "") ||
-            "User";
-          const currentEmail =
-            userEmail ||
-            (typeof window !== "undefined" ? localStorage.getItem("nammatech_support_email") : "") ||
-            "";
-          const currentCat =
-            category ||
-            (typeof window !== "undefined" ? localStorage.getItem("nammatech_support_category") : "") ||
-            "Software Installation";
-
-          fetch("/api/support/chat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              sessionId: sid,
-              userName: currentName,
-              userEmail: currentEmail,
-              category: currentCat,
-              sender: "user",
-              senderName: currentName,
-              text: `👋 Reconnected technical support session: ${currentCat}`,
-            }),
-          })
-            .then((r) => (r.ok ? r.json() : null))
-            .then((d) => {
-              if (d?.session) setSession(d.session);
-            })
-            .catch(() => {});
+        } else if (res.status === 410 || res.status === 404) {
+          // Session was permanently deleted by support specialist or closed
+          if (pollIntervalRef.current) {
+            clearInterval(pollIntervalRef.current);
+            pollIntervalRef.current = null;
+          }
+          if (typeof window !== "undefined") {
+            try {
+              localStorage.removeItem(STORAGE_SESSION_KEY);
+              localStorage.removeItem("nammatech_support_session_id");
+              localStorage.removeItem("nammatech_support_username");
+              localStorage.removeItem("nammatech_support_email");
+              localStorage.removeItem("nammatech_support_category");
+              localStorage.removeItem("nammatech_support_user_id");
+            } catch {}
+          }
+          setSessionId("");
+          setSession(null);
+          setHasJoined(false);
+          lastKnownMessageCountRef.current = 0;
+          return;
         }
       } catch {
         // Network retry on next interval
@@ -296,7 +288,7 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
 
     pollIntervalRef.current = setInterval(() => {
       fetchSession(sessionId, true);
-    }, 600);
+    }, 350);
 
     return () => {
       if (pollIntervalRef.current) {
@@ -396,23 +388,14 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
     }
   };
 
-  // Send message
+  // Send message with INSTANT 0ms Optimistic UI
   const handleSendMessage = async (customText?: string) => {
     const textToSend = customText !== undefined ? customText : inputText;
-    if ((!textToSend.trim() && !codeSnippet.trim()) || isSending) return;
+    const trimmedText = textToSend.trim();
+    const currentCode = codeSnippet.trim();
+    if ((!trimmedText && !currentCode) || !sessionId) return;
 
     const activeSid = sessionId;
-    if (!activeSid) return;
-
-    setIsSending(true);
-    setInputText("");
-    const currentCode = codeSnippet;
-    setCodeSnippet("");
-    setShowCodeInput(false);
-
-    // Optimistic message
-    chatAudio.playSent();
-
     const effectiveName =
       userName.trim() ||
       profile?.full_name ||
@@ -420,6 +403,37 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
       user?.email?.split("@")[0] ||
       "User";
 
+    // Instantly clear inputs & play sound (0ms response)
+    setInputText("");
+    setCodeSnippet("");
+    setShowCodeInput(false);
+    chatAudio.playSent();
+
+    // Create optimistic message and render IMMEDIATELY (0ms delay)
+    const optimisticMsg: SupportMessage = {
+      id: `opt_${Date.now()}`,
+      sessionId: activeSid,
+      sender: "user",
+      senderName: effectiveName,
+      text: trimmedText,
+      codeSnippet: currentCode || undefined,
+      timestamp: new Date().toISOString(),
+      status: "sent",
+      reactions: {},
+    };
+
+    setSession((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        messages: [...prev.messages, optimisticMsg],
+        lastMessage: trimmedText,
+        updatedAt: optimisticMsg.timestamp,
+      };
+    });
+    scrollToBottom(true);
+
+    setIsSending(true);
     try {
       const res = await fetch("/api/support/chat", {
         method: "POST",
@@ -431,21 +445,21 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
           category,
           sender: "user",
           senderName: effectiveName,
-          text: textToSend.trim(),
-          codeSnippet: currentCode.trim() || undefined,
+          text: trimmedText,
+          codeSnippet: currentCode || undefined,
         }),
       });
 
       if (res.ok) {
         const data = await res.json();
-        setSession(data.session);
-        lastKnownMessageCountRef.current = data.session?.messages?.length || 0;
-        scrollToBottom(true);
-      } else {
-        showToast({ type: "error", message: "Failed to send message. Please retry." });
+        if (data?.session) {
+          setSession(data.session);
+          lastKnownMessageCountRef.current = data.session.messages.length;
+          scrollToBottom(true);
+        }
       }
     } catch {
-      showToast({ type: "error", message: "Network error sending message." });
+      // background
     } finally {
       setIsSending(false);
     }
@@ -763,7 +777,7 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
         </div>
       ) : (
         /* ── STEP 2: ACTIVE LIVE TECHNICAL SUPPORT CONSOLE ── */
-        <div className={compact ? "rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xl overflow-hidden flex flex-col h-[500px] relative text-left" : "rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-2xl overflow-hidden flex flex-col h-[760px] relative"}>
+        <div className={compact ? "rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xl overflow-hidden flex flex-col h-[500px] relative text-left" : "rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-2xl overflow-hidden flex flex-col h-[calc(100vh-270px)] min-h-[440px] max-h-[640px] relative"}>
           {/* Top Control Bar */}
           <div className="px-5 py-3.5 border-b border-[var(--border)] bg-[var(--card)]/90 backdrop-blur-md flex items-center justify-between gap-3 z-10">
             <div className="flex items-center gap-3 min-w-0">
@@ -935,7 +949,7 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
                 </span>
               </div>
               <span className="font-mono text-[10px] opacity-75 hidden sm:inline-block">
-                Sync: 1.2s
+                Live Stream • 0.6s Sync
               </span>
             </div>
           )}
