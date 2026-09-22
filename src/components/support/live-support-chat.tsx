@@ -81,6 +81,7 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
   const [hasRated, setHasRated] = useState<boolean>(false);
   const [dutyStatus, setDutyStatus] = useState<"ON_DUTY" | "BUSY" | "OFF_DUTY">("ON_DUTY");
   const [queuePosition, setQueuePosition] = useState<number>(1);
+  const [isStartingSession, setIsStartingSession] = useState<boolean>(false);
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const pollIntervalRef = useRef<any>(null);
@@ -88,6 +89,7 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
   const typingTimeoutRef = useRef<any>(null);
   const isTypingEmittedRef = useRef<boolean>(false);
   const isRecoveringRef = useRef<boolean>(false);
+  const consecutive404Ref = useRef<number>(0);
 
   // Initialize identity from auth or localStorage (Supports both authenticated users and guests)
   useEffect(() => {
@@ -211,6 +213,7 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
         if (res.ok) {
           const data = await res.json();
           if (data.session) {
+            consecutive404Ref.current = 0;
             const currentCount = data.session.messages.length;
             const previousCount = lastKnownMessageCountRef.current;
 
@@ -250,8 +253,8 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
               }).catch(() => {});
             }
           }
-        } else if (res.status === 410 || res.status === 404) {
-          // Session was permanently deleted by support specialist or closed
+        } else if (res.status === 410) {
+          // Session was permanently deleted by support specialist
           if (pollIntervalRef.current) {
             clearInterval(pollIntervalRef.current);
             pollIntervalRef.current = null;
@@ -271,6 +274,25 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
           setHasJoined(false);
           lastKnownMessageCountRef.current = 0;
           return;
+        } else if (res.status === 404) {
+          // Transient 404: retry and only disconnect if 8 consecutive polls fail (~3.5s)
+          consecutive404Ref.current += 1;
+          if (consecutive404Ref.current > 8) {
+            if (pollIntervalRef.current) {
+              clearInterval(pollIntervalRef.current);
+              pollIntervalRef.current = null;
+            }
+            if (typeof window !== "undefined") {
+              try {
+                localStorage.removeItem(STORAGE_SESSION_KEY);
+                localStorage.removeItem("nammatech_support_session_id");
+              } catch {}
+            }
+            setSessionId("");
+            setSession(null);
+            setHasJoined(false);
+            lastKnownMessageCountRef.current = 0;
+          }
         }
       } catch {
         // Network retry on next interval
@@ -335,6 +357,8 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
 
   const handleStartSession = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isStartingSession) return;
+
     const finalName =
       userName.trim() ||
       profile?.full_name ||
@@ -343,16 +367,7 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
       "User";
     const newSid = `chat_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 
-    setSessionId(newSid);
-    setHasJoined(true);
-
-    if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_SESSION_KEY, newSid);
-      localStorage.setItem("nammatech_support_username", finalName);
-      if (userEmail) localStorage.setItem("nammatech_support_email", userEmail);
-      localStorage.setItem("nammatech_support_category", category);
-      if (user?.id) localStorage.setItem("nammatech_support_user_id", user.id);
-    }
+    setIsStartingSession(true);
 
     try {
       const res = await fetch("/api/support/chat", {
@@ -371,20 +386,43 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
 
       if (res.ok) {
         const data = await res.json();
-        setSession(data.session);
-        lastKnownMessageCountRef.current = data.session?.messages?.length || 1;
-        chatAudio.playSent();
+        if (data.session) {
+          consecutive404Ref.current = 0;
+          setSession(data.session);
+          setSessionId(newSid);
+          setHasJoined(true);
+          lastKnownMessageCountRef.current = data.session?.messages?.length || 1;
+
+          if (typeof window !== "undefined") {
+            try {
+              localStorage.setItem(STORAGE_SESSION_KEY, newSid);
+              localStorage.setItem("nammatech_support_username", finalName);
+              if (userEmail) localStorage.setItem("nammatech_support_email", userEmail);
+              localStorage.setItem("nammatech_support_category", category);
+              if (user?.id) localStorage.setItem("nammatech_support_user_id", user.id);
+            } catch {}
+          }
+
+          chatAudio.playSent();
+          showToast({
+            type: "success",
+            title: "Connected to Live Support",
+            message: "A support specialist has been alerted to your session.",
+          });
+        }
+      } else {
         showToast({
-          type: "success",
-          title: "Connected to Live Support",
-          message: "A support specialist has been alerted to your session.",
+          type: "error",
+          message: "Failed to connect to support specialist. Please retry.",
         });
       }
     } catch {
       showToast({
         type: "error",
-        message: "Failed to initialize live chat session. Please retry.",
+        message: "Failed to initialize live chat session. Please check your connection.",
       });
+    } finally {
+      setIsStartingSession(false);
     }
   };
 
@@ -768,10 +806,20 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
             {/* Start Button */}
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[var(--primary)] to-rose-600 text-white font-bold text-sm hover:brightness-110 active:scale-[0.99] transition-all shadow-lg shadow-[var(--primary)]/25 cursor-pointer"
+              disabled={isStartingSession}
+              className="w-full flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[var(--primary)] to-rose-600 text-white font-bold text-sm hover:brightness-110 active:scale-[0.99] transition-all shadow-lg shadow-[var(--primary)]/25 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Zap className="w-4 h-4 fill-current" />
-              <span>Connect to Live Support Specialist</span>
+              {isStartingSession ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Connecting to Specialist Desk...</span>
+                </>
+              ) : (
+                <>
+                  <Zap className="w-4 h-4 fill-current" />
+                  <span>Connect to Live Support Specialist</span>
+                </>
+              )}
             </button>
           </form>
         </div>

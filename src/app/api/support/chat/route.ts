@@ -161,14 +161,15 @@ export async function POST(request: NextRequest) {
       userPhone,
     } = body;
 
-    if (!sessionId?.trim()) {
+    const cleanSessionId = sessionId?.trim();
+    if (!cleanSessionId) {
       return NextResponse.json({ error: "Session ID is required" }, { status: 400 });
     }
 
     // Always sync latest state from Supabase
     await SupportChatStore.syncFromSupabase();
 
-    if (SupportChatStore.isDeleted(sessionId.trim())) {
+    if (SupportChatStore.isDeleted(cleanSessionId)) {
       return NextResponse.json(
         { error: "Session has been permanently removed by support", deleted: true },
         { status: 410 }
@@ -217,7 +218,7 @@ export async function POST(request: NextRequest) {
 
     // Ensure session exists with assigned specialist
     const session = SupportChatStore.getOrCreateSession(
-      sessionId.trim(),
+      cleanSessionId,
       userName?.trim(),
       category,
       userEmail,
@@ -237,7 +238,7 @@ export async function POST(request: NextRequest) {
     if (isInitOnly || (!text?.trim() && !codeSnippet?.trim())) {
       return NextResponse.json({
         success: true,
-        session: SupportChatStore.getSession(sessionId.trim()),
+        session: SupportChatStore.getSession(cleanSessionId),
         specialistDutyStatus: dutyInfo.overallStatus,
         onDutySpecialist: dutyInfo.onDutySpecialist,
       });
@@ -245,7 +246,7 @@ export async function POST(request: NextRequest) {
 
     // Append message
     const message = SupportChatStore.addMessage(
-      sessionId.trim(),
+      cleanSessionId,
       sender,
       effectiveSenderName,
       text || "",
@@ -274,7 +275,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      session: SupportChatStore.getSession(sessionId),
+      session: SupportChatStore.getSession(cleanSessionId),
       specialistDutyStatus: dutyInfo.overallStatus,
       onDutySpecialist: dutyInfo.onDutySpecialist,
       message,
