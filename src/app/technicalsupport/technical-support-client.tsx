@@ -815,6 +815,46 @@ export function TechnicalSupportClient() {
     });
   };
 
+  // Nuclear Clear / Purge all sessions from Queue & Database
+  const handleClearAllSessions = () => {
+    confirm({
+      title: "Purge All Support Sessions?",
+      message:
+        "This will permanently remove all chat sessions from the Live Queue and Supabase database. Are you sure?",
+      confirmText: "Clear All",
+      cancelText: "Cancel",
+      variant: "danger",
+      onConfirm: async () => {
+        // Collect all IDs to blacklist in localStorage
+        sessions.forEach((s) => deletedSessionIdsRef.current.add(s.id));
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem(
+              SPECIALIST_DELETED_KEY,
+              JSON.stringify(Array.from(deletedSessionIdsRef.current))
+            );
+          } catch {}
+        }
+        setSessions([]);
+        setSelectedSessionId(null);
+        setActiveSession(null);
+
+        try {
+          const res = await fetch("/api/support/chat?all=true", { method: "DELETE" });
+          if (res.ok) {
+            showToast({
+              type: "success",
+              title: "Queue Cleared",
+              message: "All support sessions have been purged from the queue and database.",
+            });
+          }
+        } catch {
+          showToast({ type: "error", message: "Failed to purge queue." });
+        }
+      },
+    });
+  };
+
   // Build WhatsApp URL with proper receiver address & business profile
   const getWhatsAppUrl = () => {
     if (!activeSession) return "#";
@@ -1144,11 +1184,28 @@ export function TechnicalSupportClient() {
                       {sessions.length}
                     </span>
                   </div>
-                  {totalUnread > 0 && (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white animate-pulse">
-                      {totalUnread} Unread
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1.5">
+                    {sessions.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleClearAllSessions}
+                        title="Purge all sessions from Live Queue and database"
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border transition-all flex items-center gap-1 cursor-pointer ${
+                          isLight
+                            ? "text-rose-600 bg-rose-50 border-rose-200 hover:bg-rose-100 shadow-xs"
+                            : "text-rose-400 bg-rose-500/10 border-rose-500/30 hover:bg-rose-500/20"
+                        }`}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>Clear All</span>
+                      </button>
+                    )}
+                    {totalUnread > 0 && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white animate-pulse">
+                        {totalUnread} Unread
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="relative">

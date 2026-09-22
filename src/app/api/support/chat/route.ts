@@ -90,23 +90,13 @@ export async function GET(request: NextRequest) {
     const sessionId = searchParams.get("sessionId");
     const all = searchParams.get("all");
 
+    // Sync database state from Supabase so every serverless lambda sees identical sessions
+    await SupportChatStore.syncFromSupabase();
+
     const dutyInfo = await getTeamDutyStatus();
 
     if (all === "true" || !sessionId) {
-      // Sync deleted sessions from Supabase into memory blacklist
-      try {
-        const supabase = createAdminClient();
-        const { data: delData } = await supabase
-          .from("site_settings")
-          .select("value")
-          .eq("key", "deleted_support_sessions")
-          .maybeSingle();
-        if (Array.isArray(delData?.value)) {
-          delData.value.forEach((id: string) => SupportChatStore.deleteSession(id));
-        }
-      } catch {}
-
-      // Admin request: get all active sessions (excluding deleted)
+      // Admin request: get all active sessions (strictly excluding deleted)
       const sessions = SupportChatStore.getAllSessions().filter((s) => !SupportChatStore.isDeleted(s.id));
       return NextResponse.json({
         sessions,
@@ -175,9 +165,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Session ID is required" }, { status: 400 });
     }
 
+    // Always sync latest state from Supabase
+    await SupportChatStore.syncFromSupabase();
+
     if (SupportChatStore.isDeleted(sessionId.trim())) {
       return NextResponse.json(
         { error: "Session has been permanently removed by support", deleted: true },
+        { status: 410 }
+      );
+    }
+
+    // Completely block ghost reconnect pings from old cached browser tabs
+    if (typeof text === "string" && text.includes("Reconnected technical support session")) {
+      return NextResponse.json(
+        { error: "Session closed by support team. Please start a fresh inquiry.", deleted: true },
         { status: 410 }
       );
     }
@@ -229,6 +230,9 @@ export async function POST(request: NextRequest) {
     }
     session.specialistDutyStatus = dutyInfo.overallStatus;
 
+    // Persist session to Supabase database
+    void SupportChatStore.persistToSupabase();
+
     // If this is an init/reconnect ping, return session state quietly without appending any message
     if (isInitOnly || (!text?.trim() && !codeSnippet?.trim())) {
       return NextResponse.json({
@@ -247,6 +251,8 @@ export async function POST(request: NextRequest) {
       text || "",
       codeSnippet
     );
+
+    void SupportChatStore.persistToSupabase();
 
     // Best-effort optional background sync to Supabase contact_messages if email exists (non-blocking)
     if (sender === "user" && userEmail) {
@@ -288,6 +294,9 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Missing sessionId" }, { status: 400 });
     }
 
+    // Sync database state from Supabase
+    await SupportChatStore.syncFromSupabase();
+
     if (SupportChatStore.isDeleted(sessionId)) {
       return NextResponse.json(
         { error: "Session has been permanently removed by support", deleted: true },
@@ -316,6 +325,9 @@ export async function PATCH(request: NextRequest) {
       SupportChatStore.rateSession(sessionId, body.rating, body.feedback);
     }
 
+    // Persist changes to Supabase
+    void SupportChatStore.persistToSupabase();
+
     return NextResponse.json({
       success: true,
       session: SupportChatStore.getSession(sessionId),
@@ -329,46 +341,33 @@ export async function PATCH(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    let all = searchParams.get("all") === "true";
     let sessionId = searchParams.get("sessionId");
 
-    if (!sessionId) {
+    if (!sessionId && !all) {
       try {
         const body = await request.json();
         sessionId = body?.sessionId;
+        if (body?.all) all = true;
       } catch {}
+    }
+
+    // Always sync latest state before mutating
+    await SupportChatStore.syncFromSupabase();
+
+    if (all) {
+      // Nuclear clear: purge all sessions from memory and Supabase site_settings
+      await SupportChatStore.purgeAll();
+      return NextResponse.json({ success: true, purged: true, message: "Queue purged completely" });
     }
 
     if (!sessionId) {
       return NextResponse.json({ error: "Missing sessionId" }, { status: 400 });
     }
 
-    SupportChatStore.deleteSession(sessionId);
+    await SupportChatStore.deleteSession(sessionId);
 
-    // Persist deleted sessionId into Supabase site_settings so all serverless lambdas remember it
-    try {
-      const supabase = createAdminClient();
-      const { data: existing } = await supabase
-        .from("site_settings")
-        .select("value")
-        .eq("key", "deleted_support_sessions")
-        .maybeSingle();
-
-      const list: string[] = Array.isArray(existing?.value) ? existing.value : [];
-      if (!list.includes(sessionId)) {
-        list.push(sessionId);
-        await supabase
-          .from("site_settings")
-          .upsert({
-            key: "deleted_support_sessions",
-            value: list.slice(-500),
-            updated_at: new Date().toISOString(),
-          });
-      }
-    } catch (dbErr) {
-      console.error("[Persist Deleted Session Error]:", dbErr);
-    }
-
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, deletedSessionId: sessionId });
   } catch (err: any) {
     console.error("[Support Chat DELETE Error]:", err);
     return NextResponse.json({ error: "Failed to delete session" }, { status: 500 });

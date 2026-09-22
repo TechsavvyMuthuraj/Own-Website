@@ -40,12 +40,16 @@ export interface SupportSession {
   messages: SupportMessage[];
 }
 
+import { createAdminClient } from "@/lib/supabase/admin";
+
 // Global declaration to survive hot-reloads in Next.js development
 declare global {
   // eslint-disable-next-line no-var
   var __nammatech_support_sessions__: Map<string, SupportSession> | undefined;
   // eslint-disable-next-line no-var
   var __nammatech_deleted_sessions__: Set<string> | undefined;
+  // eslint-disable-next-line no-var
+  var __nammatech_last_sync_timestamp__: number | undefined;
 }
 
 if (!global.__nammatech_support_sessions__) {
@@ -59,6 +63,73 @@ const sessionsStore = global.__nammatech_support_sessions__;
 const deletedSessions = global.__nammatech_deleted_sessions__;
 
 export const SupportChatStore = {
+  // Sync state from Supabase site_settings (shared across all Vercel serverless lambdas)
+  async syncFromSupabase(force = false) {
+    const now = Date.now();
+    const lastSync = global.__nammatech_last_sync_timestamp__ || 0;
+    if (!force && now - lastSync < 1200) {
+      return;
+    }
+    global.__nammatech_last_sync_timestamp__ = now;
+
+    try {
+      const supabase = createAdminClient();
+      const { data } = await supabase
+        .from("site_settings")
+        .select("key, value")
+        .in("key", ["active_support_sessions", "deleted_support_sessions"]);
+
+      if (data) {
+        const deletedRow = data.find((r) => r.key === "deleted_support_sessions");
+        if (Array.isArray(deletedRow?.value)) {
+          deletedRow.value.forEach((id: string) => deletedSessions.add(id));
+        }
+
+        const activeRow = data.find((r) => r.key === "active_support_sessions");
+        if (Array.isArray(activeRow?.value)) {
+          // Remove any sessions currently in memory that were deleted elsewhere
+          activeRow.value.forEach((s: SupportSession) => {
+            if (!deletedSessions.has(s.id)) {
+              const existing = sessionsStore.get(s.id);
+              if (!existing || new Date(s.updatedAt).getTime() >= new Date(existing.updatedAt).getTime()) {
+                sessionsStore.set(s.id, s);
+              }
+            } else {
+              sessionsStore.delete(s.id);
+            }
+          });
+        }
+      }
+    } catch (err) {
+      console.error("[SupportChatStore syncFromSupabase Error]:", err);
+    }
+  },
+
+  // Persist state to Supabase site_settings
+  async persistToSupabase() {
+    try {
+      const supabase = createAdminClient();
+      const activeList = Array.from(sessionsStore.values()).filter(
+        (s) => !deletedSessions.has(s.id)
+      );
+
+      await supabase.from("site_settings").upsert([
+        {
+          key: "active_support_sessions",
+          value: activeList.slice(0, 150),
+          updated_at: new Date().toISOString(),
+        },
+        {
+          key: "deleted_support_sessions",
+          value: Array.from(deletedSessions).slice(-500),
+          updated_at: new Date().toISOString(),
+        },
+      ]);
+    } catch (err) {
+      console.error("[SupportChatStore persistToSupabase Error]:", err);
+    }
+  },
+
   // Get all sessions (sorted newest active first, excluding deleted)
   getAllSessions(): SupportSession[] {
     return Array.from(sessionsStore.values())
@@ -366,9 +437,17 @@ export const SupportChatStore = {
     session.updatedAt = new Date().toISOString();
   },
 
-  // Delete session permanently
-  deleteSession(sessionId: string) {
+  // Delete session permanently and persist across all lambdas
+  async deleteSession(sessionId: string) {
     sessionsStore.delete(sessionId);
     deletedSessions.add(sessionId);
+    await this.persistToSupabase();
+  },
+
+  // Purge all sessions completely from memory and Supabase
+  async purgeAll() {
+    Array.from(sessionsStore.keys()).forEach((id) => deletedSessions.add(id));
+    sessionsStore.clear();
+    await this.persistToSupabase();
   },
 };
