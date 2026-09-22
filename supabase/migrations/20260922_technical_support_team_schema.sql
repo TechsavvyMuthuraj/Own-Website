@@ -27,13 +27,23 @@ CREATE TABLE IF NOT EXISTS public.technical_support_specialists (
   email TEXT NOT NULL UNIQUE,
   role TEXT NOT NULL DEFAULT 'Technical Support Specialist',
   shift_hours TEXT NOT NULL DEFAULT '9:00 AM - 6:00 PM IST',
-  phone TEXT,
+  phone TEXT DEFAULT '+91 99448 75726',
   duty_status TEXT NOT NULL DEFAULT 'ON_DUTY' CHECK (duty_status IN ('ON_DUTY', 'BUSY', 'OFF_DUTY')),
   specializations TEXT[] NOT NULL DEFAULT ARRAY['Software Installation', 'Game Crash / Error'],
+  rating NUMERIC(3,2) NOT NULL DEFAULT 5.00,
+  active_chats_count INT NOT NULL DEFAULT 0,
+  resolved_chats_count INT NOT NULL DEFAULT 0,
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Backwards compatibility / Alter columns if table already existed
+ALTER TABLE public.technical_support_specialists ADD COLUMN IF NOT EXISTS phone TEXT DEFAULT '+91 99448 75726';
+ALTER TABLE public.technical_support_specialists ADD COLUMN IF NOT EXISTS rating NUMERIC(3,2) NOT NULL DEFAULT 5.00;
+ALTER TABLE public.technical_support_specialists ADD COLUMN IF NOT EXISTS active_chats_count INT NOT NULL DEFAULT 0;
+ALTER TABLE public.technical_support_specialists ADD COLUMN IF NOT EXISTS resolved_chats_count INT NOT NULL DEFAULT 0;
+ALTER TABLE public.technical_support_specialists ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE;
 
 -- Index on email and status for rapid lookups
 CREATE INDEX IF NOT EXISTS idx_tech_support_email ON public.technical_support_specialists(email);
