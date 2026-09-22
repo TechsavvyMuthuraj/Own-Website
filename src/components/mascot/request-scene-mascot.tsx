@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { MuthurajMascotFigure, type MascotExpression } from "./muthuraj-mascot-figure";
+import { FemaleMascotFigure, type MascotExpression } from "./female-mascot-figure";
 import { Sparkles, MessageCircle, Heart } from "lucide-react";
 import "./namma-mascot.css";
 
 interface RequestSceneMascotProps {
   isTyping?: boolean;
   isSubmitted?: boolean;
+  userName?: string;
 }
 
 type CinematicStep =
@@ -24,6 +25,7 @@ type CinematicStep =
 export function RequestSceneMascot({
   isTyping = false,
   isSubmitted = false,
+  userName,
 }: RequestSceneMascotProps) {
   const [step, setStep] = useState<CinematicStep>("walk-in");
   const [lookDirection, setLookDirection] = useState<"look-left" | "look-right">("look-left");
@@ -192,7 +194,11 @@ export function RequestSceneMascot({
         <div className="absolute -top-12 right-0 sm:right-auto sm:-left-36 z-30 mascot-speech-bubble pointer-events-none">
           <div className="px-3.5 py-1.5 rounded-2xl bg-neutral-950/90 backdrop-blur-xl border border-cyan-500/40 text-[11px] font-semibold text-cyan-300 shadow-xl shadow-cyan-950/40 whitespace-nowrap flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-            <span>I&apos;ll help Muthuraj find this for you! ✨</span>
+            <span>
+              {userName
+                ? `I'll help you find this, ${userName}! ✨`
+                : "I'll help you find this! ✨"}
+            </span>
           </div>
         </div>
       )}
@@ -201,7 +207,11 @@ export function RequestSceneMascot({
         <div className="absolute -top-14 -left-20 sm:-left-16 z-30 mascot-speech-bubble pointer-events-none">
           <div className="px-4 py-2 rounded-2xl bg-emerald-950/95 backdrop-blur-xl border border-emerald-500/50 text-xs font-black text-emerald-300 shadow-2xl shadow-emerald-950/60 whitespace-nowrap flex items-center gap-2 animate-bounce">
             <Heart className="w-4 h-4 text-emerald-400 fill-current" />
-            <span>Woohoo! Request Received! 🎉</span>
+            <span>
+              {userName
+                ? `Woohoo, ${userName}! Request received! 🎉`
+                : "Woohoo! Request received! 🎉"}
+            </span>
           </div>
         </div>
       )}
@@ -210,13 +220,15 @@ export function RequestSceneMascot({
         <div className="absolute -top-7 -left-16 z-30 mascot-speech-bubble pointer-events-none">
           <div className="px-2.5 py-1 rounded-xl bg-neutral-950/80 border border-neutral-700/60 text-[10px] font-mono text-neutral-300 shadow-lg whitespace-nowrap flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
-            <span>Taking notes...</span>
+            <span>
+              {userName ? `Taking notes for ${userName}... ✍️` : "Taking notes for you... ✍️"}
+            </span>
           </div>
         </div>
       )}
 
-      {/* Mascot Figure Rendering */}
-      <MuthurajMascotFigure
+      {/* Female Vector Mascot Figure Rendering */}
+      <FemaleMascotFigure
         expression={activeExpression}
         size="md"
         isPeekingFromBehind={isPeekingBehind}

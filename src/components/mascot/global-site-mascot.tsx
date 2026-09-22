@@ -3,8 +3,9 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MuthurajMascotFigure } from "./muthuraj-mascot-figure";
-import { Sparkles, X, ArrowRight, ShieldCheck } from "lucide-react";
+import { FemaleMascotFigure } from "./female-mascot-figure";
+import { useAuth } from "@/lib/auth/auth-context";
+import { Sparkles, X, ArrowRight, Bot } from "lucide-react";
 import "./namma-mascot.css";
 
 function YouTubeIcon({ className = "w-3 h-3" }: { className?: string }) {
@@ -25,8 +26,12 @@ function InstagramIcon({ className = "w-3 h-3" }: { className?: string }) {
 
 export function GlobalSiteMascot() {
   const pathname = usePathname();
+  const { user, profile } = useAuth();
   const [isHovered, setIsHovered] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
+
+  // Derive user's display name if authenticated
+  const displayName = profile?.full_name || user?.email?.split("@")[0] || "";
 
   // If on the /request page, hide global mascot so the cinematic request mascot is the sole star!
   if (pathname === "/request" || isDismissed) {
@@ -50,8 +55,8 @@ export function GlobalSiteMascot() {
           <div className="relative p-4 rounded-2xl bg-neutral-950/95 backdrop-blur-xl border border-cyan-500/40 text-white shadow-2xl shadow-cyan-950/50 max-w-[240px] space-y-2.5">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-1.5 text-cyan-400 font-bold text-[11px]">
-                <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Muthuraj • NammaTech</span>
+                <Bot className="w-3.5 h-3.5 text-cyan-400" />
+                <span>NammaTech AI Assistant</span>
               </div>
               <button
                 type="button"
@@ -67,14 +72,16 @@ export function GlobalSiteMascot() {
             </div>
 
             <p className="text-[11px] text-neutral-300 leading-relaxed">
-              Need a game, PC software, APK, or AI tool? Let&apos;s build it together! 💙
+              {displayName
+                ? `Hey ${displayName}! Need any games, PC tools, or APKs? Let me find it for you! ✨`
+                : "Looking for games, software, or APK tools? Let me find it for you! ✨"}
             </p>
 
             <Link
               href="/request"
               className="inline-flex items-center gap-1.5 w-full justify-center px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-[11px] transition-all shadow-md shadow-cyan-500/25 active:scale-95"
             >
-              <span>Submit Request</span>
+              <span>Request a Resource</span>
               <ArrowRight className="w-3 h-3" />
             </Link>
 
@@ -106,20 +113,20 @@ export function GlobalSiteMascot() {
         </div>
       )}
 
-      {/* ── Mascot Icon / Figure ── */}
+      {/* ── Female Animated Mascot Icon / Figure ── */}
       <Link
         href="/request"
-        className="group relative flex flex-col items-center cursor-pointer transition-transform duration-300 hover:scale-105 active:scale-95"
-        title="Muthuraj - Click to submit a resource request!"
+        className="group relative flex flex-col items-center cursor-pointer transition-transform duration-300 hover:scale-110 active:scale-95"
+        title="AI Assistant - Click to request any resource!"
       >
-        <MuthurajMascotFigure
-          expression={isHovered ? "watching" : "normal"}
+        <FemaleMascotFigure
+          expression={isHovered ? "wave" : "normal"}
           size="sm"
           className="transition-all"
         />
 
         {/* Ambient base shadow / hover glow */}
-        <div className="w-14 h-2 rounded-full bg-cyan-500/25 blur-xs mt-1 transition-all group-hover:bg-cyan-500/50 group-hover:scale-125" />
+        <div className="w-12 h-2 rounded-full bg-cyan-500/25 blur-xs mt-1 transition-all group-hover:bg-cyan-500/50 group-hover:scale-125" />
       </Link>
     </div>
   );

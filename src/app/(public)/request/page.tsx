@@ -191,7 +191,11 @@ export default function RequestPage() {
 
         {/* Right Side: Form or Success Card */}
         <div className="lg:col-span-8 relative">
-          <RequestSceneMascot isTyping={isTyping} isSubmitted={status === "success"} />
+          <RequestSceneMascot
+            isTyping={isTyping}
+            isSubmitted={status === "success"}
+            userName={name}
+          />
           <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8 shadow-md relative z-10">
             {status === "success" ? (
               /* Success State */
