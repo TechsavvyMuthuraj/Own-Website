@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense, useMemo } from "react";
+import React, { useState, Suspense } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
@@ -158,6 +158,7 @@ function LoginForm() {
               height={72}
               className="w-full h-full object-cover"
               priority
+              unoptimized
             />
           </div>
         </Link>
@@ -167,7 +168,7 @@ function LoginForm() {
           </h1>
         </div>
         <p className="text-xs text-neutral-400">
-          Sign in to access your downloads and account settings.
+          Sign in to access your account. Browsing &amp; free downloads don&apos;t require one.
         </p>
       </div>
 
@@ -279,12 +280,26 @@ function LoginForm() {
       </form>
 
       {/* Footer */}
-      <div className="mt-6 pt-5 text-center text-xs" style={{ borderTop: "1px solid rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.35)" }}>
-        Don&apos;t have an account?{" "}
-        <Link href={`/auth/register?redirect=${encodeURIComponent(redirectUrl)}`}
-          className="font-semibold hover:underline" style={{ color: "#FD1843" }}>
-          Create an account
-        </Link>
+      <div className="mt-6 pt-5 space-y-3 text-center text-xs" style={{ borderTop: "1px solid rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.35)" }}>
+        <div>
+          Don&apos;t have an account?{" "}
+          <Link href={`/auth/register?redirect=${encodeURIComponent(redirectUrl)}`}
+            className="font-semibold hover:underline" style={{ color: "#FD1843" }}>
+            Create an account
+          </Link>
+        </div>
+        <div>
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-medium transition-all"
+            style={{ color: "rgba(255,255,255,0.45)", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+          >
+            Continue as Guest &rarr;
+          </Link>
+          <p className="text-[10px] mt-1" style={{ color: "rgba(255,255,255,0.25)" }}>
+            No account needed to browse or download free resources.
+          </p>
+        </div>
       </div>
     </div>
   );

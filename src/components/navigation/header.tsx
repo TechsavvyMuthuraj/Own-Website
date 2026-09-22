@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -57,6 +57,13 @@ export function Header({ navLinks = DEFAULT_NAV_LINKS }: HeaderProps) {
   const { itemCount } = useCart();
   const { user, profile, isAdmin, signOut } = useAuth();
 
+  // Close mobile navigation drawer, user menu, and search modal whenever route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setIsUserMenuOpen(false);
+    setIsSearchOpen(false);
+  }, [pathname]);
+
   const activeLinks = (navLinks && navLinks.length > 0 ? navLinks : DEFAULT_NAV_LINKS).filter(
     (l) => l.active !== false
   );
@@ -75,6 +82,7 @@ export function Header({ navLinks = DEFAULT_NAV_LINKS }: HeaderProps) {
                   fill
                   className="object-cover"
                   priority
+                  unoptimized
                 />
               </div>
             </Link>

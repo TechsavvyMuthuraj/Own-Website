@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   ShieldCheck,
   Clock,
@@ -15,6 +14,8 @@ import {
   Bell,
   Loader2,
   Sparkles,
+  User,
+  Phone,
 } from "lucide-react";
 import { useCart } from "@/lib/cart/cart-store";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -22,7 +23,6 @@ import { formatCurrency } from "@/lib/utils";
 import { UpiQrCard } from "@/components/payments/upi-qr-card";
 
 export default function CheckoutPage() {
-  const router = useRouter();
   const { items, subtotal, discount, total, appliedCoupon, clearCart } = useCart();
   const { user, loading: authLoading } = useAuth();
 
@@ -30,6 +30,11 @@ export default function CheckoutPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [pendingOrder, setPendingOrder] = useState<any>(null);
   const [completedFreeOrder, setCompletedFreeOrder] = useState<any>(null);
+
+  // Guest contact info (only used when not signed in)
+  const [guestName, setGuestName] = useState("");
+  const [guestWhatsApp, setGuestWhatsApp] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
 
   const [tempOrderNumber] = useState(
     () => `ORD-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`
@@ -55,12 +60,26 @@ export default function CheckoutPage() {
     );
   }
 
+  const isGuest = !user && !authLoading;
+
+  const validateGuestFields = (): boolean => {
+    if (!isGuest) return true;
+    const name = guestName.trim();
+    const wa = guestWhatsApp.trim();
+    if (!name) {
+      setErrorMsg("Please enter your name to continue as a guest.");
+      return false;
+    }
+    if (!wa || !/^[6-9]\d{9}$/.test(wa)) {
+      setErrorMsg("Please enter a valid 10-digit Indian WhatsApp number.");
+      return false;
+    }
+    return true;
+  };
+
   // Handle Free Order Checkout (total === 0)
   const handleClaimFreeOrder = async () => {
-    if (!user) {
-      router.push("/auth/login?redirect=/checkout");
-      return;
-    }
+    if (!validateGuestFields()) return;
 
     setIsProcessing(true);
     setErrorMsg("");
@@ -72,6 +91,11 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           resourceIds: items.map((i) => i.resource.id),
           couponCode: appliedCoupon?.code,
+          ...(isGuest && {
+            customerName: guestName.trim(),
+            whatsappNumber: guestWhatsApp.trim(),
+            customerEmail: guestEmail.trim() || undefined,
+          }),
         }),
       });
 
@@ -87,6 +111,7 @@ export default function CheckoutPage() {
       setCompletedFreeOrder({
         orderNumber: orderData.orderNumber,
         items: orderItemsCopy,
+        isGuest,
       });
     } catch (err) {
       console.error("Free order checkout error:", err);
@@ -98,10 +123,7 @@ export default function CheckoutPage() {
 
   // Handle UPI Submission — creates PENDING order and stores UTR for admin review
   const handleConfirmUpiPayment = async (utr: string) => {
-    if (!user) {
-      router.push("/auth/login?redirect=/checkout");
-      return;
-    }
+    if (!validateGuestFields()) return;
 
     // UTR is mandatory and must be exactly 12 digits
     const trimmedUtr = utr.trim();
@@ -118,7 +140,7 @@ export default function CheckoutPage() {
     setErrorMsg("");
 
     try {
-      // Create a PENDING order — admin will verify and unlock entitlements
+      // Create a PENDING order
       const createRes = await fetch("/api/checkout/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -126,6 +148,11 @@ export default function CheckoutPage() {
           resourceIds: items.map((i) => i.resource.id),
           couponCode: appliedCoupon?.code,
           upiReference: trimmedUtr || undefined,
+          ...(isGuest && {
+            customerName: guestName.trim(),
+            whatsappNumber: guestWhatsApp.trim(),
+            customerEmail: guestEmail.trim() || undefined,
+          }),
         }),
       });
 
@@ -144,7 +171,7 @@ export default function CheckoutPage() {
           body: JSON.stringify({
             orderId: orderData.orderId,
             upiReference: trimmedUtr,
-            pendingOnly: true, // flag: only record UTR, don't grant entitlements yet
+            pendingOnly: true,
           }),
         });
       }
@@ -155,6 +182,8 @@ export default function CheckoutPage() {
         total: orderData.total,
         items: [...items],
         utr: trimmedUtr || null,
+        isGuest,
+        guestWhatsApp: isGuest ? guestWhatsApp.trim() : null,
       });
     } catch (err) {
       console.error("Checkout error:", err);
@@ -181,7 +210,10 @@ export default function CheckoutPage() {
               Downloads Ready! 🚀
             </h1>
             <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1.5 max-w-sm mx-auto">
-              Order <strong className="font-mono text-[var(--foreground)]">#{completedFreeOrder.orderNumber}</strong> has been granted to your account. All items are now accessible in your Downloads section.
+              Order <strong className="font-mono text-[var(--foreground)]">#{completedFreeOrder.orderNumber}</strong>{" "}
+              {completedFreeOrder.isGuest
+                ? "is confirmed. All free items are ready to download directly."
+                : "has been granted to your account. All items are now accessible in your Downloads section."}
             </p>
           </div>
 
@@ -202,13 +234,23 @@ export default function CheckoutPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
-            <Link
-              href="/account/downloads"
-              className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm transition-all shadow-md shadow-emerald-600/20"
-            >
-              <Download className="w-4 h-4" />
-              <span>Go to My Downloads</span>
-            </Link>
+            {!completedFreeOrder.isGuest ? (
+              <Link
+                href="/account/downloads"
+                className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm transition-all shadow-md shadow-emerald-600/20"
+              >
+                <Download className="w-4 h-4" />
+                <span>Go to My Downloads</span>
+              </Link>
+            ) : (
+              <Link
+                href="/explore"
+                className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm transition-all shadow-md shadow-emerald-600/20"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Explore More Resources</span>
+              </Link>
+            )}
             <Link
               href="/explore"
               className="inline-flex items-center justify-center py-3 px-5 rounded-2xl bg-[var(--secondary)] text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--border)] transition-all"
@@ -221,17 +263,15 @@ export default function CheckoutPage() {
     );
   }
 
-  // PENDING SUCCESS STATE — waiting for admin verification (Paid Orders)
+  // PENDING SUCCESS STATE
   if (pendingOrder) {
     return (
       <div className="max-w-xl mx-auto px-4 py-8 sm:py-16 w-full flex flex-col items-center justify-center text-center">
         <div className="p-6 sm:p-10 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-2xl shadow-amber-500/10 w-full space-y-6 animate-in zoom-in-95 duration-300">
-          {/* Icon */}
           <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto ring-1 ring-amber-500/30 shadow-lg shadow-amber-500/10">
             <Clock className="w-8 h-8 sm:w-10 sm:h-10" />
           </div>
 
-          {/* Status Badge */}
           <div>
             <span className="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 mb-3">
               Payment Submitted • Pending Admin Verification
@@ -244,11 +284,13 @@ export default function CheckoutPage() {
               <strong className="font-mono text-[var(--foreground)]">
                 #{pendingOrder.orderNumber}
               </strong>{" "}
-              is placed. Your download will unlock once admin verifies your UPI payment.
+              is placed.{" "}
+              {pendingOrder.isGuest
+                ? <>Once admin verifies your payment, your <strong>secure download link will be sent to your WhatsApp</strong> {pendingOrder.guestWhatsApp ? `(${pendingOrder.guestWhatsApp})` : ""}.</>
+                : "Your download will unlock once admin verifies your UPI payment."}
             </p>
           </div>
 
-          {/* Order Details Box */}
           <div className="rounded-2xl bg-[var(--secondary)]/60 border border-[var(--border)] p-4 text-left space-y-3">
             <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
               Order Summary
@@ -278,20 +320,34 @@ export default function CheckoutPage() {
             )}
           </div>
 
-          {/* Actions */}
+          {pendingOrder.isGuest && (
+            <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-left flex items-start gap-2.5">
+              <Bell className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-[var(--foreground)]">
+                Your secure download link will be sent via <strong>WhatsApp</strong> after payment is verified (typically within a few hours).{" "}
+                <Link href="/auth/register" className="text-[var(--primary)] hover:underline font-semibold">
+                  Create a free account
+                </Link>{" "}
+                to track orders and access downloads from your dashboard.
+              </p>
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            {!pendingOrder.isGuest && (
+              <Link
+                href="/account/orders"
+                className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-6 rounded-2xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-semibold text-xs transition-all shadow-md shadow-[#FD1843]/25"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                <span>View Order in Account</span>
+              </Link>
+            )}
             <Link
-              href="/account/orders"
-              className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-6 rounded-2xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-semibold text-xs transition-all shadow-md shadow-[#FD1843]/25"
+              href="/explore"
+              className="flex-1 inline-flex items-center justify-center py-3 px-5 rounded-2xl bg-[var(--secondary)] text-xs font-medium text-[var(--foreground)] hover:bg-[var(--border)] transition-all"
             >
-              <ShoppingBag className="w-4 h-4" />
-              <span>View Order in Account</span>
-            </Link>
-            <Link
-              href="/account/downloads"
-              className="inline-flex items-center justify-center py-3 px-5 rounded-2xl bg-[var(--secondary)] text-xs font-medium text-[var(--foreground)] hover:bg-[var(--border)] transition-all"
-            >
-              My Downloads
+              Continue Exploring
             </Link>
           </div>
         </div>
@@ -325,13 +381,13 @@ export default function CheckoutPage() {
         </div>
       )}
 
-      {/* Guest Login Warning */}
+      {/* Optional Sign-In Hint (non-blocking) */}
       {!user && !authLoading && (
-        <div className="w-full max-w-md p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs flex items-center justify-between gap-3 mb-5 text-left">
+        <div className="w-full max-w-md p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-xs flex items-center justify-between gap-3 mb-5 text-left">
           <div className="flex items-center gap-2">
-            <Bell className="w-4 h-4 text-amber-500 flex-shrink-0" />
+            <Bell className="w-4 h-4 text-blue-500 flex-shrink-0" />
             <span className="text-[var(--foreground)]">
-              Sign in to automatically link this purchase to your permanent account.
+              Sign in to automatically link this purchase to your account for easy re-downloads.
             </span>
           </div>
           <Link
@@ -340,6 +396,66 @@ export default function CheckoutPage() {
           >
             Sign In
           </Link>
+        </div>
+      )}
+
+      {/* Guest Contact Info (only when not signed in) */}
+      {isGuest && (
+        <div className="w-full max-w-md p-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] mb-5 text-left space-y-3.5">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
+            Your Contact Details (Required for Guest Checkout)
+          </p>
+
+          {/* Name */}
+          <div>
+            <label className="block text-xs font-semibold text-[var(--foreground)] mb-1.5">
+              <span className="text-red-500">*</span> Your Name
+            </label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)]" />
+              <input
+                type="text"
+                value={guestName}
+                onChange={(e) => setGuestName(e.target.value)}
+                placeholder="Enter your full name"
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm bg-[var(--secondary)] border border-[var(--border)] text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:border-[var(--primary)]/50 focus:ring-1 focus:ring-[var(--primary)]/30 transition-all"
+              />
+            </div>
+          </div>
+
+          {/* WhatsApp */}
+          <div>
+            <label className="block text-xs font-semibold text-[var(--foreground)] mb-1.5">
+              <span className="text-red-500">*</span> WhatsApp Number
+            </label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted-foreground)]" />
+              <input
+                type="tel"
+                value={guestWhatsApp}
+                onChange={(e) => setGuestWhatsApp(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                placeholder="10-digit number (e.g. 9876543210)"
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm bg-[var(--secondary)] border border-[var(--border)] text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:border-[var(--primary)]/50 focus:ring-1 focus:ring-[var(--primary)]/30 transition-all"
+              />
+            </div>
+            <p className="text-[10px] text-[var(--muted-foreground)] mt-1">
+              After payment verification, your secure download link will be sent here via WhatsApp.
+            </p>
+          </div>
+
+          {/* Email (optional) */}
+          <div>
+            <label className="block text-xs font-semibold text-[var(--foreground)] mb-1.5">
+              Email Address <span className="text-[var(--muted-foreground)] font-normal">(optional)</span>
+            </label>
+            <input
+              type="email"
+              value={guestEmail}
+              onChange={(e) => setGuestEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="w-full px-4 py-2.5 rounded-xl text-sm bg-[var(--secondary)] border border-[var(--border)] text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:border-[var(--primary)]/50 focus:ring-1 focus:ring-[var(--primary)]/30 transition-all"
+            />
+          </div>
         </div>
       )}
 
@@ -388,7 +504,7 @@ export default function CheckoutPage() {
               </div>
               <h3 className="font-bold text-sm text-[var(--foreground)]">100% Free Order</h3>
               <p className="text-[11px] text-[var(--muted-foreground)] max-w-xs mx-auto">
-                No payment needed. Click below to claim all free items into your downloads library immediately.
+                No payment needed. Click below to claim all free items immediately.
               </p>
             </div>
 
@@ -401,7 +517,7 @@ export default function CheckoutPage() {
               {isProcessing ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Unlocking Downloads...</span>
+                  <span>Processing…</span>
                 </>
               ) : (
                 <>

@@ -1,0 +1,174 @@
+/* ==============================================================================
+   NAMMATECH CINEMATIC MASCOT (NAMMABOT / TECHIEBOT) ANIMATIONS
+   Ultra-Smooth Hardware-Accelerated Micro-Animations
+   ============================================================================== */
+
+@keyframes mascotHoverIdle {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1.5deg);
+  }
+}
+
+@keyframes mascotThrusterPulse {
+  0%, 100% {
+    transform: scaleY(1) scaleX(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scaleY(1.4) scaleX(0.9);
+    opacity: 1;
+  }
+}
+
+@keyframes mascotAntennaBeacon {
+  0%, 100% {
+    box-shadow: 0 0 8px #38bdf8, 0 0 16px #0284c7;
+    opacity: 0.8;
+  }
+  50% {
+    box-shadow: 0 0 16px #38bdf8, 0 0 28px #00f0ff;
+    opacity: 1;
+  }
+}
+
+@keyframes mascotWaveArm {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-28deg);
+  }
+  75% {
+    transform: rotate(18deg);
+  }
+}
+
+@keyframes mascotCelebrateJump {
+  0% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  30% {
+    transform: translateY(-24px) scale(1.1) rotate(-8deg);
+  }
+  60% {
+    transform: translateY(-16px) scale(1.05) rotate(8deg);
+  }
+  100% {
+    transform: translateY(-20px) scale(1.08) rotate(0deg);
+  }
+}
+
+@keyframes mascotCelebrateArms {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(-15deg);
+  }
+}
+
+@keyframes mascotConfettiPop {
+  0% {
+    transform: translate(0, 0) scale(0);
+    opacity: 1;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx, 20px), var(--ty, -40px)) scale(1.2) rotate(var(--rot, 45deg));
+    opacity: 0;
+  }
+}
+
+@keyframes mascotNoticeExclamation {
+  0% {
+    transform: translateY(6px) scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(-4px) scale(1.25);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes mascotHeadTiltLeft {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-8deg);
+  }
+}
+
+@keyframes mascotHeadTiltRight {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(8deg);
+  }
+}
+
+@keyframes mascotTypingWatch {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(3px) rotate(-2deg);
+  }
+}
+
+/* Cinematic States */
+.mascot-state-hover-idle {
+  animation: mascotHoverIdle 3.2s ease-in-out infinite;
+}
+
+.mascot-state-wave-arm {
+  transform-origin: 85% 65%;
+  animation: mascotWaveArm 0.6s ease-in-out infinite;
+}
+
+.mascot-state-celebrate {
+  animation: mascotCelebrateJump 1.2s cubic-bezier(0.18, 0.89, 0.32, 1.28) infinite alternate;
+}
+
+.mascot-state-notice-excl {
+  animation: mascotNoticeExclamation 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.mascot-state-watching {
+  animation: mascotTypingWatch 1.4s ease-in-out infinite;
+}
+
+.mascot-thruster {
+  transform-origin: top center;
+  animation: mascotThrusterPulse 0.9s ease-in-out infinite;
+}
+
+.mascot-antenna-glow {
+  animation: mascotAntennaBeacon 2s ease-in-out infinite;
+}
+
+/* Speech Bubble */
+.mascot-speech-bubble {
+  animation: mascotSpeechFade 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes mascotSpeechFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

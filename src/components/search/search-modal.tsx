@@ -35,10 +35,13 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       setTimeout(() => inputRef.current?.focus(), 50);
       document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
       setQuery("");
       setDebouncedQuery("");
     }
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [isOpen]);
 
   useEffect(() => {

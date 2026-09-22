@@ -13,6 +13,7 @@ import {
   Compass,
   ShieldCheck,
   ChevronRight,
+  MessageSquarePlus,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { Header } from "@/components/navigation/header";
@@ -28,6 +29,7 @@ export default function AccountLayout({
 
   const navItems = [
     { href: "/account", label: "Overview", icon: User },
+    { href: "/account/requests", label: "My Requests", icon: MessageSquarePlus },
     { href: "/account/downloads", label: "My Downloads", icon: Download },
     { href: "/account/orders", label: "Order History", icon: ShoppingBag },
     { href: "/account/favorites", label: "Saved Favorites", icon: Heart },

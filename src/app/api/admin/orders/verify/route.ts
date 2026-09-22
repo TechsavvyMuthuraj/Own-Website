@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { randomBytes } from "crypto";
 
 export async function POST(request: Request) {
   try {
@@ -64,13 +65,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, message: "Already verified" });
     }
 
-    // 3. ── UTR MATCH CHECK ────────────────────────────────────────────────────
-    // The user-submitted UTR is stored in payment_id (set during checkout).
-    // Admin must enter the same UTR to confirm they verified the same transaction.
+    // 3. UTR MATCH CHECK
     const userUtr = (order.payment_id || "").trim();
 
     if (!userUtr) {
-      // User hasn't submitted a UTR yet — admin cannot verify without it
       return NextResponse.json(
         {
           error: "User has not submitted a UTR number yet. Ask the user to add their UTR first.",
@@ -92,7 +90,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 4. UTRs match — mark order as PAID ─────────────────────────────────────
+    // 4. UTRs match — mark order as PAID
     await supabaseAdmin
       .from("orders")
       .update({
@@ -119,19 +117,61 @@ export async function POST(request: Request) {
     }
 
     // 6. Grant entitlements for all items
+    let accessToken: string | null = null;
+    const isGuestOrder = !order.user_id;
+
     if (order.items && order.items.length > 0) {
-      const entitlements = order.items.map((item: any) => ({
-        user_id: order.user_id,
-        resource_id: item.resource_id,
-        order_id: order.id,
-        status: "ACTIVE",
-      }));
-      await supabaseAdmin
-        .from("entitlements")
-        .upsert(entitlements, { onConflict: "user_id,resource_id" });
+      if (isGuestOrder) {
+        // Guest order: generate one secure access_token per entitlement
+        // (For simplicity, one token covers all items in this order)
+        const entitlements = await Promise.all(
+          order.items.map(async (item: any) => {
+            const token = randomBytes(24).toString("hex");
+            if (!accessToken) accessToken = token; // return first token for the link
+            return {
+              user_id: null,
+              resource_id: item.resource_id,
+              order_id: order.id,
+              status: "ACTIVE",
+              access_token: token,
+              customer_name: order.customer_name || null,
+              whatsapp_number: order.whatsapp_number || null,
+              verified_at: new Date().toISOString(),
+              verified_by: user.email || user.id,
+            };
+          })
+        );
+        await supabaseAdmin.from("entitlements").insert(entitlements);
+      } else {
+        // Authenticated user: standard entitlement (no token needed)
+        const entitlements = order.items.map((item: any) => ({
+          user_id: order.user_id,
+          resource_id: item.resource_id,
+          order_id: order.id,
+          status: "ACTIVE",
+          verified_at: new Date().toISOString(),
+          verified_by: user.email || user.id,
+        }));
+        await supabaseAdmin
+          .from("entitlements")
+          .upsert(entitlements, { onConflict: "user_id,resource_id" });
+      }
     }
 
-    return NextResponse.json({ success: true, orderId: order.id, matchedUtr: adminUtr });
+    // 7. Build access link for guest orders
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://techsavvymuthuraj.dev";
+    const accessLink = isGuestOrder && accessToken ? `${baseUrl}/access/${accessToken}` : null;
+
+    return NextResponse.json({
+      success: true,
+      orderId: order.id,
+      matchedUtr: adminUtr,
+      isGuestOrder,
+      accessLink,
+      accessToken,
+      customerName: order.customer_name,
+      whatsappNumber: order.whatsapp_number,
+    });
   } catch (err) {
     console.error("Admin order verify error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

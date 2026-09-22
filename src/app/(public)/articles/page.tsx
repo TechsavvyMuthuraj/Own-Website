@@ -112,62 +112,37 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
         </div>
       )}
 
-      {/* 1. HERO BANNER FOR JOURNAL */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="relative overflow-hidden rounded-3xl border border-amber-500/25 bg-gradient-to-b from-neutral-950 via-neutral-900 to-neutral-950 p-6 sm:p-12 text-white shadow-2xl">
-          {/* Inner ambient glowing light */}
-          <div className="absolute -top-24 -right-24 w-96 h-96 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="relative z-10 max-w-3xl space-y-4">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider shadow-sm">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>NammaTech Journal & News</span>
-            </div>
-
-            <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
-              Curated Articles, Guides &{" "}
-              <span className="bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent">
-                Tech Updates
-              </span>
-            </h1>
-
-            <p className="text-sm sm:text-base text-neutral-300 leading-relaxed max-w-2xl">
-              In-depth software tutorials, cinema releases, security deep dives, and expert commentary curated by the NammaTech editorial team.
-            </p>
-
-            {/* Quick Tag Filter Bar */}
-            {allTags.length > 0 && (
-              <div className="pt-2 flex flex-wrap items-center gap-2">
-                <span className="text-xs text-neutral-400 font-medium mr-1">Topics:</span>
-                <Link
-                  href="/articles"
-                  className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
-                    !tag
-                      ? "bg-amber-500 text-neutral-950 shadow-md shadow-amber-500/20"
-                      : "bg-neutral-800/80 hover:bg-neutral-800 text-neutral-300 border border-neutral-700/60"
-                  }`}
-                >
-                  All Articles
-                </Link>
-                {allTags.map((t) => (
-                  <Link
-                    key={t}
-                    href={`/articles?tag=${encodeURIComponent(t)}`}
-                    className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
-                      tag === t
-                        ? "bg-amber-500 text-neutral-950 shadow-md shadow-amber-500/20"
-                        : "bg-neutral-800/80 hover:bg-neutral-800 text-neutral-300 border border-neutral-700/60 hover:text-amber-400"
-                    }`}
-                  >
-                    #{t}
-                  </Link>
-                ))}
-              </div>
-            )}
+      {/* Quick Tag Filter Bar */}
+      {allTags.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="flex flex-wrap items-center gap-2 py-1">
+            <span className="text-xs text-[var(--muted-foreground)] font-medium mr-1">Topics:</span>
+            <Link
+              href="/articles"
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+                !tag
+                  ? "bg-amber-500 text-neutral-950 shadow-sm"
+                  : "bg-[var(--card)] hover:bg-[var(--secondary)] text-[var(--foreground)] border border-[var(--border)]"
+              }`}
+            >
+              All Articles
+            </Link>
+            {allTags.map((t) => (
+              <Link
+                key={t}
+                href={`/articles?tag=${encodeURIComponent(t)}`}
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+                  tag === t
+                    ? "bg-amber-500 text-neutral-950 shadow-sm"
+                    : "bg-[var(--card)] hover:bg-[var(--secondary)] text-[var(--muted-foreground)] border border-[var(--border)] hover:text-[var(--foreground)]"
+                }`}
+              >
+                #{t}
+              </Link>
+            ))}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* 2. FEATURED ARTICLES (IF NOT FILTERED) */}
       {!tag && featuredArticles.length > 0 && (

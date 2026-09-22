@@ -13,17 +13,41 @@ export const revalidate = 0;
 export default async function AdminPaymentsPage() {
   const supabase = createAdminClient();
 
-  const [{ data: orders }, { data: resources }] = await Promise.all([
-    supabase
-      .from("orders")
-      .select("*, user:profiles(full_name, email), items:order_items(*, resource:resources(id, title, thumbnail_url))")
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("resources")
-      .select("id, title, price, sale_price")
-      .eq("status", "PUBLISHED")
-      .order("title"),
-  ]);
+  const [{ data: orders }, { data: resources }, { data: paymentSettingsRow }] =
+    await Promise.all([
+      supabase
+        .from("orders")
+        .select(
+          "*, user:profiles(full_name, email), items:order_items(*, resource:resources(id, title, thumbnail_url))"
+        )
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("resources")
+        .select("id, title, price, sale_price")
+        .eq("status", "PUBLISHED")
+        .order("title"),
+      supabase
+        .from("site_settings")
+        .select("value")
+        .eq("key", "payment_settings")
+        .maybeSingle(),
+    ]);
+
+  let paymentSettings = {
+    upi_id: "muthurajc@slc",
+    merchant_name: "NammaTech Digital / Muthuraj C",
+    receiver_phone: "+91 91764 43726",
+  };
+
+  if (paymentSettingsRow?.value) {
+    try {
+      const parsed =
+        typeof paymentSettingsRow.value === "string"
+          ? JSON.parse(paymentSettingsRow.value)
+          : paymentSettingsRow.value;
+      paymentSettings = { ...paymentSettings, ...parsed };
+    } catch {}
+  }
 
   return (
     <div className="space-y-6 max-w-7xl pb-16">
@@ -61,6 +85,7 @@ export default async function AdminPaymentsPage() {
       <PaymentsClient
         initialOrders={orders || []}
         availableResources={resources || []}
+        initialPaymentSettings={paymentSettings}
       />
     </div>
   );

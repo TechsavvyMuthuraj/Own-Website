@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Settings, Save, Check, AlertCircle, Loader2, Power, Wrench, Trash2, AlertTriangle, ShieldAlert } from "lucide-react";
+import { Settings, Save, Check, AlertCircle, Loader2, Power, Wrench, Trash2, AlertTriangle, ShieldAlert, QrCode, Phone } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 
 export function SettingsClient({ initialSettings }: { initialSettings: Record<string, any> }) {
@@ -29,6 +29,16 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
   );
   const [updatedDays, setUpdatedDays] = useState(
     initialSettings.updated_resource_threshold_days || "14"
+  );
+
+  // UPI Payment Gateway Settings
+  const initialPayment = initialSettings.payment_settings || {};
+  const [upiId, setUpiId] = useState(initialPayment.upi_id || "muthurajc@slc");
+  const [merchantName, setMerchantName] = useState(
+    initialPayment.merchant_name || "NammaTech Digital / Muthuraj C"
+  );
+  const [receiverPhone, setReceiverPhone] = useState(
+    initialPayment.receiver_phone || "+91 91764 43726"
   );
 
   const [loading, setLoading] = useState(false);
@@ -104,6 +114,11 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
           maintenance_mode: maintenanceMode,
           new_resource_threshold_days: Number(newDays) || 14,
           updated_resource_threshold_days: Number(updatedDays) || 14,
+          payment_settings: {
+            upi_id: upiId.trim(),
+            merchant_name: merchantName.trim(),
+            receiver_phone: receiverPhone.trim(),
+          },
         }),
       });
 
@@ -280,6 +295,66 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
               <span>Preview Live Site as Admin</span>
               <span>↗</span>
             </a>
+          </div>
+        </div>
+      </div>
+
+      {/* ── UPI Payment Gateway & Receiver Configuration ── */}
+      <div className="p-6 rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl shadow-xl space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500">
+            <QrCode className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-white">
+              Active UPI Gateway &amp; Settlement Routing
+            </h2>
+            <p className="text-xs text-neutral-400">
+              Configure default UPI ID, payee name, and merchant receiver phone number across the platform.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-neutral-200">
+              Active UPI ID <span className="text-rose-400">*</span>
+            </label>
+            <input
+              type="text"
+              required
+              value={upiId}
+              onChange={(e) => setUpiId(e.target.value)}
+              placeholder="e.g. muthurajc@slc"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950 text-xs font-mono text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-neutral-200">
+              Merchant / Business Name
+            </label>
+            <input
+              type="text"
+              value={merchantName}
+              onChange={(e) => setMerchantName(e.target.value)}
+              placeholder="e.g. NammaTech Digital / Muthuraj C"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950 text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-neutral-200 flex items-center gap-1.5">
+              <Phone className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Receiver Phone Number</span>
+            </label>
+            <input
+              type="text"
+              value={receiverPhone}
+              onChange={(e) => setReceiverPhone(e.target.value)}
+              placeholder="e.g. +91 91764 43726"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950 text-xs font-mono text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            />
           </div>
         </div>
       </div>

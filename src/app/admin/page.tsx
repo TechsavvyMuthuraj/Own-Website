@@ -50,6 +50,9 @@ export default async function AdminDashboardPage() {
   let totalRevenue = 0;
   let pendingOrders = 0;
   let recentAuditLogs: any[] = [];
+  let pendingRequests = 0;
+  let reviewingRequests = 0;
+  let completedRequests = 0;
 
   try {
     // Execute all dashboard metrics and audit logs concurrently in parallel
@@ -63,6 +66,9 @@ export default async function AdminDashboardPage() {
       dlCountRes,
       revenueRes,
       logsRes,
+      pendingReqRes,
+      reviewingReqRes,
+      completedReqRes,
     ] = await Promise.all([
       supabase.from("resources").select("*", { count: "exact", head: true }),
       supabase.from("resources").select("*", { count: "exact", head: true }).eq("status", "PUBLISHED"),
@@ -77,6 +83,9 @@ export default async function AdminDashboardPage() {
         .select("id, action, entity_type, entity_id, created_at")
         .order("created_at", { ascending: false })
         .limit(8),
+      supabase.from("resource_requests").select("*", { count: "exact", head: true }).or("status.eq.pending,status.eq.PENDING"),
+      supabase.from("resource_requests").select("*", { count: "exact", head: true }).or("status.eq.reviewing,status.eq.IN_REVIEW"),
+      supabase.from("resource_requests").select("*", { count: "exact", head: true }).or("status.eq.completed,status.eq.FULFILLED"),
     ]);
 
     totalResources = resCountRes.count || 0;
@@ -86,6 +95,9 @@ export default async function AdminDashboardPage() {
     paidOrders = paidCountRes.count || 0;
     pendingOrders = pendCountRes.count || 0;
     totalDownloads = dlCountRes.count || 0;
+    pendingRequests = pendingReqRes.count || 0;
+    reviewingRequests = reviewingReqRes.count || 0;
+    completedRequests = completedReqRes.count || 0;
 
     if (revenueRes.data) {
       totalRevenue = revenueRes.data.reduce((sum, o) => sum + Number(o.total || 0), 0);
@@ -335,6 +347,43 @@ export default async function AdminDashboardPage() {
               />
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* 3B. RESOURCE REQUESTS COMMUNITY PIPELINE (Real Database Metrics) */}
+      <div className="rounded-3xl border border-neutral-800/80 bg-neutral-900/50 backdrop-blur-xl p-5 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center">
+              <Package className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
+                Community Resource Requests
+              </span>
+              <div className="flex items-center gap-3 text-xs mt-0.5">
+                <span className="text-amber-400 font-bold">
+                  Pending: {pendingRequests}
+                </span>
+                <span className="text-neutral-600">•</span>
+                <span className="text-blue-400 font-bold">
+                  Reviewing: {reviewingRequests}
+                </span>
+                <span className="text-neutral-600">•</span>
+                <span className="text-emerald-400 font-bold">
+                  Completed: {completedRequests}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <Link
+            href="/admin/requests"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 text-xs font-bold transition-all w-fit"
+          >
+            <span>Manage Requests ({pendingRequests + reviewingRequests + completedRequests})</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
       </div>
 

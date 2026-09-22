@@ -72,7 +72,7 @@ export default function AdminLayout({
         { href: "/admin/payments", label: "Payments", icon: CreditCard },
         { href: "/admin/coupons", label: "Coupons", icon: Tag },
         { href: "/admin/messages", label: "Contact Inbox", icon: Mail },
-        { href: "/admin/requests", label: "Software Requests", icon: Compass },
+        { href: "/admin/requests", label: "Resource Requests", icon: Compass },
       ],
     },
     {
@@ -128,6 +128,7 @@ export default function AdminLayout({
                 height={32}
                 className="w-full h-full object-cover"
                 priority
+                unoptimized
               />
             </div>
             <div>

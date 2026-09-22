@@ -24,11 +24,8 @@ import { AdSlot } from "@/components/ads/ad-slot";
 import { getActiveAd } from "@/lib/ads";
 import { FounderProfile } from "@/components/home/founder-profile";
 import { HomepageWallpapers } from "@/components/wallpapers/homepage-wallpapers";
-import { LiveStatsBar } from "@/components/home/live-stats-bar";
-import { InteractivePlatformStrip } from "@/components/home/interactive-platform-strip";
 import { FeaturesGrid } from "@/components/home/features-grid";
-import { HomepageFaq } from "@/components/home/homepage-faq";
-import { ThemeCustomizer } from "@/components/theme/theme-customizer";
+import { YouTubeShowcase } from "@/components/home/youtube-showcase";
 import { HeroInteractiveBanner } from "@/components/home/hero-interactive-banner";
 
 import type { Metadata } from "next";
@@ -254,16 +251,83 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* 2. REAL-TIME PLATFORM METRICS COUNTER */}
-      <LiveStatsBar
-        totalResources={totalResourcesCount}
-        totalCategories={totalCategoriesCount}
-        totalWallpapers={totalWallpapersCount}
-        totalMovies={totalMoviesCount}
-      />
+      {/* 2. REAL-TIME PLATFORM DETAILS & ECOSYSTEM (SUITABLE TEXT STYLE) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 py-3.5 px-5 rounded-2xl border border-[var(--border)] bg-[var(--card)]/60 backdrop-blur-xl shadow-xs">
+          {/* Key Metrics in Minimal Text Style */}
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-[var(--muted-foreground)]">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
+              <span className="font-bold text-[var(--foreground)] font-mono text-sm">{totalResourcesCount}+</span>
+              <span>Verified Resources</span>
+            </div>
+            <span className="hidden sm:inline text-[var(--border)]">|</span>
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-[var(--foreground)] font-mono text-sm">{totalCategoriesCount}</span>
+              <span>Active Categories</span>
+            </div>
+            <span className="hidden sm:inline text-[var(--border)]">|</span>
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-[var(--foreground)] font-mono text-sm">{totalWallpapersCount}+</span>
+              <span>4K Wallpapers</span>
+            </div>
+            <span className="hidden md:inline text-[var(--border)]">|</span>
+            <div className="hidden md:flex items-center gap-1.5 text-emerald-500 dark:text-emerald-400 font-medium">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>100% Security Audited</span>
+            </div>
+          </div>
 
-      {/* 3. INTERACTIVE ECOSYSTEM & OS NAVIGATOR */}
-      <InteractivePlatformStrip />
+          {/* Platform Environments in Clean Text Filter Style */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0 scrollbar-none text-xs font-medium text-[var(--muted-foreground)]">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] flex-shrink-0">
+              Filter:
+            </span>
+            <Link
+              href="/explore?platform=windows"
+              className="hover:text-[var(--foreground)] hover:bg-[var(--secondary)] px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap"
+            >
+              Windows
+            </Link>
+            <span className="text-[var(--border)]">•</span>
+            <Link
+              href="/explore?platform=android"
+              className="hover:text-[var(--foreground)] hover:bg-[var(--secondary)] px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap"
+            >
+              Android
+            </Link>
+            <span className="text-[var(--border)]">•</span>
+            <Link
+              href="/explore?platform=mac"
+              className="hover:text-[var(--foreground)] hover:bg-[var(--secondary)] px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap"
+            >
+              macOS
+            </Link>
+            <span className="text-[var(--border)]">•</span>
+            <Link
+              href="/explore?platform=linux"
+              className="hover:text-[var(--foreground)] hover:bg-[var(--secondary)] px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap"
+            >
+              Linux
+            </Link>
+            <span className="text-[var(--border)]">•</span>
+            <Link
+              href="/explore?platform=web"
+              className="hover:text-[var(--foreground)] hover:bg-[var(--secondary)] px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap"
+            >
+              Web Tools
+            </Link>
+            <span className="text-[var(--border)]">•</span>
+            <Link
+              href="/movies"
+              className="text-amber-500 dark:text-amber-400 font-bold hover:underline px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap inline-flex items-center gap-1"
+            >
+              <span>4K Cinema</span>
+              <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* 4. CATEGORIES PREVIEW */}
       {showCategories && (
@@ -387,14 +451,11 @@ export default async function HomePage() {
       {/* 8. 4K & ULTRA HD WALLPAPERS SHOWCASE */}
       <HomepageWallpapers wallpapers={wallpapers} />
 
-      {/* 9. FREQUENTLY ASKED QUESTIONS */}
-      <HomepageFaq />
+      {/* 9. YOUTUBE CHANNEL SHOWCASE */}
+      <YouTubeShowcase settings={hpSettings} />
 
       {/* 10. FOUNDER & LEAD DEVELOPER PROFILE */}
       <FounderProfile settings={hpSettings} />
-
-      {/* 11. FLOATING THEME & FONT CUSTOMIZER */}
-      <ThemeCustomizer />
     </div>
   );
 }

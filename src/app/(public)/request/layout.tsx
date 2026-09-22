@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Request a Resource or Software",
+  title: "Request a Resource - NammaTech",
   description:
-    "Can't find a specific tool, APK, or open-source software? Submit a resource request to the NammaTech community and we will verify and publish it.",
+    "Can't find a resource on NammaTech? Submit a request and our team will review it.",
   openGraph: {
-    title: "Request a Resource or Software | NammaTech",
-    description: "Submit a software or resource request to NammaTech.",
+    title: "Request a Resource - NammaTech",
+    description:
+      "Can't find a resource on NammaTech? Submit a request and our team will review it.",
   },
 };
 

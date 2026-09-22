@@ -1,19 +1,20 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { generateDownloadPresignedUrl } from "@/lib/r2/signed-url";
 
 export async function POST(request: Request) {
   try {
-    const { resourceId, linkId, r2Key } = await request.json();
+    const { resourceId, linkId, r2Key, accessToken } = await request.json();
 
     if (!resourceId) {
       return NextResponse.json({ error: "Missing required resourceId" }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const supabaseAdmin = createAdminClient();
 
     // 1. Fetch resource to verify access permissions
-    const { data: resource, error: resError } = await supabase
+    const { data: resource, error: resError } = await supabaseAdmin
       .from("resources")
       .select("id, title, access_type, status")
       .eq("id", resourceId)
@@ -23,32 +24,51 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Resource not available" }, { status: 404 });
     }
 
-    // 2. If Paid, strictly enforce user entitlement
+    // 2. If Paid, enforce entitlement — user session OR valid access token
     if (resource.access_type === "PAID") {
+      const supabase = await createClient();
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!user) {
-        return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+      let hasAccess = false;
+
+      if (user) {
+        // Check authenticated user's entitlement
+        const { data: entitlement } = await supabaseAdmin
+          .from("entitlements")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("resource_id", resource.id)
+          .eq("status", "ACTIVE")
+          .maybeSingle();
+        hasAccess = !!entitlement;
+      } else if (accessToken && typeof accessToken === "string" && accessToken.length >= 16) {
+        // Check guest access token
+        const { data: entitlement } = await supabaseAdmin
+          .from("entitlements")
+          .select("id, resource_id, expires_at")
+          .eq("access_token", accessToken)
+          .eq("resource_id", resource.id)
+          .eq("status", "ACTIVE")
+          .maybeSingle();
+
+        if (entitlement) {
+          // Check expiry
+          if (!entitlement.expires_at || new Date(entitlement.expires_at) > new Date()) {
+            hasAccess = true;
+          }
+        }
       }
 
-      const { data: entitlement } = await supabase
-        .from("entitlements")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("resource_id", resource.id)
-        .eq("status", "ACTIVE")
-        .maybeSingle();
-
-      if (!entitlement) {
+      if (!hasAccess) {
         return NextResponse.json({ error: "Payment required for this resource" }, { status: 403 });
       }
     }
 
     // 3. Find download link directly from Supabase
     if (linkId) {
-      const { data: link } = await supabase
+      const { data: link } = await supabaseAdmin
         .from("download_links")
         .select("url, r2_key")
         .eq("id", linkId)
@@ -68,7 +88,7 @@ export async function POST(request: Request) {
     }
 
     // 5. If there is a primary link with url on the resource, return it
-    const { data: fallbackLinks } = await supabase
+    const { data: fallbackLinks } = await supabaseAdmin
       .from("download_links")
       .select("url")
       .eq("resource_id", resourceId)

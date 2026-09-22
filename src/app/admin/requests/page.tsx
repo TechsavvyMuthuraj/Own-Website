@@ -2,7 +2,7 @@ import React from "react";
 import { RequestsClient } from "./requests-client";
 
 export const metadata = {
-  title: "Software Requests – NammaTech Admin",
+  title: "Resource Requests – NammaTech Admin",
 };
 
 export default function AdminRequestsPage() {

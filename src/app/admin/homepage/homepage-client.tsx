@@ -23,6 +23,8 @@ import {
   Plus,
   Trash2,
   RotateCcw,
+  Play,
+  Tv,
 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 
@@ -221,6 +223,51 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
     initialSettings.founder_telegram || "https://t.me/techsavvymuthuraj"
   );
 
+  // YouTube Showcase
+  const [showYoutubeShowcase, setShowYoutubeShowcase] = useState(
+    initialSettings.show_youtube_showcase !== false
+  );
+  const [youtubeChannelName, setYoutubeChannelName] = useState(
+    initialSettings.youtube_channel_name || "Techsavvy Muthuraj"
+  );
+  const [youtubeChannelId, setYoutubeChannelId] = useState(
+    initialSettings.youtube_channel_id || "UCavl9VKjbVWJBsqlVaCiIsw"
+  );
+  const [youtubeHandle, setYoutubeHandle] = useState(
+    initialSettings.youtube_handle || "@TechsavvyMuthuraj"
+  );
+  const [youtubeChannelUrl, setYoutubeChannelUrl] = useState(
+    initialSettings.youtube_channel_url ||
+      "https://www.youtube.com/channel/UCavl9VKjbVWJBsqlVaCiIsw"
+  );
+  const [youtubeSubtitle, setYoutubeSubtitle] = useState(
+    initialSettings.youtube_subtitle ||
+      "Muthuraj C • Tech Creator, Software Architect & YouTuber"
+  );
+  const [youtubeTags, setYoutubeTags] = useState(
+    initialSettings.youtube_tags ||
+      "PC Optimization • Android APKs • Open-Source Utilities • Coding"
+  );
+
+  // Instagram Showcase
+  const [showInstagramShowcase, setShowInstagramShowcase] = useState(
+    initialSettings.show_instagram_showcase !== false
+  );
+  const [instagramHandle, setInstagramHandle] = useState(
+    initialSettings.instagram_handle || "@techiemuthuraj"
+  );
+  const [instagramName, setInstagramName] = useState(
+    initialSettings.instagram_name ||
+      "Muthuraj C • Tech Creator, Software Architect & Founder"
+  );
+  const [instagramUrl, setInstagramUrl] = useState(
+    initialSettings.instagram_url || "https://www.instagram.com/techiemuthuraj/"
+  );
+  const [instagramBioTags, setInstagramBioTags] = useState(
+    initialSettings.instagram_bio_tags ||
+      "Daily Tech Reels • Software Tutorials • Cinema News"
+  );
+
   // Ads
   const [showHomepageAd, setShowHomepageAd] = useState(
     initialSettings.show_homepage_ad !== false
@@ -266,6 +313,18 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
           founder_github: founderGithub.trim(),
           founder_linkedin: founderLinkedin.trim(),
           founder_telegram: founderTelegram.trim(),
+          show_youtube_showcase: showYoutubeShowcase,
+          youtube_channel_name: youtubeChannelName.trim(),
+          youtube_channel_id: youtubeChannelId.trim(),
+          youtube_handle: youtubeHandle.trim(),
+          youtube_channel_url: youtubeChannelUrl.trim(),
+          youtube_subtitle: youtubeSubtitle.trim(),
+          youtube_tags: youtubeTags.trim(),
+          show_instagram_showcase: showInstagramShowcase,
+          instagram_handle: instagramHandle.trim(),
+          instagram_name: instagramName.trim(),
+          instagram_url: instagramUrl.trim(),
+          instagram_bio_tags: instagramBioTags.trim(),
           show_homepage_ad: showHomepageAd,
           show_in_feed_ad: showInFeedAd,
         },
@@ -973,7 +1032,129 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
         </div>
       </div>
 
-      {/* 8. AD PLACEMENTS TOGGLES */}
+      {/* 8. YOUTUBE CHANNEL SHOWCASE */}
+      <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8 space-y-6 shadow-sm">
+        <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-red-500/10 text-red-500">
+              <Tv className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-[var(--foreground)]">
+                8. YouTube Channel Showcase
+              </h2>
+              <p className="text-xs text-[var(--muted-foreground)]">
+                Manage your YouTube channel showcase, handle, channel ID, and title displayed on the homepage.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* YouTube Showcase Settings */}
+        <div className="p-5 rounded-2xl bg-[var(--secondary)]/30 border border-[var(--border)] space-y-4">
+          <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-red-600" />
+              <h3 className="text-sm font-bold text-[var(--foreground)]">
+                YouTube Channel Showcase
+              </h3>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-[var(--muted-foreground)] font-medium">Visible</span>
+              <input
+                type="checkbox"
+                checked={showYoutubeShowcase}
+                onChange={(e) => setShowYoutubeShowcase(e.target.checked)}
+                className="w-4 h-4 accent-red-600 rounded cursor-pointer"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-[var(--foreground)]">
+                Channel Name
+              </label>
+              <input
+                type="text"
+                value={youtubeChannelName}
+                onChange={(e) => setYoutubeChannelName(e.target.value)}
+                placeholder="Techie Muthuraj"
+                className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-[var(--foreground)]">
+                Channel Handle
+              </label>
+              <input
+                type="text"
+                value={youtubeHandle}
+                onChange={(e) => setYoutubeHandle(e.target.value)}
+                placeholder="@techiemuthuraj"
+                className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-[var(--foreground)]">
+                Channel ID
+              </label>
+              <input
+                type="text"
+                value={youtubeChannelId}
+                onChange={(e) => setYoutubeChannelId(e.target.value)}
+                placeholder="UCavl9VKjbVWJBsqlVaCiIsw"
+                className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] font-mono"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-[var(--foreground)]">
+              Full YouTube URL
+            </label>
+            <input
+              type="text"
+              value={youtubeChannelUrl}
+              onChange={(e) => setYoutubeChannelUrl(e.target.value)}
+              placeholder="https://www.youtube.com/channel/UCavl9VKjbVWJBsqlVaCiIsw"
+              className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-[var(--foreground)]">
+                Channel Subtitle / Bio
+              </label>
+              <input
+                type="text"
+                value={youtubeSubtitle}
+                onChange={(e) => setYoutubeSubtitle(e.target.value)}
+                placeholder="Muthuraj C • Tech Creator, Software Architect & YouTuber"
+                className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-[var(--foreground)]">
+                Topic Tags / Badges
+              </label>
+              <input
+                type="text"
+                value={youtubeTags}
+                onChange={(e) => setYoutubeTags(e.target.value)}
+                placeholder="OBS Studio • PC Optimization • Open-Source Utilities • Coding"
+                className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 9. AD PLACEMENTS TOGGLES */}
       <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8 space-y-4 shadow-sm">
         <div className="flex items-center gap-3 border-b border-[var(--border)] pb-4">
           <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-500">
@@ -981,7 +1162,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
           </div>
           <div>
             <h2 className="text-base font-bold text-[var(--foreground)]">
-              8. Homepage Ad Placements
+              9. Homepage Ad Placements
             </h2>
             <p className="text-xs text-[var(--muted-foreground)]">
               Control where Google AdSense and custom banner ads appear on the homepage.

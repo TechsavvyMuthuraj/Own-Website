@@ -228,7 +228,7 @@ export function StyleProvider({ children }: { children: React.ReactNode }) {
   // Mutable ref so rapid sequential clicks ALWAYS read the freshest active theme with 0ms lag
   const currentThemeRef = React.useRef<ThemePreset>("midnight");
 
-  // Load preferences from localStorage on initial mount
+  // Load preferences on initial mount, prioritizing pre-hydration DOM attributes
   useEffect(() => {
     let initialTheme: ThemePreset = "midnight";
     let initialAccent: AccentPreset = "amber";
@@ -236,6 +236,11 @@ export function StyleProvider({ children }: { children: React.ReactNode }) {
     let initialDark: ThemePreset = "midnight";
 
     try {
+      // 1. Check if pre-hydration script already applied theme to DOM
+      const domTheme = document.documentElement.getAttribute("data-theme") as ThemePreset | null;
+      const domAccent = document.documentElement.getAttribute("data-accent") as AccentPreset | null;
+      const domFont = document.documentElement.getAttribute("data-font") as FontPreset | null;
+
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
@@ -243,6 +248,10 @@ export function StyleProvider({ children }: { children: React.ReactNode }) {
         if (parsed.lastDarkTheme) initialDark = parsed.lastDarkTheme;
         if (parsed.accent) initialAccent = parsed.accent;
         if (parsed.fontStyle) initialFont = parsed.fontStyle;
+      } else if (domTheme) {
+        initialTheme = domTheme;
+        if (domAccent) initialAccent = domAccent;
+        if (domFont) initialFont = domFont;
       } else {
         const storedTheme = localStorage.getItem("theme");
         if (storedTheme === "light") {
@@ -262,7 +271,10 @@ export function StyleProvider({ children }: { children: React.ReactNode }) {
 
     // Apply immediately upon client hydration
     applyDomTheme(initialTheme, initialAccent, initialFont);
-  }, []);
+
+    const isLight = initialTheme === "nordic-light" || initialTheme === "warm-ivory";
+    setNextTheme(isLight ? "light" : "dark");
+  }, [setNextTheme]);
 
   // Compute if currently dark mode
   const isDark = theme !== "nordic-light" && theme !== "warm-ivory";
@@ -270,24 +282,6 @@ export function StyleProvider({ children }: { children: React.ReactNode }) {
   // Current active theme option metadata
   const currentThemeOption =
     THEME_OPTIONS.find((t) => t.id === theme) || THEME_OPTIONS[0];
-
-  // Sync state changes with DOM & Storage
-  useEffect(() => {
-    if (!mounted) return;
-    currentThemeRef.current = theme;
-    applyDomTheme(theme, accent, fontStyle);
-
-    const isLight = theme === "nordic-light" || theme === "warm-ivory";
-    setNextTheme(isLight ? "light" : "dark");
-
-    try {
-      localStorage.setItem("theme", isLight ? "light" : "dark");
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ theme, accent, fontStyle, lastDarkTheme })
-      );
-    } catch {}
-  }, [theme, accent, fontStyle, lastDarkTheme, mounted, setNextTheme]);
 
   const setTheme = (newTheme: ThemePreset) => {
     currentThemeRef.current = newTheme;
@@ -298,11 +292,27 @@ export function StyleProvider({ children }: { children: React.ReactNode }) {
     applyDomTheme(newTheme, newAccent, fontStyle);
 
     const isNewLight = newTheme === "nordic-light" || newTheme === "warm-ivory";
+    const nextDark = !isNewLight ? newTheme : lastDarkTheme;
     if (!isNewLight) {
       setLastDarkTheme(newTheme);
     }
     setThemeState(newTheme);
     setAccentState(newAccent);
+
+    // Explicitly persist on user action
+    setNextTheme(isNewLight ? "light" : "dark");
+    try {
+      localStorage.setItem("theme", isNewLight ? "light" : "dark");
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          theme: newTheme,
+          accent: newAccent,
+          fontStyle,
+          lastDarkTheme: nextDark,
+        })
+      );
+    } catch {}
   };
 
   // Cycle through all 10 themes one-by-one with zero dropped clicks and instant visual response
@@ -320,6 +330,7 @@ export function StyleProvider({ children }: { children: React.ReactNode }) {
 
     // 3. Update React state
     const isNewLight = nextTheme.category === "light";
+    const nextDark = !isNewLight ? nextTheme.id : lastDarkTheme;
     if (!isNewLight) {
       setLastDarkTheme(nextTheme.id);
     }
@@ -336,7 +347,7 @@ export function StyleProvider({ children }: { children: React.ReactNode }) {
           theme: nextTheme.id,
           accent: nextTheme.accentId,
           fontStyle,
-          lastDarkTheme: isNewLight ? lastDarkTheme : nextTheme.id,
+          lastDarkTheme: nextDark,
         })
       );
     } catch {}
@@ -356,20 +367,46 @@ export function StyleProvider({ children }: { children: React.ReactNode }) {
   const setAccent = (newAccent: AccentPreset) => {
     setAccentState(newAccent);
     applyDomTheme(currentThemeRef.current, newAccent, fontStyle);
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          theme: currentThemeRef.current,
+          accent: newAccent,
+          fontStyle,
+          lastDarkTheme,
+        })
+      );
+    } catch {}
   };
 
   const setFontStyle = (newFont: FontPreset) => {
     setFontStyleState(newFont);
     applyDomTheme(currentThemeRef.current, accent, newFont);
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          theme: currentThemeRef.current,
+          accent,
+          fontStyle: newFont,
+          lastDarkTheme,
+        })
+      );
+    } catch {}
   };
 
   const resetDefaults = () => {
+    currentThemeRef.current = "midnight";
     setThemeState("midnight");
     setLastDarkTheme("midnight");
     setAccentState("amber");
     setFontStyleState("jakarta");
+    applyDomTheme("midnight", "amber", "jakarta");
+    setNextTheme("dark");
     try {
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.setItem("theme", "dark");
     } catch {}
   };
 

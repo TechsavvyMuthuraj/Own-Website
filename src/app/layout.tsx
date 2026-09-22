@@ -210,6 +210,12 @@ export default async function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebsiteAndOrg) }}
         />
+        {/* Instant Synchronous Theme Pre-Hydration to prevent theme reset on refresh */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var k="nammatech_style_prefs_v1";var r=localStorage.getItem(k);var t="midnight",a="amber",f="jakarta";if(r){var p=JSON.parse(r);if(p.theme)t=p.theme;if(p.accent)a=p.accent;if(p.fontStyle)f=p.fontStyle;}else{var s=localStorage.getItem("theme");if(s==="light")t="nordic-light";}var d=document.documentElement;d.setAttribute("data-theme",t);d.setAttribute("data-accent",a);d.setAttribute("data-font",f);var isL=(t==="nordic-light"||t==="warm-ivory");if(isL){d.classList.remove("dark");d.classList.add("light");d.style.colorScheme="light";}else{d.classList.remove("light");d.classList.add("dark");d.style.colorScheme="dark";}}catch(e){}})();`,
+          }}
+        />
       </head>
       <body className="min-h-full flex flex-col font-sans bg-[var(--background)] text-[var(--foreground)] antialiased">
         <GoogleAnalytics />

@@ -26,6 +26,18 @@ export function TopLoader() {
     }
   }, [pathname, searchParams]);
 
+  // Safety timeout to auto-reset TopLoader if navigation takes longer than 4.5s or is cancelled
+  useEffect(() => {
+    if (active) {
+      const safetyTimeout = setTimeout(() => {
+        setActive(false);
+        setProgress(0);
+        setFading(false);
+      }, 4500);
+      return () => clearTimeout(safetyTimeout);
+    }
+  }, [active]);
+
   // Listen to internal link clicks to start loading animation
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {

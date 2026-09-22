@@ -29,32 +29,55 @@ import {
   Package,
   X,
   ArrowUpRight,
+  Edit3,
+  Phone,
 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useToast } from "@/components/ui/toast";
 import { EmptyState } from "@/components/ui/empty-state";
 import { UpiQrCard } from "@/components/payments/upi-qr-card";
 
+export interface PaymentSettings {
+  upi_id?: string;
+  merchant_name?: string;
+  receiver_phone?: string;
+}
+
 interface PaymentsClientProps {
   initialOrders: any[];
   availableResources: any[];
+  initialPaymentSettings?: PaymentSettings;
 }
 
 export function PaymentsClient({
   initialOrders,
   availableResources,
+  initialPaymentSettings,
 }: PaymentsClientProps) {
   const router = useRouter();
   const { showToast, confirm } = useToast();
 
-  const [orders, setOrders] = useState(initialOrders);
-  const [activeTab, setActiveTab] = useState<"ALL" | "PAID" | "PENDING" | "FAILED">("ALL");
+  const [orders, setOrders] = useState<any[]>(initialOrders);
+  const [activeTab, setActiveTab] = useState<
+    "ALL" | "PAID" | "PENDING" | "FAILED"
+  >("ALL");
   const [searchQuery, setSearchQuery] = useState("");
-  const [copiedUpi, setCopiedUpi] = useState(false);
-
-  // Modals
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [showQrModal, setShowQrModal] = useState(false);
   const [showManualModal, setShowManualModal] = useState(false);
+  const [copiedUpi, setCopiedUpi] = useState(false);
+
+  // Gateway Settings State
+  const [paymentSettings, setPaymentSettings] = useState<PaymentSettings>({
+    upi_id: initialPaymentSettings?.upi_id || "muthurajc@slc",
+    merchant_name: initialPaymentSettings?.merchant_name || "NammaTech Digital / Muthuraj C",
+    receiver_phone: initialPaymentSettings?.receiver_phone || "+91 91764 43726",
+  });
+  const [showEditGatewayModal, setShowEditGatewayModal] = useState(false);
+  const [editUpiId, setEditUpiId] = useState(paymentSettings.upi_id || "muthurajc@slc");
+  const [editMerchantName, setEditMerchantName] = useState(paymentSettings.merchant_name || "NammaTech Digital / Muthuraj C");
+  const [editReceiverPhone, setEditReceiverPhone] = useState(paymentSettings.receiver_phone || "+91 91764 43726");
+  const [savingGateway, setSavingGateway] = useState(false);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<any | null>(null);
 
   // Manual payment state
@@ -133,14 +156,66 @@ export function PaymentsClient({
 
   // Copy UPI ID
   const handleCopyUpi = () => {
-    navigator.clipboard.writeText("muthurajc@slc");
+    const activeUpi = paymentSettings.upi_id || "muthurajc@slc";
+    navigator.clipboard.writeText(activeUpi);
     setCopiedUpi(true);
     showToast({
       type: "success",
       title: "UPI ID Copied",
-      message: "muthurajc@slc copied to clipboard!",
+      message: `${activeUpi} copied to clipboard!`,
     });
     setTimeout(() => setCopiedUpi(false), 2500);
+  };
+
+  // Save UPI Gateway Settings
+  const handleSaveGateway = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editUpiId.trim()) {
+      showToast({ type: "error", title: "Error", message: "UPI ID is required" });
+      return;
+    }
+
+    setSavingGateway(true);
+    try {
+      const updated = {
+        upi_id: editUpiId.trim(),
+        merchant_name: editMerchantName.trim() || "NammaTech Digital",
+        receiver_phone: editReceiverPhone.trim(),
+      };
+
+      const res = await fetch("/api/admin/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          payment_settings: updated,
+        }),
+      });
+
+      if (res.ok) {
+        setPaymentSettings(updated);
+        setShowEditGatewayModal(false);
+        showToast({
+          type: "success",
+          title: "Gateway Updated 🟢",
+          message: "UPI ID and Receiver Number saved successfully.",
+        });
+      } else {
+        const data = await res.json();
+        showToast({
+          type: "error",
+          title: "Save Failed",
+          message: data.error || "Could not update payment settings.",
+        });
+      }
+    } catch {
+      showToast({
+        type: "error",
+        title: "Network Error",
+        message: "Failed to update payment settings.",
+      });
+    } finally {
+      setSavingGateway(false);
+    }
   };
 
   // Export CSV
@@ -414,13 +489,30 @@ export function PaymentsClient({
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--muted-foreground)] mt-1">
-              <span>UPI ID: <strong className="text-[var(--foreground)] font-mono">muthurajc@slc</strong></span>
-              <span>Merchant: <strong className="text-[var(--foreground)]">NammaTech Digital / Muthuraj C</strong></span>
+              <span>UPI ID: <strong className="text-[var(--foreground)] font-mono">{paymentSettings.upi_id || "muthurajc@slc"}</strong></span>
+              <span>Merchant: <strong className="text-[var(--foreground)]">{paymentSettings.merchant_name || "NammaTech Digital / Muthuraj C"}</strong></span>
+              {paymentSettings.receiver_phone && (
+                <span>Receiver Phone: <strong className="text-emerald-400 font-mono">{paymentSettings.receiver_phone}</strong></span>
+              )}
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2.5 flex-shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              setEditUpiId(paymentSettings.upi_id || "muthurajc@slc");
+              setEditMerchantName(paymentSettings.merchant_name || "NammaTech Digital / Muthuraj C");
+              setEditReceiverPhone(paymentSettings.receiver_phone || "+91 91764 43726");
+              setShowEditGatewayModal(true);
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-xs font-semibold transition-colors cursor-pointer"
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            <span>Edit Gateway</span>
+          </button>
+
           <button
             type="button"
             onClick={handleCopyUpi}
@@ -932,7 +1024,8 @@ export function PaymentsClient({
               <UpiQrCard
                 amount={49}
                 orderNumber={`TEST-${Date.now().toString().slice(-4)}`}
-                upiId="muthurajc@slc"
+                upiId={paymentSettings.upi_id || "muthurajc@slc"}
+                payeeName={paymentSettings.merchant_name || "Techsavvy Muthuraj"}
                 isProcessing={false}
                 onConfirmPayment={async (utr) => {
                   showToast({
@@ -944,6 +1037,99 @@ export function PaymentsClient({
                 }}
               />
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Edit UPI Gateway Modal ── */}
+      {showEditGatewayModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-[var(--card)] border border-neutral-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5 my-auto">
+            <div className="flex items-start justify-between border-b border-neutral-800/80 pb-3">
+              <div>
+                <h4 className="text-base font-black text-white flex items-center gap-2">
+                  <Edit3 className="w-4 h-4 text-cyan-400" />
+                  <span>Configure UPI Payment Gateway</span>
+                </h4>
+                <p className="text-xs text-neutral-400 mt-0.5">
+                  Update payment receiver details and UPI ID
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowEditGatewayModal(false)}
+                className="text-neutral-400 hover:text-white p-1 rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveGateway} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-neutral-200">
+                  Active UPI ID <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editUpiId}
+                  onChange={(e) => setEditUpiId(e.target.value)}
+                  placeholder="e.g. muthurajc@slc or user@okhdfcbank"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950 text-xs font-mono text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
+                />
+                <p className="text-[11px] text-neutral-500">
+                  This UPI ID will receive direct instant customer payments.
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-neutral-200">
+                  Merchant / Payee Name
+                </label>
+                <input
+                  type="text"
+                  value={editMerchantName}
+                  onChange={(e) => setEditMerchantName(e.target.value)}
+                  placeholder="e.g. NammaTech Digital / Muthuraj C"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950 text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-neutral-200 flex items-center gap-1.5">
+                  <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Payment Receiver Phone Number</span>
+                </label>
+                <input
+                  type="text"
+                  value={editReceiverPhone}
+                  onChange={(e) => setEditReceiverPhone(e.target.value)}
+                  placeholder="e.g. +91 91764 43726"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950 text-xs font-mono text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                />
+                <p className="text-[11px] text-neutral-500">
+                  Receiver mobile number associated with the merchant UPI account.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-800/80">
+                <button
+                  type="button"
+                  onClick={() => setShowEditGatewayModal(false)}
+                  className="px-4 py-2 rounded-xl border border-neutral-800 hover:bg-neutral-800 text-xs font-semibold text-neutral-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingGateway}
+                  className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition-all shadow-md cursor-pointer disabled:opacity-50"
+                >
+                  {savingGateway ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                  <span>Save Gateway Details</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

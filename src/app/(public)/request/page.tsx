@@ -1,62 +1,98 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
-  Search,
   Send,
   CheckCircle2,
   AlertCircle,
   Loader2,
   Sparkles,
-  ArrowRight,
-  Lightbulb,
-  Package,
-  Clock,
+  ArrowLeft,
+  ShieldCheck,
+  MessageCircle,
+  HelpCircle,
+  Info,
+  Check,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
+import { RequestSceneMascot } from "@/components/mascot/request-scene-mascot";
 
 const CATEGORIES = [
-  "General",
-  "Developer Tools",
-  "Design & Graphics",
-  "Video & Audio",
-  "Productivity",
-  "System Utilities",
-  "Security",
-  "Education",
+  "Software",
+  "APK",
+  "AI Tools",
   "Games",
-  "Office & Documents",
-  "Communication",
-  "Browser & Extensions",
-  "Database Tools",
-  "Networking",
+  "Wallpapers",
+  "Templates",
+  "Files & Resources",
+  "Useful Websites",
+  "Education",
   "Other",
-];
-
-const PRIORITIES = [
-  { value: "LOW", label: "Low", description: "Nice to have, no rush" },
-  { value: "NORMAL", label: "Normal", description: "Standard request" },
-  { value: "HIGH", label: "High", description: "Needed soon" },
-];
+] as const;
 
 export default function RequestPage() {
   const { user, profile } = useAuth();
 
-  const [softwareName, setSoftwareName] = useState("");
-  const [category, setCategory] = useState("General");
+  const [name, setName] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [resourceName, setResourceName] = useState("");
+  const [category, setCategory] = useState<string>("Software");
   const [description, setDescription] = useState("");
-  const [officialUrl, setOfficialUrl] = useState("");
-  const [priority, setPriority] = useState("NORMAL");
-  const [guestEmail, setGuestEmail] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [honeypot, setHoneypot] = useState(""); // Hidden honeypot for bot spam prevention
+
+  const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
-  const [submittedName, setSubmittedName] = useState("");
+  const [submittedResource, setSubmittedResource] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+
+  // Pre-fill user name when authenticated
+  useEffect(() => {
+    if (profile?.full_name && !name) {
+      setName(profile.full_name);
+    }
+  }, [profile, name]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    if (submitting) return;
+
+    // Honeypot check
+    if (honeypot) {
+      return;
+    }
+
+    // Client-side validations
+    const trimmedName = name.trim();
+    if (!trimmedName || trimmedName.length < 2) {
+      setStatus("error");
+      setErrorMessage("Please enter your name (at least 2 characters).");
+      return;
+    }
+
+    const trimmedPhone = whatsappNumber.trim().replace(/[\s\-\(\)]/g, "");
+    if (!trimmedPhone || trimmedPhone.length < 7) {
+      setStatus("error");
+      setErrorMessage("Please enter a valid WhatsApp number with country code (e.g. +91XXXXXXXXXX).");
+      return;
+    }
+
+    const trimmedResource = resourceName.trim();
+    if (!trimmedResource || trimmedResource.length < 2) {
+      setStatus("error");
+      setErrorMessage("Please enter the resource or tool name you are looking for.");
+      return;
+    }
+
+    const trimmedDescription = description.trim();
+    if (!trimmedDescription || trimmedDescription.length < 5) {
+      setStatus("error");
+      setErrorMessage("Please tell us what you need with relevant details (at least 5 characters).");
+      return;
+    }
+
+    setSubmitting(true);
     setStatus("idle");
     setErrorMessage("");
 
@@ -65,287 +101,307 @@ export default function RequestPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          software_name: softwareName,
-          software_category: category,
-          description,
-          official_url: officialUrl,
-          priority,
-          user_email: user?.email || guestEmail,
-          user_name: profile?.full_name || user?.email || guestEmail,
+          name: trimmedName,
+          whatsapp_number: trimmedPhone,
+          resource_name: trimmedResource,
+          category,
+          description: trimmedDescription,
+          hp_website: honeypot,
         }),
       });
 
       const data = await res.json();
 
       if (res.ok && data.success) {
-        setSubmittedName(softwareName);
+        setSubmittedResource(trimmedResource);
         setStatus("success");
-        setSoftwareName("");
-        setCategory("General");
+        setResourceName("");
         setDescription("");
-        setOfficialUrl("");
-        setPriority("NORMAL");
-        setGuestEmail("");
+        setCategory("Software");
       } else {
         setStatus("error");
-        setErrorMessage(data.error || "Failed to submit request. Please try again.");
+        setErrorMessage(data.error || "Failed to submit request. Please verify your details.");
       }
     } catch {
       setStatus("error");
-      setErrorMessage("Network error. Please check your connection.");
+      setErrorMessage("Network error. Please check your connection and try again.");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
+  const handleResetForm = () => {
+    setStatus("idle");
+    setErrorMessage("");
+    setResourceName("");
+    setDescription("");
+  };
+
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 w-full">
       {/* Header */}
-      <div className="text-center mb-12">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[var(--border)] bg-[var(--card)] text-xs font-semibold text-[var(--primary)] mb-4">
-          <Sparkles className="w-3.5 h-3.5" />
+      <div className="text-center mb-10 sm:mb-12">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[var(--border)] bg-[var(--card)] text-xs font-semibold text-[var(--primary)] mb-4 shadow-xs">
+          <Sparkles className="w-3.5 h-3.5 text-[var(--primary)]" />
           <span>Resource Request</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-[var(--foreground)] tracking-tight mb-3">
-          Request a Software or Tool
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[var(--foreground)] tracking-tight mb-3">
+          Request a Resource
         </h1>
-        <p className="text-sm text-[var(--muted-foreground)] max-w-md mx-auto leading-relaxed">
-          Can&apos;t find what you need? Tell us and we&apos;ll work on adding it to the NammaTech catalog.
+        <p className="text-sm sm:text-base text-[var(--muted-foreground)] max-w-xl mx-auto leading-relaxed">
+          Can&apos;t find what you&apos;re looking for? Send us your request. Our team will review it and, if suitable and legally available, we&apos;ll try to add it to NammaTech.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Info Panel */}
-        <div className="space-y-4">
-          <div className="p-5 rounded-2xl border border-[var(--border)] bg-[var(--card)]">
-            <h3 className="text-sm font-semibold text-[var(--foreground)] mb-3 flex items-center gap-2">
-              <Lightbulb className="w-4 h-4 text-amber-500" />
-              How It Works
-            </h3>
-            <ul className="space-y-3">
-              {[
-                { icon: Search, text: "Submit your software request below", color: "text-[var(--primary)]" },
-                { icon: Clock, text: "Admin reviews within 1–3 business days", color: "text-amber-500" },
-                { icon: Package, text: "We source, verify & add it to our catalog", color: "text-emerald-500" },
-                { icon: CheckCircle2, text: "You'll find it ready for download!", color: "text-indigo-500" },
-              ].map((item, i) => (
-                <li key={i} className="flex items-start gap-2.5">
-                  <span className={`mt-0.5 flex-shrink-0 ${item.color}`}>
-                    <item.icon className="w-4 h-4" />
-                  </span>
-                  <span className="text-xs text-[var(--muted-foreground)]">{item.text}</span>
-                </li>
-              ))}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Left Side: Notice & Trust Guidelines */}
+        <div className="lg:col-span-4 space-y-4">
+          <div className="p-5 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm space-y-4">
+            <h2 className="text-sm font-bold text-[var(--foreground)] flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-[var(--primary)]" />
+              <span>Review Criteria</span>
+            </h2>
+            <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+              Every submission is manually examined by our admin team before being curated or published.
+            </p>
+            <ul className="space-y-2.5 text-xs text-[var(--muted-foreground)] border-t border-[var(--border)] pt-3">
+              <li className="flex items-start gap-2">
+                <Check className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
+                <span>Legitimate, official, freeware, or open-source resources only.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
+                <span>No piracy, cracked executables, or unauthorized material.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
+                <span>Direct WhatsApp notification when reviewed or available.</span>
+              </li>
             </ul>
           </div>
 
-          <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/15">
-            <h4 className="text-xs font-semibold text-amber-600 dark:text-amber-400 mb-1.5">Guidelines</h4>
-            <ul className="space-y-1.5 text-[11px] text-[var(--muted-foreground)]">
-              <li>• Only legitimate, licensed software</li>
-              <li>• No piracy, cracks, or keygens</li>
-              <li>• Freeware, open-source preferred</li>
-              <li>• Be as specific as possible</li>
-            </ul>
+          <div className="p-4 rounded-2xl bg-[var(--secondary)]/40 border border-[var(--border)] flex items-start gap-3">
+            <MessageCircle className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
+            <div className="text-[11px] text-[var(--muted-foreground)] leading-relaxed">
+              <span className="font-semibold text-[var(--foreground)] block mb-0.5">WhatsApp Updates</span>
+              We use WhatsApp strictly for request confirmations and follow-ups. Your phone number is never shared or displayed publicly.
+            </div>
           </div>
-
-          <Link
-            href="/explore"
-            className="flex items-center justify-between px-4 py-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] text-xs font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:border-[var(--primary)]/30 transition-colors group"
-          >
-            <span>Browse existing catalog first</span>
-            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-          </Link>
         </div>
 
-        {/* Request Form */}
-        <div className="lg:col-span-2">
-          <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8 shadow-sm">
+        {/* Right Side: Form or Success Card */}
+        <div className="lg:col-span-8 relative">
+          <RequestSceneMascot isTyping={isTyping} isSubmitted={status === "success"} />
+          <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8 shadow-md relative z-10">
             {status === "success" ? (
+              /* Success State */
               <div className="py-8 text-center flex flex-col items-center animate-in fade-in zoom-in-95 duration-300">
-                <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4 ring-1 ring-emerald-500/20 shadow-sm">
-                  <CheckCircle2 className="w-8 h-8" />
+                <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-5 ring-1 ring-emerald-500/20 shadow-sm">
+                  <CheckCircle2 className="w-9 h-9" />
                 </div>
-                <h3 className="text-xl font-bold text-[var(--foreground)] mb-2">Request Submitted!</h3>
-                <p className="text-sm text-[var(--muted-foreground)] max-w-sm mb-2 leading-relaxed">
-                  Your request for <span className="font-semibold text-[var(--foreground)]">&quot;{submittedName}&quot;</span> has been submitted.
-                  Our admin will review it and add it to the catalog if eligible.
+                <h2 className="text-2xl font-black text-[var(--foreground)] mb-2">Request Received</h2>
+                <p className="text-sm font-medium text-[var(--foreground)] max-w-md mb-2">
+                  Your request has been successfully submitted.
                 </p>
-                <p className="text-xs text-[var(--muted-foreground)] mb-6 opacity-70">
-                  Check back in 1–3 business days.
+                <p className="text-xs sm:text-sm text-[var(--muted-foreground)] max-w-md mb-8 leading-relaxed">
+                  Thanks! Your request for <span className="font-semibold text-[var(--foreground)]">&quot;{submittedResource}&quot;</span> has been received. Our team will review it and contact you through WhatsApp if we need more information or when there is an update.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-2.5">
+
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-sm">
                   <button
                     type="button"
-                    id="request-another-btn"
-                    onClick={() => setStatus("idle")}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--secondary)] hover:bg-[var(--secondary)]/80 text-xs font-semibold text-[var(--foreground)] transition-colors"
+                    onClick={handleResetForm}
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--secondary)] hover:bg-[var(--secondary)]/80 text-xs font-semibold text-[var(--foreground)] transition-all cursor-pointer"
                   >
-                    <Send className="w-3.5 h-3.5" />
-                    Submit Another
+                    Submit Another Request
                   </button>
                   <Link
-                    href="/explore"
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-xs font-semibold transition-all shadow-md shadow-[#FD1843]/20"
+                    href="/"
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] text-xs font-semibold transition-all shadow-md text-center"
                   >
-                    <Search className="w-3.5 h-3.5" />
-                    Explore Catalog
+                    Back to NammaTech
                   </Link>
                 </div>
               </div>
             ) : (
+              /* Request Form */
               <>
-                <h2 className="text-lg font-bold text-[var(--foreground)] mb-6">Submit Your Request</h2>
+                <div className="mb-6 border-b border-[var(--border)] pb-4">
+                  <h2 className="text-lg sm:text-xl font-bold text-[var(--foreground)] tracking-tight">
+                    Submit Your Request
+                  </h2>
+                  <p className="text-xs text-[var(--muted-foreground)] mt-1">
+                    Fill out the form below. Required fields are marked with an asterisk (*).
+                  </p>
+                </div>
 
                 {status === "error" && (
-                  <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs flex items-center gap-2 mb-6">
-                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs flex items-start gap-2.5 mb-6">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                     <span>{errorMessage}</span>
                   </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  {/* Software Name */}
+                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+                  {/* Anti-spam Honeypot Field (invisible to real humans) */}
+                  <div className="hidden" aria-hidden="true">
+                    <label htmlFor="req-hp-website">Leave this field blank</label>
+                    <input
+                      id="req-hp-website"
+                      type="text"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={honeypot}
+                      onChange={(e) => setHoneypot(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Name Field */}
                   <div>
-                    <label htmlFor="req-software-name" className="block text-xs font-medium text-[var(--foreground)] mb-1.5">
-                      Software / Tool Name <span className="text-[var(--primary)]">*</span>
+                    <label
+                      htmlFor="req-name"
+                      className="block text-xs font-semibold text-[var(--foreground)] mb-1.5"
+                    >
+                      Your Name <span className="text-[var(--primary)]">*</span>
                     </label>
                     <input
-                      id="req-software-name"
+                      id="req-name"
                       type="text"
                       required
-                      value={softwareName}
-                      onChange={(e) => setSoftwareName(e.target.value)}
-                      placeholder="e.g. VLC Media Player, VS Code, Figma..."
-                      className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      onFocus={() => setIsTyping(true)}
+                      onBlur={() => setIsTyping(false)}
+                      placeholder="Enter your name"
+                      className="w-full px-4 py-2.5 sm:py-3 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] transition-all"
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* Category */}
-                    <div>
-                      <label htmlFor="req-category" className="block text-xs font-medium text-[var(--foreground)] mb-1.5">
-                        Category
-                      </label>
-                      <select
-                        id="req-category"
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
-                      >
-                        {CATEGORIES.map((c) => (
-                          <option key={c} value={c}>{c}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Priority */}
-                    <div>
-                      <label className="block text-xs font-medium text-[var(--foreground)] mb-1.5">
-                        Priority
-                      </label>
-                      <div className="flex gap-2">
-                        {PRIORITIES.map((p) => (
-                          <button
-                            key={p.value}
-                            type="button"
-                            onClick={() => setPriority(p.value)}
-                            className={`flex-1 py-2 rounded-xl text-[11px] font-semibold border transition-all ${
-                              priority === p.value
-                                ? p.value === "HIGH"
-                                  ? "bg-amber-500/15 border-amber-500/30 text-amber-600 dark:text-amber-400"
-                                  : p.value === "NORMAL"
-                                  ? "bg-[var(--primary)]/10 border-[var(--primary)]/30 text-[var(--primary)]"
-                                  : "bg-slate-500/10 border-slate-500/20 text-slate-600 dark:text-slate-400"
-                                : "border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--secondary)]"
-                            }`}
-                          >
-                            {p.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Official URL */}
+                  {/* WhatsApp Number Field */}
                   <div>
-                    <label htmlFor="req-official-url" className="block text-xs font-medium text-[var(--foreground)] mb-1.5">
-                      Official Website / Source URL
+                    <label
+                      htmlFor="req-whatsapp"
+                      className="block text-xs font-semibold text-[var(--foreground)] mb-1.5"
+                    >
+                      WhatsApp Number <span className="text-[var(--primary)]">*</span>
                     </label>
                     <input
-                      id="req-official-url"
-                      type="url"
-                      value={officialUrl}
-                      onChange={(e) => setOfficialUrl(e.target.value)}
-                      placeholder="https://vlcmediaplayer.com"
-                      className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+                      id="req-whatsapp"
+                      type="tel"
+                      required
+                      value={whatsappNumber}
+                      onChange={(e) => setWhatsappNumber(e.target.value)}
+                      onFocus={() => setIsTyping(true)}
+                      onBlur={() => setIsTyping(false)}
+                      placeholder="Enter your WhatsApp number (e.g. +91XXXXXXXXXX)"
+                      className="w-full px-4 py-2.5 sm:py-3 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] transition-all font-mono"
+                    />
+                    <p className="text-[11px] text-[var(--muted-foreground)] mt-1 flex items-center gap-1">
+                      <Info className="w-3 h-3 text-[var(--primary)] shrink-0" />
+                      <span>Include your country code (for India: +91XXXXXXXXXX). Private and confidential.</span>
+                    </p>
+                  </div>
+
+                  {/* Resource / Tool Name Field */}
+                  <div>
+                    <label
+                      htmlFor="req-resource-name"
+                      className="block text-xs font-semibold text-[var(--foreground)] mb-1.5"
+                    >
+                      What do you need? <span className="text-[var(--primary)]">*</span>
+                    </label>
+                    <input
+                      id="req-resource-name"
+                      type="text"
+                      required
+                      value={resourceName}
+                      onChange={(e) => setResourceName(e.target.value)}
+                      onFocus={() => setIsTyping(true)}
+                      onBlur={() => setIsTyping(false)}
+                      placeholder="Example: OBS Virtual Camera, Photoshop alternative, AI tool..."
+                      className="w-full px-4 py-2.5 sm:py-3 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] transition-all"
                     />
                   </div>
 
-                  {/* Description */}
+                  {/* Category Field */}
                   <div>
-                    <label htmlFor="req-description" className="block text-xs font-medium text-[var(--foreground)] mb-1.5">
-                      Why do you need it? (Optional)
+                    <label
+                      htmlFor="req-category"
+                      className="block text-xs font-semibold text-[var(--foreground)] mb-1.5"
+                    >
+                      Category
+                    </label>
+                    <select
+                      id="req-category"
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      onFocus={() => setIsTyping(true)}
+                      onBlur={() => setIsTyping(false)}
+                      className="w-full px-4 py-2.5 sm:py-3 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] transition-all cursor-pointer"
+                    >
+                      {CATEGORIES.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Description Field */}
+                  <div>
+                    <label
+                      htmlFor="req-description"
+                      className="block text-xs font-semibold text-[var(--foreground)] mb-1.5"
+                    >
+                      Tell us what you need <span className="text-[var(--primary)]">*</span>
                     </label>
                     <textarea
                       id="req-description"
+                      required
                       rows={4}
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Describe the tool, its use case, and why it should be added to the NammaTech catalog..."
-                      className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] resize-none"
+                      onFocus={() => setIsTyping(true)}
+                      onBlur={() => setIsTyping(false)}
+                      placeholder="Describe what you are looking for, version, platform, features, or any other useful details..."
+                      className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] transition-all resize-y min-h-[110px]"
                     />
+                    <p className="text-[11px] text-[var(--muted-foreground)] mt-1">
+                      Example: &quot;I need OBS Virtual Camera for Windows 11. I am looking for a legitimate tool or official solution that supports virtual camera output.&quot;
+                    </p>
                   </div>
 
-                  {/* Guest email if not logged in */}
-                  {!user && (
-                    <div>
-                      <label htmlFor="req-guest-email" className="block text-xs font-medium text-[var(--foreground)] mb-1.5">
-                        Your Email <span className="text-[var(--primary)]">*</span>
-                      </label>
-                      <input
-                        id="req-guest-email"
-                        type="email"
-                        required
-                        value={guestEmail}
-                        onChange={(e) => setGuestEmail(e.target.value)}
-                        placeholder="you@example.com"
-                        className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
-                      />
-                      <p className="text-[11px] text-[var(--muted-foreground)] mt-1">
-                        Or{" "}
-                        <Link href="/auth/login?redirect=/request" className="text-[var(--primary)] hover:underline">
-                          log in
-                        </Link>
-                        {" "}to auto-fill your details.
-                      </p>
+                  {/* User Association Notice if logged in */}
+                  {user && (
+                    <div className="p-3 rounded-xl bg-[var(--secondary)]/50 border border-[var(--border)] text-xs text-[var(--muted-foreground)] flex items-center justify-between">
+                      <span>Submitting as authenticated user: <strong className="text-[var(--foreground)]">{user.email}</strong></span>
+                      <Link href="/account/requests" className="text-[var(--primary)] hover:underline font-medium text-[11px]">
+                        View My Requests
+                      </Link>
                     </div>
                   )}
 
-                  {user && (
-                    <p className="text-xs text-[var(--muted-foreground)] bg-[var(--secondary)]/60 px-3 py-2 rounded-xl border border-[var(--border)]">
-                      Submitting as <span className="font-semibold text-[var(--foreground)]">{user.email}</span>
-                    </p>
-                  )}
-
-                  <button
-                    type="submit"
-                    id="req-submit-btn"
-                    disabled={loading}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[var(--primary)] text-white font-semibold text-sm hover:bg-[var(--primary-hover)] transition-all shadow-md shadow-[#FD1843]/25 disabled:opacity-70"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Submitting...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4" />
-                        <span>Submit Request</span>
-                      </>
-                    )}
-                  </button>
+                  {/* Submit Button */}
+                  <div className="pt-2">
+                    <button
+                      type="submit"
+                      id="req-submit-btn"
+                      disabled={submitting}
+                      className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[var(--primary)] text-white font-semibold text-sm hover:bg-[var(--primary-hover)] transition-all shadow-md shadow-[#FD1843]/20 disabled:opacity-70 cursor-pointer active:scale-[0.99]"
+                    >
+                      {submitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Sending Request...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4" />
+                          <span>Send Request</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </form>
               </>
             )}

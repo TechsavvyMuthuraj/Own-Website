@@ -4,7 +4,8 @@ import type { Resource, Coupon } from "@/types/database";
 
 export async function POST(request: Request) {
   try {
-    const { resourceIds, couponCode } = await request.json();
+    const { resourceIds, couponCode, customerName, whatsappNumber, customerEmail } =
+      await request.json();
 
     if (!resourceIds || !Array.isArray(resourceIds) || resourceIds.length === 0) {
       return NextResponse.json({ error: "Cart is empty or invalid" }, { status: 400 });
@@ -15,12 +16,27 @@ export async function POST(request: Request) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) {
-      return NextResponse.json({ error: "Authentication required to checkout" }, { status: 401 });
+    // Guest checkout validation — require name & WhatsApp if not signed in
+    const isGuest = !user;
+    if (isGuest) {
+      const name = (customerName || "").trim();
+      const wa = (whatsappNumber || "").trim();
+      if (!name) {
+        return NextResponse.json({ error: "Your name is required for guest checkout" }, { status: 400 });
+      }
+      if (!wa || !/^[6-9]\d{9}$/.test(wa)) {
+        return NextResponse.json(
+          { error: "A valid 10-digit Indian WhatsApp number is required for guest checkout" },
+          { status: 400 }
+        );
+      }
     }
 
     // 1. Fetch real resource data from database (NEVER trust client price)
-    const { data: resources, error: resError } = await supabase
+    const { createAdminClient } = await import("@/lib/supabase/admin");
+    const supabaseAdmin = createAdminClient();
+
+    const { data: resources, error: resError } = await supabaseAdmin
       .from("resources")
       .select("id, title, price, sale_price, currency, status, access_type")
       .in("id", resourceIds)
@@ -30,24 +46,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "One or more resources are unavailable" }, { status: 404 });
     }
 
-    // 2. Check if user already owns any of these items (Prevent duplicate digital purchases)
-    const { data: existingEntitlements } = await supabase
-      .from("entitlements")
-      .select("resource_id")
-      .eq("user_id", user.id)
-      .in("resource_id", resourceIds)
-      .eq("status", "ACTIVE");
+    // 2. Check if authenticated user already owns any items (skip for guests)
+    if (!isGuest) {
+      const { data: existingEntitlements } = await supabaseAdmin
+        .from("entitlements")
+        .select("resource_id")
+        .eq("user_id", user!.id)
+        .in("resource_id", resourceIds)
+        .eq("status", "ACTIVE");
 
-    if (existingEntitlements && existingEntitlements.length > 0) {
-      const ownedIds = new Set(existingEntitlements.map((e) => e.resource_id));
-      const ownedTitles = resources
-        .filter((r) => ownedIds.has(r.id))
-        .map((r) => r.title)
-        .join(", ");
-      return NextResponse.json(
-        { error: `You already own the following digital products: ${ownedTitles}` },
-        { status: 400 }
-      );
+      if (existingEntitlements && existingEntitlements.length > 0) {
+        const ownedIds = new Set(existingEntitlements.map((e) => e.resource_id));
+        const ownedTitles = resources
+          .filter((r) => ownedIds.has(r.id))
+          .map((r) => r.title)
+          .join(", ");
+        return NextResponse.json(
+          { error: `You already own the following digital products: ${ownedTitles}` },
+          { status: 400 }
+        );
+      }
     }
 
     // 3. Calculate genuine subtotal
@@ -61,7 +79,7 @@ export async function POST(request: Request) {
     let validatedCoupon: Coupon | null = null;
 
     if (couponCode && typeof couponCode === "string") {
-      const { data: coupon } = await supabase
+      const { data: coupon } = await supabaseAdmin
         .from("coupons")
         .select("*")
         .eq("code", couponCode.trim().toUpperCase())
@@ -96,20 +114,30 @@ export async function POST(request: Request) {
     const isFreeOrder = total === 0;
     const initialStatus = isFreeOrder ? "PAID" : "PENDING";
 
-    // 5. Create Order record in database
-    const { data: order, error: orderError } = await supabase
+    // 5. Create Order record — guest or authenticated
+    const orderPayload: Record<string, unknown> = {
+      order_number: orderNumber,
+      subtotal,
+      discount,
+      total,
+      currency: "INR",
+      status: initialStatus,
+      payment_provider: isFreeOrder ? "FREE" : null,
+      coupon_code: validatedCoupon ? validatedCoupon.code : null,
+    };
+
+    if (isGuest) {
+      orderPayload.user_id = null;
+      orderPayload.customer_name = (customerName || "").trim();
+      orderPayload.whatsapp_number = (whatsappNumber || "").trim();
+      if (customerEmail) orderPayload.customer_email = (customerEmail || "").trim();
+    } else {
+      orderPayload.user_id = user!.id;
+    }
+
+    const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
-      .insert({
-        user_id: user.id,
-        order_number: orderNumber,
-        subtotal,
-        discount,
-        total,
-        currency: "INR",
-        status: initialStatus,
-        payment_provider: isFreeOrder ? "FREE" : null,
-        coupon_code: validatedCoupon ? validatedCoupon.code : null,
-      })
+      .insert(orderPayload)
       .select()
       .single();
 
@@ -118,10 +146,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
     }
 
-    // 6. Insert Order Items using admin client to guarantee bypass of RLS
-    const { createAdminClient } = await import("@/lib/supabase/admin");
-    const supabaseAdmin = createAdminClient();
-
+    // 6. Insert Order Items
     const orderItems = resources.map((res) => ({
       order_id: order.id,
       resource_id: res.id,
@@ -133,17 +158,22 @@ export async function POST(request: Request) {
       console.error("[Checkout] Order items insert error:", itemsError);
     }
 
-    // 7. If this is a free order, grant active entitlements immediately!
+    // 7. If this is a free order, grant active entitlements immediately
     if (isFreeOrder) {
-      const entitlementsToInsert = resources.map((res) => ({
-        user_id: user.id,
-        resource_id: res.id,
-        order_id: order.id,
-        status: "ACTIVE",
-      }));
-      await supabaseAdmin
-        .from("entitlements")
-        .upsert(entitlementsToInsert, { onConflict: "user_id,resource_id" });
+      if (!isGuest) {
+        // Authenticated user: standard entitlement
+        const entitlementsToInsert = resources.map((res) => ({
+          user_id: user!.id,
+          resource_id: res.id,
+          order_id: order.id,
+          status: "ACTIVE",
+        }));
+        await supabaseAdmin
+          .from("entitlements")
+          .insert(entitlementsToInsert);
+      }
+      // Guest free orders: extremely rare edge case — no entitlement needed for free resources
+      // (free resources don't require entitlement check)
     }
 
     return NextResponse.json({

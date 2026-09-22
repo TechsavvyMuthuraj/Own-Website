@@ -2,26 +2,37 @@
 
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import Image from "next/image";
-import { Sparkles, ShieldCheck, Cpu } from "lucide-react";
+import { usePathname } from "next/navigation";
 import "./page-loader.css";
 
 interface PageLoaderProps {
-  /** Minimum duration for the animation in milliseconds (default: 1600) */
+  /** Minimum duration for the animation in milliseconds (default: 6000 for 6s load) */
   duration?: number;
-  /** Force show on every mount regardless of session storage (default: true for full page reload) */
+  /** Force show regardless of session or path */
   forceShow?: boolean;
 }
 
+// In-memory flag so the animation only plays on initial page load / refresh of the main page,
+// and NOT on internal SPA route transitions back to the main page.
+// On browser refresh (F5 / pull-to-refresh), the JS runtime resets and this becomes false again.
+let hasShownInThisSession = false;
+
 export function PageLoader({
-  duration = 850,
+  duration = 6000,
   forceShow = false,
 }: PageLoaderProps) {
+  const pathname = usePathname();
+  const isMainPage = pathname === "/";
+
+  // Only the main page shows the loader on initial load / refresh
+  const shouldShow = forceShow || (isMainPage && !hasShownInThisSession);
+
   const [visible, setVisible] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [progress, setProgress] = useState(0);
   const [statusText, setStatusText] = useState("INITIALIZING NAMMATECH CORE...");
 
-  // Generate 20 floating micro-sparkles with fixed randomized coordinates
+  // Generate 22 floating micro-sparkles with fixed randomized coordinates
   const particles = useMemo(() => {
     return Array.from({ length: 22 }).map((_, i) => ({
       id: i,
@@ -37,12 +48,25 @@ export function PageLoader({
     setProgress(100);
     setStatusText("WELCOME TO NAMMATECH");
     setIsFadingOut(true);
+    hasShownInThisSession = true;
+    if (typeof document !== "undefined") {
+      document.body.style.overflow = "";
+    }
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("page-loader-finished"));
+    }
+    // 0.01s instant sync
     setTimeout(() => {
       setVisible(false);
-    }, 400);
+    }, 15);
   }, []);
 
   useEffect(() => {
+    if (!shouldShow) {
+      setVisible(false);
+      return;
+    }
+
     setVisible(true);
     setIsFadingOut(false);
     setProgress(0);
@@ -55,11 +79,13 @@ export function PageLoader({
       const pct = Math.min((elapsed / duration) * 100, 100);
       setProgress(Math.round(pct));
 
-      if (pct < 35) {
+      if (pct < 25) {
         setStatusText("INITIALIZING NAMMATECH CORE...");
-      } else if (pct < 70) {
-        setStatusText("VERIFYING SECURE DIGITAL ASSETS...");
-      } else if (pct < 95) {
+      } else if (pct < 50) {
+        setStatusText("CONNECTING ENCRYPTED MAINFRAME...");
+      } else if (pct < 75) {
+        setStatusText("VERIFYING SECURE DIGITAL ASSETS & APKS...");
+      } else if (pct < 98) {
         setStatusText("OPTIMIZING 4K VISUALS & TOOLS...");
       } else {
         finishLoading();
@@ -71,37 +97,60 @@ export function PageLoader({
 
     animationFrameId = requestAnimationFrame(tick);
 
+    // Watchdog timer: safety completion after 6.5 seconds
+    const watchdogTimer = setTimeout(() => {
+      finishLoading();
+    }, duration + 500);
+
+    // Emergency failsafe timer: force unmount if ever delayed
+    const emergencyTimer = setTimeout(() => {
+      hasShownInThisSession = true;
+      setIsFadingOut(true);
+      setVisible(false);
+      if (typeof document !== "undefined") {
+        document.body.style.overflow = "";
+      }
+    }, duration + 1000);
+
     const handleReplay = () => {
       setVisible(true);
       setIsFadingOut(false);
       setProgress(0);
+      animationFrameId = requestAnimationFrame(tick);
     };
     window.addEventListener("replay-namma-loader", handleReplay);
 
     return () => {
       cancelAnimationFrame(animationFrameId);
+      clearTimeout(watchdogTimer);
+      clearTimeout(emergencyTimer);
       window.removeEventListener("replay-namma-loader", handleReplay);
+      if (typeof document !== "undefined") {
+        document.body.style.overflow = "";
+      }
     };
-  }, [duration, finishLoading]);
+  }, [shouldShow, duration, finishLoading]);
 
-  if (!visible) return null;
+  if (!visible || !shouldShow) return null;
 
   return (
     <div
-      onClick={finishLoading}
-      className={`fixed inset-0 z-[999999] flex flex-col items-center justify-center bg-[#06070a] text-white cursor-pointer select-none transition-all duration-600 ease-out ${
-        isFadingOut ? "opacity-0 scale-105 pointer-events-none" : "opacity-100 scale-100"
+      className={`fixed inset-0 z-[999999] flex flex-col items-center justify-center bg-[#06070a] text-white select-none transition-opacity duration-75 ease-out ${
+        isFadingOut ? "opacity-0 pointer-events-none" : "opacity-100 cursor-default"
       }`}
-      style={{ isolation: "isolate" }}
+      style={{
+        isolation: "isolate",
+        pointerEvents: isFadingOut ? "none" : "auto",
+      }}
     >
       {/* 1. Subtle High-Tech Cyber Grid Background */}
       <div className="absolute inset-0 z-0 pointer-events-none namma-cyber-grid" />
 
-      {/* 2. Deep Ambient Luxury Glow Orbs */}
-      <div className="absolute top-1/2 left-1/2 w-[550px] sm:w-[700px] h-[550px] sm:h-[700px] rounded-full bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-amber-600/15 blur-[140px] pointer-events-none namma-ambient-aura z-0" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] sm:w-[450px] h-[350px] sm:h-[450px] rounded-full bg-indigo-500/10 blur-[100px] pointer-events-none z-0" />
+      {/* 2. Deep Ambient Luxury Glow Orbs (Electric Blue & Cyber Cyan) */}
+      <div className="absolute top-1/2 left-1/2 w-[550px] sm:w-[700px] h-[550px] sm:h-[700px] rounded-full bg-gradient-to-r from-blue-600/25 via-cyan-500/20 to-blue-500/25 blur-[140px] pointer-events-none namma-ambient-aura z-0" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] sm:w-[450px] h-[350px] sm:h-[450px] rounded-full bg-indigo-600/20 blur-[100px] pointer-events-none z-0" />
 
-      {/* 3. Floating Micro Golden Particles (Pure CSS, 0% CPU) */}
+      {/* 3. Floating Micro Cyan Particles (Pure CSS, 0% CPU) */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         {particles.map((p) => (
           <span
@@ -124,27 +173,20 @@ export function PageLoader({
 
       {/* 5. Central Foreground Hero Animation */}
       <div className="relative z-10 flex flex-col items-center px-4 max-w-2xl text-center pointer-events-none">
-        {/* Holographic Verification Pill */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[11px] sm:text-xs font-semibold tracking-[0.25em] uppercase mb-8 shadow-[0_0_25px_rgba(245,158,11,0.25)] backdrop-blur-md">
-          <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-          <span>VERIFIED DIGITAL HUB</span>
-          <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-        </div>
-
         {/* Concentric Tech HUD Rings + Expanding Sonar Pulse + Official Logo */}
         <div className="relative mb-8 flex items-center justify-center">
           {/* Sonar Ripple Waves */}
-          <div className="absolute w-24 sm:w-28 h-24 sm:h-28 rounded-full border border-amber-500/40 namma-sonar-wave pointer-events-none" />
-          <div className="absolute w-24 sm:w-28 h-24 sm:h-28 rounded-full border border-yellow-400/30 namma-sonar-wave-delayed pointer-events-none" />
+          <div className="absolute w-24 sm:w-28 h-24 sm:h-28 rounded-full border border-blue-500/40 namma-sonar-wave pointer-events-none" />
+          <div className="absolute w-24 sm:w-28 h-24 sm:h-28 rounded-full border border-cyan-400/30 namma-sonar-wave-delayed pointer-events-none" />
 
           {/* Outer Dashed HUD Ring */}
-          <div className="absolute w-28 sm:w-36 h-28 sm:h-36 rounded-full border border-dashed border-amber-500/35 namma-hud-outer pointer-events-none" />
+          <div className="absolute w-28 sm:w-36 h-28 sm:h-36 rounded-full border border-dashed border-blue-500/35 namma-hud-outer pointer-events-none" />
 
           {/* Middle Bi-Color Glowing Arc Ring */}
-          <div className="absolute w-24 sm:w-32 h-24 sm:h-32 rounded-full border-2 border-transparent border-t-amber-400/80 border-b-cyan-400/60 namma-hud-inner pointer-events-none shadow-[0_0_20px_rgba(245,158,11,0.3)]" />
+          <div className="absolute w-24 sm:w-32 h-24 sm:h-32 rounded-full border-2 border-transparent border-t-cyan-400/90 border-b-blue-500/70 namma-hud-inner pointer-events-none shadow-[0_0_20px_rgba(14,165,233,0.4)]" />
 
           {/* Core Official Logo Container */}
-          <div className="relative w-18 sm:w-22 h-18 sm:h-22 rounded-3xl bg-gradient-to-br from-amber-400/90 via-yellow-500/80 to-amber-600/90 p-[1.5px] shadow-[0_0_40px_rgba(245,158,11,0.7)]">
+          <div className="relative w-18 sm:w-22 h-18 sm:h-22 rounded-3xl bg-gradient-to-br from-blue-400/90 via-cyan-400/80 to-blue-600/90 p-[1.5px] shadow-[0_0_40px_rgba(14,165,233,0.7)]">
             <div className="w-full h-full rounded-[22px] bg-[#0c0d14]/95 backdrop-blur-xl flex items-center justify-center overflow-hidden p-2.5">
               <Image
                 src="/logo.png"
@@ -152,14 +194,15 @@ export function PageLoader({
                 width={88}
                 height={88}
                 priority
-                className="w-full h-full object-contain drop-shadow-[0_0_16px_rgba(245,158,11,0.8)] transition-transform duration-300"
+                unoptimized
+                className="w-full h-full object-contain drop-shadow-[0_0_16px_rgba(14,165,233,0.85)] transition-transform duration-300"
               />
             </div>
           </div>
         </div>
 
         {/* "NAMMA TECH" Luxury Typography with Rolling Metallic Shimmer */}
-        <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-[0.24em] uppercase leading-none mb-3 drop-shadow-[0_0_45px_rgba(245,158,11,0.55)]">
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-[0.24em] uppercase leading-none mb-3 drop-shadow-[0_0_45px_rgba(14,165,233,0.6)]">
           <span className="namma-text-shine">NAMMA TECH</span>
         </h1>
 
@@ -168,32 +211,27 @@ export function PageLoader({
           Movies • APKs • Software • 4K Wallpapers
         </p>
 
-        {/* High-Tech Progress Track */}
+        {/* High-Tech Progress Track (Electric Blue & Cyan Laser) */}
         <div className="w-64 sm:w-80 flex flex-col gap-2.5 mb-6">
           <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden relative p-[1px] border border-white/10 backdrop-blur-md">
             <div
-              className="h-full bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-400 rounded-full shadow-[0_0_20px_rgba(245,158,11,1)] transition-all duration-150 ease-out relative"
+              className="h-full bg-gradient-to-r from-blue-600 via-cyan-400 to-blue-400 rounded-full shadow-[0_0_20px_rgba(14,165,233,1)] transition-all duration-150 ease-out relative"
               style={{ width: `${progress}%` }}
             >
               {/* Glowing Laser Head at front of progress bar */}
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-white shadow-[0_0_8px_#ffffff]" />
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-white shadow-[0_0_10px_#ffffff,0_0_18px_#38bdf8]" />
             </div>
           </div>
 
           <div className="flex items-center justify-between text-[10px] font-mono tracking-wider">
-            <span className="text-amber-400/90 font-semibold truncate max-w-[200px]">
+            <span className="text-cyan-400/90 font-semibold truncate max-w-[200px]">
               {statusText}
             </span>
-            <span className="text-amber-300 font-bold ml-2">
+            <span className="text-cyan-300 font-bold ml-2">
               {progress}%
             </span>
           </div>
         </div>
-
-        {/* Click anywhere to enter hint */}
-        <span className="text-[10px] font-medium tracking-[0.2em] text-neutral-500 uppercase transition-opacity duration-300 hover:text-neutral-300">
-          Click anywhere to enter
-        </span>
       </div>
     </div>
   );

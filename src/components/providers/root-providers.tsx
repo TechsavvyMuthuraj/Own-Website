@@ -28,7 +28,7 @@ export function RootProviders({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} storageKey="theme">
         <StyleProvider>
           <AuthProvider>
             <CartProvider>

@@ -139,6 +139,7 @@ function RegisterForm() {
               height={72}
               className="w-full h-full object-cover"
               priority
+              unoptimized
             />
           </div>
         </Link>
