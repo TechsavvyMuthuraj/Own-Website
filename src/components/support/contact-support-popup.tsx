@@ -19,8 +19,21 @@ import {
   ShieldCheck,
   ChevronRight,
 } from "lucide-react";
-import { LiveSupportChat } from "./live-support-chat";
+import dynamic from "next/dynamic";
 import { useToast } from "@/components/ui/toast";
+
+const LiveSupportChat = dynamic(
+  () => import("./live-support-chat").then((m) => m.LiveSupportChat),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-64 flex flex-col items-center justify-center gap-2">
+        <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+        <span className="text-xs text-neutral-400">Loading instant support...</span>
+      </div>
+    ),
+  }
+);
 
 const WHATSAPP_NUMBER = "919944875726";
 const SUPPORT_EMAIL = "techsavvy.muthuraj.dev@gmail.com";

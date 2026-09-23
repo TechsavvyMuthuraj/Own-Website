@@ -2,6 +2,8 @@ import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { AdPlacement } from "@/types/database";
 
+import { unstable_cache } from "next/cache";
+
 let cachedAdsSettings: {
   adsEnabled: boolean;
   autoAds: boolean;
@@ -15,18 +17,10 @@ export function invalidateAdsCache() {
   cachedAdsByLocation = {};
 }
 
-export const getAdsGlobalSettings = async (): Promise<{
+const fetchAdsGlobalSettingsFromDb = async (): Promise<{
   adsEnabled: boolean;
   autoAds: boolean;
 }> => {
-  const now = Date.now();
-  if (cachedAdsSettings && cachedAdsSettings.expiresAt > now) {
-    return {
-      adsEnabled: cachedAdsSettings.adsEnabled,
-      autoAds: cachedAdsSettings.autoAds,
-    };
-  }
-
   try {
     const supabase = createAdminClient();
     const { data } = await supabase
@@ -55,15 +49,42 @@ export const getAdsGlobalSettings = async (): Promise<{
       }
     }
 
-    cachedAdsSettings = {
-      adsEnabled,
-      autoAds,
-      expiresAt: now + 60000,
-    };
-
     return { adsEnabled, autoAds };
   } catch {
     return { adsEnabled: true, autoAds: true };
+  }
+};
+
+const getCachedAdsGlobalSettings = unstable_cache(
+  fetchAdsGlobalSettingsFromDb,
+  ["global-ads-settings"],
+  { revalidate: 300, tags: ["ads-settings"] }
+);
+
+export const getAdsGlobalSettings = async (): Promise<{
+  adsEnabled: boolean;
+  autoAds: boolean;
+}> => {
+  const now = Date.now();
+  if (cachedAdsSettings && cachedAdsSettings.expiresAt > now) {
+    return {
+      adsEnabled: cachedAdsSettings.adsEnabled,
+      autoAds: cachedAdsSettings.autoAds,
+    };
+  }
+
+  try {
+    const res = await getCachedAdsGlobalSettings();
+    cachedAdsSettings = {
+      adsEnabled: res.adsEnabled,
+      autoAds: res.autoAds,
+      expiresAt: now + 300000,
+    };
+    return res;
+  } catch {
+    return cachedAdsSettings
+      ? { adsEnabled: cachedAdsSettings.adsEnabled, autoAds: cachedAdsSettings.autoAds }
+      : { adsEnabled: true, autoAds: true };
   }
 };
 

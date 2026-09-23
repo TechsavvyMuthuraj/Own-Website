@@ -22,6 +22,7 @@ const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
   display: "swap",
+  preload: true,
 });
 
 const inter = Inter({
@@ -29,6 +30,7 @@ const inter = Inter({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
+  preload: false,
 });
 
 const spaceGrotesk = Space_Grotesk({
@@ -36,6 +38,7 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
+  preload: false,
 });
 
 const dmSans = DM_Sans({
@@ -43,6 +46,7 @@ const dmSans = DM_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
+  preload: false,
 });
 
 const outfit = Outfit({
@@ -50,16 +54,19 @@ const outfit = Outfit({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
   display: "swap",
+  preload: false,
 });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  preload: false,
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  preload: false,
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_SITE_URL.includes("localhost")
@@ -201,16 +208,18 @@ export default async function RootLayout({
       className={`${jakarta.variable} ${inter.variable} ${spaceGrotesk.variable} ${dmSans.variable} ${outfit.variable} ${geistSans.variable} ${geistMono.variable} h-full`}
     >
       <head>
+        {/* Resource Preconnections & DNS Prefetch for Fast First Byte */}
+        <link rel="preconnect" href="https://rixdlxqktshrwjbaxxcz.supabase.co" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://rixdlxqktshrwjbaxxcz.supabase.co" />
+        <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
         {/* Google Site Verification */}
         <meta name="google-site-verification" content="google38f31838101be6e4" />
         {/* Google AdSense Meta Verification */}
         <meta name="google-adsense-account" content="ca-pub-1960459798233871" />
-        {/* Google AdSense Script for Instant Site Approval & Verification */}
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1960459798233871"
-          crossOrigin="anonymous"
-        />
         {/* Global Structured Data JSON-LD */}
         <script
           type="application/ld+json"

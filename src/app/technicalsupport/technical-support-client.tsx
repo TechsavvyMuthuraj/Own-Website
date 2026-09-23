@@ -58,6 +58,7 @@ const QUICK_RESPONSES = [
 ];
 
 const SPECIALIST_STORAGE_KEY = "nammatech_active_specialist_session";
+const SPECIALIST_LIVENESS_KEY = "nammatech_specialist_session_alive";
 
 export function TechnicalSupportClient() {
   const { showToast, confirm } = useToast();
@@ -128,19 +129,70 @@ export function TechnicalSupportClient() {
     } catch {}
   }, []);
 
-  // Restore existing specialist session on mount
+  // Restore existing specialist session on mount (auto-logout if browser was closed)
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
       const saved = localStorage.getItem(SPECIALIST_STORAGE_KEY);
+      const isAlive = sessionStorage.getItem(SPECIALIST_LIVENESS_KEY);
       if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed?.email) {
-          setSpecialist(parsed);
+        if (!isAlive) {
+          // Browser was closed previously: auto-terminate session for security
+          console.warn("Website was previously closed: auto-logging out specialist session.");
+          localStorage.removeItem(SPECIALIST_STORAGE_KEY);
+          setSpecialist(null);
+        } else {
+          const parsed = JSON.parse(saved);
+          if (parsed?.email) {
+            setSpecialist(parsed);
+          }
         }
       }
     } catch {}
   }, []);
+
+  // Auto-logout specialist on website minimize or close
+  useEffect(() => {
+    if (!specialist) return;
+
+    let minTimer: NodeJS.Timeout | null = null;
+    const handleVis = () => {
+      if (document.visibilityState === "hidden") {
+        minTimer = setTimeout(() => {
+          console.warn("Specialist portal minimized: auto-logging out for security.");
+          if (typeof window !== "undefined") {
+            sessionStorage.removeItem(SPECIALIST_LIVENESS_KEY);
+            localStorage.removeItem(SPECIALIST_STORAGE_KEY);
+          }
+          setSpecialist(null);
+          setSelectedSessionId(null);
+          setActiveSession(null);
+        }, 1500);
+      } else {
+        if (minTimer) {
+          clearTimeout(minTimer);
+          minTimer = null;
+        }
+      }
+    };
+
+    const handleHide = () => {
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem(SPECIALIST_LIVENESS_KEY);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVis);
+    window.addEventListener("pagehide", handleHide);
+    window.addEventListener("beforeunload", handleHide);
+
+    return () => {
+      if (minTimer) clearTimeout(minTimer);
+      document.removeEventListener("visibilitychange", handleVis);
+      window.removeEventListener("pagehide", handleHide);
+      window.removeEventListener("beforeunload", handleHide);
+    };
+  }, [specialist]);
 
   // Fetch team roster
   const fetchTeamRoster = useCallback(async () => {
@@ -257,6 +309,7 @@ export function TechnicalSupportClient() {
       if (matchedMember) {
         setSpecialist(matchedMember);
         if (typeof window !== "undefined") {
+          sessionStorage.setItem(SPECIALIST_LIVENESS_KEY, "true");
           localStorage.setItem(SPECIALIST_STORAGE_KEY, JSON.stringify(matchedMember));
         }
 
@@ -288,6 +341,7 @@ export function TechnicalSupportClient() {
 
         setSpecialist(adminMember);
         if (typeof window !== "undefined") {
+          sessionStorage.setItem(SPECIALIST_LIVENESS_KEY, "true");
           localStorage.setItem(SPECIALIST_STORAGE_KEY, JSON.stringify(adminMember));
         }
 
@@ -318,6 +372,7 @@ export function TechnicalSupportClient() {
       variant: "warning",
       onConfirm: () => {
         if (typeof window !== "undefined") {
+          sessionStorage.removeItem(SPECIALIST_LIVENESS_KEY);
           localStorage.removeItem(SPECIALIST_STORAGE_KEY);
         }
         setSpecialist(null);
@@ -694,10 +749,35 @@ export function TechnicalSupportClient() {
     }
   };
 
+  // Specialist prompts for resolution note/download link before fulfilling
+  const handleFulfillRequest = (req: any) => {
+    const defaultNote = `Resource verified and fulfilled by Specialist ${specialist?.name || "Support"}.`;
+    const entered = window.prompt(
+      `Enter resolution note or direct download link for "${req.resourceName}":`,
+      defaultNote
+    );
+    if (entered !== null) {
+      handleUpdateRequestStatus(req.id, "fulfilled", entered.trim() || defaultNote);
+    }
+  };
+
+  // Specialist prompts for review message
+  const handleReviewRequest = (req: any) => {
+    const defaultNote = `Specialist ${specialist?.name || "Support"} is verifying files & links.`;
+    const entered = window.prompt(
+      `Enter review message or instructions for "${req.resourceName}":`,
+      defaultNote
+    );
+    if (entered !== null) {
+      handleUpdateRequestStatus(req.id, "in_review", entered.trim() || defaultNote);
+    }
+  };
+
   // Convert or launch Live Support chat for a user request
   const handleConvertRequestToChat = async (req: any) => {
     try {
       const sessionId = `req_chat_${req.id.slice(0, 8)}_${Date.now().toString(36)}`;
+      const initialGreeting = `👋 Hello ${req.userName}! I am ${specialist?.name || "Technical Specialist"} from NammaTech Technical Support. I am looking into your request for: "${req.resourceName}". How can I help?`;
       const res = await fetch("/api/support/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -712,12 +792,18 @@ export function TechnicalSupportClient() {
           specialistName: specialist?.name,
           specialistEmail: specialist?.email,
           specialistRole: specialist?.role,
-          text: `👋 Hello ${req.userName}! I am ${specialist?.name || "Technical Specialist"} from NammaTech Technical Support. I am looking into your request for: "${req.resourceName}". How can I help?`,
+          text: initialGreeting,
         }),
       });
 
       if (res.ok) {
         const data = await res.json();
+        // Also update request admin_note so user sees the message right on their request card!
+        handleUpdateRequestStatus(
+          req.id,
+          "in_review",
+          `Specialist ${specialist?.name || "Support"} connected via Live Support: "${initialGreeting}"`
+        );
         await fetchLiveSessions();
         setActiveLeftTab("queue");
         setSelectedSessionId(sessionId);
@@ -1516,8 +1602,8 @@ export function TechnicalSupportClient() {
                             {req.status !== "in_review" && req.status !== "fulfilled" && (
                               <button
                                 type="button"
-                                onClick={() => handleUpdateRequestStatus(req.id, "in_review")}
-                                title="Mark In Review"
+                                onClick={() => handleReviewRequest(req)}
+                                title="Mark In Review with message"
                                 className={`px-2 py-1 rounded-lg border text-[10px] font-bold transition-all cursor-pointer ${
                                   isLight
                                     ? "bg-cyan-50 hover:bg-cyan-100 text-cyan-700 border-cyan-200"
@@ -1532,8 +1618,8 @@ export function TechnicalSupportClient() {
                             {req.status !== "fulfilled" && (
                               <button
                                 type="button"
-                                onClick={() => handleUpdateRequestStatus(req.id, "fulfilled")}
-                                title="Mark Fulfilled / Resolved"
+                                onClick={() => handleFulfillRequest(req)}
+                                title="Mark Fulfilled with resolution details or download link"
                                 className={`px-2 py-1 rounded-lg border text-[10px] font-bold transition-all cursor-pointer ${
                                   isLight
                                     ? "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200"

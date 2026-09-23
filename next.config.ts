@@ -11,15 +11,24 @@ const nextConfig: NextConfig = {
     // Allow quality=85 for hero image; enable WebP + AVIF for ~70% smaller payloads
     formats: ["image/avif", "image/webp"],
     qualities: [50, 60, 70, 75, 80, 85, 90],
-    minimumCacheTTL: 86400, // 24h CDN caching for optimized images
+    minimumCacheTTL: 31536000, // 1 year CDN caching for optimized images
+  },
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error", "warn"] } : false,
   },
   experimental: {
-    optimizePackageImports: ["lucide-react", "framer-motion"],
+    optimizePackageImports: [
+      "lucide-react",
+      "framer-motion",
+      "@supabase/supabase-js",
+      "clsx",
+      "tailwind-merge",
+    ],
   },
   async headers() {
     return [
       {
-        source: "/_next/static/(.*)",
+        source: "/images/(.*)",
         headers: [
           {
             key: "Cache-Control",
@@ -28,11 +37,11 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: "/images/(.*)",
+        source: "/(logo.png|favicon.ico)",
         headers: [
           {
             key: "Cache-Control",
-            value: "public, max-age=86400, stale-while-revalidate=604800",
+            value: "public, max-age=604800, stale-while-revalidate=2592000",
           },
         ],
       },

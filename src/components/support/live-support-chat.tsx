@@ -67,7 +67,12 @@ export function LiveSupportChat({ compact = false, onActiveStateChange }: LiveSu
   const [userName, setUserName] = useState<string>("");
   const [userEmail, setUserEmail] = useState<string>("");
   const [category, setCategory] = useState<string>("Software Installation");
-  const [hasJoined, setHasJoined] = useState<boolean>(false);
+  const [hasJoined, setHasJoined] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return Boolean(
+      localStorage.getItem(STORAGE_SESSION_KEY) || localStorage.getItem("nammatech_support_session_id")
+    );
+  });
   const [isMaximized, setIsMaximized] = useState<boolean>(false);
   const [showInspector, setShowInspector] = useState<boolean>(true);
 
@@ -77,6 +82,13 @@ export function LiveSupportChat({ compact = false, onActiveStateChange }: LiveSu
 
   // Chat data state
   const [session, setSession] = useState<SupportSession | null>(null);
+
+  // Safe specialist name (sanitizes any stale Vijaya references)
+  const rawSpecialist = session?.assignedSpecialistName || "";
+  const displaySpecialistName =
+    rawSpecialist && !rawSpecialist.toLowerCase().includes("vijaya")
+      ? rawSpecialist
+      : "Kishore";
   const [inputText, setInputText] = useState<string>("");
   const [codeSnippet, setCodeSnippet] = useState<string>("");
   const [showCodeInput, setShowCodeInput] = useState<boolean>(false);
@@ -818,16 +830,20 @@ export function LiveSupportChat({ compact = false, onActiveStateChange }: LiveSu
       ) : (
         /* ── STEP 2: ACTIVE LIVE TECHNICAL SUPPORT CONSOLE (WINDOWS OS FORMAT) ── */
         <div
+          style={{ backgroundColor: "#090a10" }}
           className={
             isMaximized
-              ? "fixed inset-1 sm:inset-3 z-50 rounded-2xl border border-neutral-700 bg-[#08090f] shadow-2xl overflow-hidden flex flex-col text-left"
+              ? "fixed inset-0 z-50 rounded-none border-none flex flex-col text-left shadow-2xl overflow-hidden"
               : compact
-              ? "rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xl overflow-hidden flex flex-col h-[500px] relative text-left"
-              : "rounded-2xl sm:rounded-3xl border border-neutral-800 bg-[#08090f] shadow-2xl overflow-hidden flex flex-col h-[calc(100vh-170px)] min-h-[580px] max-h-[820px] relative text-left"
+              ? "rounded-2xl border border-neutral-800 shadow-xl overflow-hidden flex flex-col h-[500px] relative text-left"
+              : "rounded-2xl sm:rounded-3xl border border-neutral-800 shadow-2xl overflow-hidden flex flex-col h-[calc(100vh-140px)] min-h-[580px] max-h-[820px] relative text-left"
           }
         >
           {/* 1. Windows OS Application Titlebar */}
-          <div className="px-3.5 py-2 bg-[#10121a] border-b border-neutral-800 flex items-center justify-between text-xs select-none z-20">
+          <div
+            style={{ backgroundColor: "#10121a" }}
+            className="px-3.5 py-2 border-b border-neutral-800 flex items-center justify-between text-xs select-none z-20"
+          >
             <div className="flex items-center gap-2.5 min-w-0">
               <span className="w-5 h-5 rounded bg-blue-600/20 border border-blue-500/40 text-blue-400 flex items-center justify-center text-[11px] font-bold">
                 🪟
@@ -900,7 +916,10 @@ export function LiveSupportChat({ compact = false, onActiveStateChange }: LiveSu
           <div className="flex-1 flex overflow-hidden min-h-0">
             {/* LEFT PANE: Technical Support Inspector (Width 280px on desktop) */}
             {showInspector && (
-              <aside className="w-64 sm:w-72 border-r border-neutral-800 bg-[#0d0f17] flex flex-col justify-between overflow-y-auto p-4 text-xs select-none flex-shrink-0">
+              <aside
+                style={{ backgroundColor: "#0d0f17" }}
+                className="w-64 sm:w-72 border-r border-neutral-800 flex flex-col justify-between overflow-y-auto p-4 text-xs select-none flex-shrink-0"
+              >
                 <div className="space-y-4">
                   <div>
                     <div className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">
@@ -948,11 +967,11 @@ export function LiveSupportChat({ compact = false, onActiveStateChange }: LiveSu
                     <div className="p-3 rounded-xl bg-gradient-to-br from-neutral-900 to-neutral-950 border border-neutral-800 space-y-2">
                       <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
-                          {session?.assignedSpecialistName ? session.assignedSpecialistName.charAt(0) : "S"}
+                          {displaySpecialistName ? displaySpecialistName.charAt(0) : "S"}
                         </div>
                         <div>
                           <div className="font-bold text-white text-xs">
-                            {session?.assignedSpecialistName || "Specialist Desk"}
+                            {displaySpecialistName}
                           </div>
                           <div className="text-[10px] text-emerald-400 flex items-center gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -1011,9 +1030,12 @@ export function LiveSupportChat({ compact = false, onActiveStateChange }: LiveSu
             )}
 
             {/* RIGHT PANE: Chat Stream & Message Input */}
-            <div className="flex-1 flex flex-col min-w-0 bg-[#090a0f] overflow-hidden">
+            <div style={{ backgroundColor: "#090a10" }} className="flex-1 flex flex-col min-w-0 overflow-hidden">
               {/* Top Control Bar */}
-              <div className="px-5 py-3 border-b border-neutral-800 bg-[#0c0d14]/90 backdrop-blur-md flex items-center justify-between gap-3 z-10">
+              <div
+                style={{ backgroundColor: "#0c0d14" }}
+                className="px-5 py-3 border-b border-neutral-800 flex items-center justify-between gap-3 z-10"
+              >
             <div className="flex items-center gap-3 min-w-0">
               <div className="relative">
                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[var(--primary)] to-rose-600 flex items-center justify-center text-white font-black text-sm shadow-md">
@@ -1033,9 +1055,9 @@ export function LiveSupportChat({ compact = false, onActiveStateChange }: LiveSu
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <h3 className="font-bold text-sm text-[var(--foreground)] truncate">
-                    {session?.assignedSpecialistName ? (
+                    {displaySpecialistName ? (
                       <span className="flex items-center gap-1.5">
-                        <span className="text-emerald-500 font-extrabold">{session.assignedSpecialistName}</span>
+                        <span className="text-emerald-500 font-extrabold">{displaySpecialistName}</span>
                         <span className="text-xs font-semibold text-[var(--muted-foreground)]">(Technical Team)</span>
                       </span>
                     ) : dutyStatus === "BUSY" ? (
@@ -1175,8 +1197,8 @@ export function LiveSupportChat({ compact = false, onActiveStateChange }: LiveSu
               <div className="flex items-center gap-2 truncate">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
                 <span className="truncate">
-                  {session?.assignedSpecialistName ? (
-                    <span>Connected to <strong>{session.assignedSpecialistName}</strong> (Technical Support Specialist). Live 1-on-1 session active.</span>
+                  {displaySpecialistName ? (
+                    <span>Connected to <strong>{displaySpecialistName}</strong> (Technical Support Specialist). Live 1-on-1 session active.</span>
                   ) : (
                     <span>Connected to <strong>Technical Support Team</strong>. Specialist on duty.</span>
                   )}
@@ -1189,7 +1211,11 @@ export function LiveSupportChat({ compact = false, onActiveStateChange }: LiveSu
           )}
 
           {/* Message Stream Area */}
-          <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-[var(--background)]/40">
+          <div
+            ref={chatContainerRef}
+            style={{ backgroundColor: "#06070a" }}
+            className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4"
+          >
             {session?.messages.map((msg: SupportMessage) => {
               const isUser = msg.sender === "user";
               const isSystem = msg.sender === "system";
@@ -1205,15 +1231,16 @@ export function LiveSupportChat({ compact = false, onActiveStateChange }: LiveSu
                   <div key={msg.id} className="flex justify-center my-3">
                     <div className="px-4 py-2 rounded-2xl bg-[var(--secondary)] border border-[var(--border)] text-xs text-[var(--muted-foreground)] flex items-center gap-2 max-w-lg text-center shadow-sm">
                       <Bot className="w-3.5 h-3.5 text-[var(--primary)] flex-shrink-0" />
-                      <span>{msg.text}</span>
+                      <span>{msg.text.replace(/vijaya/gi, displaySpecialistName)}</span>
                     </div>
                   </div>
                 );
               }
 
-              const cleanSenderName = msg.senderName?.replace(/\s*\((Technical Team|Technical Specialist|Support Agent)\)/i, "") ||
-                session?.assignedSpecialistName ||
-                "Specialist";
+              const cleanSenderName = (
+                msg.senderName?.replace(/\s*\((Technical Team|Technical Specialist|Support Agent)\)/i, "") ||
+                displaySpecialistName
+              ).replace(/vijaya/gi, displaySpecialistName);
 
               return (
                 <div
@@ -1417,7 +1444,10 @@ export function LiveSupportChat({ compact = false, onActiveStateChange }: LiveSu
           )}
 
           {/* Bottom Chat Input Bar */}
-          <div className="p-3 sm:p-4 border-t border-[var(--border)] bg-[var(--card)]">
+          <div
+            style={{ backgroundColor: "#0c0d14" }}
+            className="p-3 sm:p-4 border-t border-neutral-800"
+          >
             <div className="flex items-end gap-2">
               {/* Code Toggle Button */}
               <button

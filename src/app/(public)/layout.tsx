@@ -11,24 +11,18 @@ import { PageLoader } from "@/components/ui/page-loader";
 import { GlobalSiteMascot } from "@/components/mascot/global-site-mascot";
 import { ContactSupportPopup } from "@/components/support/contact-support-popup";
 
-export const revalidate = 60; // 60s Edge ISR cache — unlocks instant CDN page switching
+import { unstable_cache } from "next/cache";
 
-let cachedMaintenance: { value: boolean; expires: number } | null = null;
-let cachedNavLinks: { value: NavLinkItem[]; expires: number } | null = null;
+export const revalidate = 300; // 300s Edge ISR cache — unlocks instant CDN page switching
 
-async function checkMaintenanceMode(): Promise<boolean> {
-  const now = Date.now();
-  if (cachedMaintenance && cachedMaintenance.expires > now) {
-    return cachedMaintenance.value;
-  }
-
+const fetchMaintenanceModeFromDb = async (): Promise<boolean> => {
   try {
     const supabaseAdmin = createAdminClient();
     const { data } = await supabaseAdmin
       .from("site_settings")
       .select("value")
       .eq("key", "maintenance_mode")
-      .single();
+      .maybeSingle();
     let isMaintenanceActive = false;
     if (data?.value) {
       try {
@@ -38,19 +32,27 @@ async function checkMaintenanceMode(): Promise<boolean> {
         isMaintenanceActive = data.value === "true";
       }
     }
-    cachedMaintenance = { value: isMaintenanceActive, expires: now + 60000 };
     return isMaintenanceActive;
   } catch {
-    return cachedMaintenance ? cachedMaintenance.value : false;
+    return false;
+  }
+};
+
+const getCachedMaintenance = unstable_cache(
+  fetchMaintenanceModeFromDb,
+  ["site-maintenance-mode"],
+  { revalidate: 60, tags: ["maintenance"] }
+);
+
+async function checkMaintenanceMode(): Promise<boolean> {
+  try {
+    return await getCachedMaintenance();
+  } catch {
+    return false;
   }
 }
 
-async function getNavbarLinks(): Promise<NavLinkItem[]> {
-  const now = Date.now();
-  if (cachedNavLinks && cachedNavLinks.expires > now) {
-    return cachedNavLinks.value;
-  }
-
+const fetchNavbarLinksFromDb = async (): Promise<NavLinkItem[]> => {
   try {
     const supabaseAdmin = createAdminClient();
     const { data } = await supabaseAdmin
@@ -62,13 +64,26 @@ async function getNavbarLinks(): Promise<NavLinkItem[]> {
     if (data?.value) {
       const parsed = typeof data.value === "string" ? JSON.parse(data.value) : data.value;
       if (parsed?.navbar_items && Array.isArray(parsed.navbar_items)) {
-        cachedNavLinks = { value: parsed.navbar_items, expires: now + 60000 };
         return parsed.navbar_items;
       }
     }
   } catch {}
 
   return DEFAULT_NAV_LINKS;
+};
+
+const getCachedNavbarLinks = unstable_cache(
+  fetchNavbarLinksFromDb,
+  ["site-navbar-links"],
+  { revalidate: 300, tags: ["nav-links"] }
+);
+
+async function getNavbarLinks(): Promise<NavLinkItem[]> {
+  try {
+    return await getCachedNavbarLinks();
+  } catch {
+    return DEFAULT_NAV_LINKS;
+  }
 }
 
 export default async function PublicLayout({
