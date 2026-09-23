@@ -255,24 +255,6 @@ export async function POST(request: NextRequest) {
 
     void SupportChatStore.persistToSupabase();
 
-    // Best-effort optional background sync to Supabase contact_messages if email exists (non-blocking)
-    if (sender === "user" && userEmail) {
-      void (async () => {
-        try {
-          const supabase = createAdminClient();
-          await supabase.from("contact_messages").insert({
-            name: userName,
-            email: userEmail,
-            subject: `[Live Support] ${category || "Inquiry"}`,
-            message: `${text}${codeSnippet ? `\n\nCode/Logs:\n${codeSnippet}` : ""}`,
-            status: "UNREAD",
-          });
-        } catch {
-          // non-blocking
-        }
-      })();
-    }
-
     return NextResponse.json({
       success: true,
       session: SupportChatStore.getSession(cleanSessionId),

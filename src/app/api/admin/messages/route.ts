@@ -13,8 +13,35 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id, status } = await request.json();
+    const body = await request.json();
+    const { id, ids, all, status = "READ" } = body;
     const supabaseAdmin = createAdminClient();
+
+    if (all) {
+      // Mark all unread messages as read
+      const { error } = await supabaseAdmin
+        .from("contact_messages")
+        .update({ status })
+        .neq("status", status);
+
+      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ success: true, all: true });
+    }
+
+    if (Array.isArray(ids) && ids.length > 0) {
+      // Bulk update selected messages
+      const { error } = await supabaseAdmin
+        .from("contact_messages")
+        .update({ status })
+        .in("id", ids);
+
+      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ success: true, count: ids.length });
+    }
+
+    if (!id) {
+      return NextResponse.json({ error: "Missing message id" }, { status: 400 });
+    }
 
     const { error } = await supabaseAdmin
       .from("contact_messages")
@@ -23,8 +50,8 @@ export async function PATCH(request: Request) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
     return NextResponse.json({ success: true });
-  } catch (err) {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  } catch (err: any) {
+    return NextResponse.json({ error: err?.message || "Internal server error" }, { status: 500 });
   }
 }
 
@@ -39,8 +66,41 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = await request.json();
+    const body = await request.json();
+    const { id, ids, all, filter } = body;
     const supabaseAdmin = createAdminClient();
+
+    if (all) {
+      // Delete all messages (or filtered by status e.g. "READ")
+      let query = supabaseAdmin.from("contact_messages").delete();
+      if (filter === "READ") {
+        query = query.eq("status", "READ");
+      } else if (filter === "UNREAD") {
+        query = query.eq("status", "UNREAD");
+      } else {
+        // Delete all contact messages
+        query = query.neq("id", "00000000-0000-0000-0000-000000000000");
+      }
+
+      const { error } = await query;
+      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ success: true, all: true });
+    }
+
+    if (Array.isArray(ids) && ids.length > 0) {
+      // Bulk delete selected messages
+      const { error } = await supabaseAdmin
+        .from("contact_messages")
+        .delete()
+        .in("id", ids);
+
+      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ success: true, count: ids.length });
+    }
+
+    if (!id) {
+      return NextResponse.json({ error: "Missing message id" }, { status: 400 });
+    }
 
     const { error } = await supabaseAdmin
       .from("contact_messages")
@@ -49,7 +109,7 @@ export async function DELETE(request: Request) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
     return NextResponse.json({ success: true });
-  } catch (err) {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  } catch (err: any) {
+    return NextResponse.json({ error: err?.message || "Internal server error" }, { status: 500 });
   }
 }

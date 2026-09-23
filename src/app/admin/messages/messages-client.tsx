@@ -83,9 +83,15 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
   const adminTypingTimeoutRef = useRef<any>(null);
 
   // ── Email Inquiries State ───────────────────────────────────────────────────
+  const [messages, setMessages] = useState<ContactMessage[]>(initialMessages);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
   const [emailTab, setEmailTab] = useState<"ALL" | "UNREAD" | "READ">("ALL");
   const [emailSearchQuery, setEmailSearchQuery] = useState("");
+
+  useEffect(() => {
+    setMessages(initialMessages);
+  }, [initialMessages]);
 
   // ── Live Sessions Poller ────────────────────────────────────────────────────
   const fetchLiveSessions = useCallback(async () => {
@@ -341,6 +347,14 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
 
   // ── Email Inquiries Handlers ────────────────────────────────────────────────
   const updateEmailStatus = async (id: string, status: string) => {
+    // Instant Optimistic Update
+    setMessages((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, status: status as any } : m))
+    );
+    if (selectedMessage?.id === id) {
+      setSelectedMessage((prev) => (prev ? { ...prev, status: status as any } : null));
+    }
+
     try {
       const res = await fetch("/api/admin/messages", {
         method: "PATCH",
@@ -364,6 +378,15 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
       cancelText: "Cancel",
       variant: "danger",
       onConfirm: async () => {
+        // Instant Optimistic Update
+        setMessages((prev) => prev.filter((m) => m.id !== id));
+        if (selectedMessage?.id === id) setSelectedMessage(null);
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+
         try {
           const res = await fetch("/api/admin/messages", {
             method: "DELETE",
@@ -371,7 +394,6 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
             body: JSON.stringify({ id }),
           });
           if (res.ok) {
-            if (selectedMessage?.id === id) setSelectedMessage(null);
             showToast({ message: "Message deleted", type: "success" });
             router.refresh();
           }
@@ -380,6 +402,182 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
         }
       },
     });
+  };
+
+  // Mark all unread messages as read in 1 click
+  const handleMarkAllAsRead = () => {
+    const unreadCount = messages.filter((m) => m.status === "UNREAD").length;
+    if (unreadCount === 0) {
+      showToast({ message: "No unread messages", type: "info" });
+      return;
+    }
+
+    confirm({
+      title: "Mark All Messages as Read?",
+      message: `Are you sure you want to mark all ${unreadCount} unread message(s) as read?`,
+      confirmText: "Mark All Read",
+      cancelText: "Cancel",
+      variant: "primary",
+      onConfirm: async () => {
+        // Instant Optimistic UI (0ms)
+        setMessages((prev) => prev.map((m) => ({ ...m, status: "READ" })));
+        if (selectedMessage) {
+          setSelectedMessage((prev) => (prev ? { ...prev, status: "READ" } : null));
+        }
+
+        try {
+          const res = await fetch("/api/admin/messages", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ all: true, status: "READ" }),
+          });
+          if (res.ok) {
+            showToast({ message: `All ${unreadCount} messages marked as read!`, type: "success" });
+            router.refresh();
+          }
+        } catch {
+          showToast({ message: "Failed to mark all as read", type: "error" });
+        }
+      },
+    });
+  };
+
+  // Delete all messages or all read messages in 1 click
+  const handleDeleteAll = (filter?: "READ" | "ALL") => {
+    const countToDelete =
+      filter === "READ"
+        ? messages.filter((m) => m.status === "READ").length
+        : messages.length;
+
+    if (countToDelete === 0) {
+      showToast({ message: "No messages to delete", type: "info" });
+      return;
+    }
+
+    confirm({
+      title: filter === "READ" ? "Delete All Read Messages?" : "Delete All Messages?",
+      message: `Are you sure you want to permanently delete ${countToDelete} message(s)? This action cannot be undone.`,
+      confirmText: filter === "READ" ? "Delete Read" : "Delete All Messages",
+      cancelText: "Cancel",
+      variant: "danger",
+      onConfirm: async () => {
+        // Instant Optimistic UI (0ms)
+        if (filter === "READ") {
+          setMessages((prev) => prev.filter((m) => m.status !== "READ"));
+          if (selectedMessage?.status === "READ") setSelectedMessage(null);
+        } else {
+          setMessages([]);
+          setSelectedMessage(null);
+        }
+        setSelectedIds(new Set());
+
+        try {
+          const res = await fetch("/api/admin/messages", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ all: true, filter }),
+          });
+          if (res.ok) {
+            showToast({ message: `${countToDelete} message(s) permanently deleted!`, type: "success" });
+            router.refresh();
+          }
+        } catch {
+          showToast({ message: "Failed to delete messages", type: "error" });
+        }
+      },
+    });
+  };
+
+  // Bulk actions on selected checkboxes
+  const handleBulkMarkRead = async () => {
+    if (selectedIds.size === 0) return;
+    const ids = Array.from(selectedIds);
+
+    // Instant Optimistic UI
+    setMessages((prev) =>
+      prev.map((m) => (selectedIds.has(m.id) ? { ...m, status: "READ" } : m))
+    );
+    if (selectedMessage && selectedIds.has(selectedMessage.id)) {
+      setSelectedMessage((prev) => (prev ? { ...prev, status: "READ" } : null));
+    }
+    setSelectedIds(new Set());
+
+    try {
+      const res = await fetch("/api/admin/messages", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids, status: "READ" }),
+      });
+      if (res.ok) {
+        showToast({ message: `${ids.length} message(s) marked as read`, type: "success" });
+        router.refresh();
+      }
+    } catch {
+      showToast({ message: "Failed to update messages", type: "error" });
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedIds.size === 0) return;
+    const ids = Array.from(selectedIds);
+
+    confirm({
+      title: `Delete ${ids.length} Message(s)?`,
+      message: "Are you sure you want to permanently delete the selected messages?",
+      confirmText: `Delete ${ids.length} Messages`,
+      cancelText: "Cancel",
+      variant: "danger",
+      onConfirm: async () => {
+        // Instant Optimistic UI
+        setMessages((prev) => prev.filter((m) => !selectedIds.has(m.id)));
+        if (selectedMessage && selectedIds.has(selectedMessage.id)) {
+          setSelectedMessage(null);
+        }
+        setSelectedIds(new Set());
+
+        try {
+          const res = await fetch("/api/admin/messages", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ids }),
+          });
+          if (res.ok) {
+            showToast({ message: `${ids.length} message(s) deleted`, type: "success" });
+            router.refresh();
+          }
+        } catch {
+          showToast({ message: "Failed to delete messages", type: "error" });
+        }
+      },
+    });
+  };
+
+  const toggleSelect = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    const allFilteredIds = filteredEmailMessages.map((m) => m.id);
+    const allSelected = allFilteredIds.every((id) => selectedIds.has(id));
+    if (allSelected) {
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        allFilteredIds.forEach((id) => next.delete(id));
+        return next;
+      });
+    } else {
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        allFilteredIds.forEach((id) => next.add(id));
+        return next;
+      });
+    }
   };
 
   // Filtered live sessions
@@ -398,10 +596,10 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
   });
 
   const totalLiveUnread = liveSessions.reduce((acc, s) => acc + (s.unreadAdminCount || 0), 0);
-  const unreadEmailCount = initialMessages.filter((m) => m.status === "UNREAD").length;
-  const readEmailCount = initialMessages.filter((m) => m.status === "READ").length;
+  const unreadEmailCount = messages.filter((m) => m.status === "UNREAD").length;
+  const readEmailCount = messages.filter((m) => m.status === "READ").length;
 
-  const filteredEmailMessages = initialMessages.filter((msg) => {
+  const filteredEmailMessages = messages.filter((msg) => {
     if (emailTab === "UNREAD" && msg.status !== "UNREAD") return false;
     if (emailTab === "READ" && msg.status !== "READ") return false;
     if (emailSearchQuery.trim()) {
@@ -928,40 +1126,82 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
       ) : (
         /* ── SECTION 2: EMAIL INBOX (CONTACT FORM SUBMISSIONS) ── */
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            {/* Filter Tabs */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-              {[
-                { id: "ALL", label: "All Inquiries", count: initialMessages.length },
-                { id: "UNREAD", label: "Unread", count: unreadEmailCount },
-                { id: "READ", label: "Read / Resolved", count: readEmailCount },
-              ].map((tab) => {
-                const isActive = emailTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setEmailTab(tab.id as any)}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-2 ${
-                      isActive
-                        ? "bg-sky-500 text-neutral-950 shadow-md shadow-sky-500/20"
-                        : "bg-neutral-900/60 border border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-700"
-                    }`}
-                  >
-                    <span>{tab.label}</span>
-                    <span
-                      className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
-                        isActive ? "bg-neutral-950 text-sky-400" : "bg-neutral-800 text-neutral-400"
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+            {/* Filter Tabs & Quick Actions */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+                {[
+                  { id: "ALL", label: "All Inquiries", count: messages.length },
+                  { id: "UNREAD", label: "Unread", count: unreadEmailCount },
+                  { id: "READ", label: "Read / Resolved", count: readEmailCount },
+                ].map((tab) => {
+                  const isActive = emailTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setEmailTab(tab.id as any)}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-2 ${
+                        isActive
+                          ? "bg-sky-500 text-neutral-950 shadow-md shadow-sky-500/20"
+                          : "bg-neutral-900/60 border border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-700"
                       }`}
                     >
-                      {tab.count}
-                    </span>
+                      <span>{tab.label}</span>
+                      <span
+                        className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                          isActive ? "bg-neutral-950 text-sky-400" : "bg-neutral-800 text-neutral-400"
+                        }`}
+                      >
+                        {tab.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Action Buttons: Mark All as Read & Delete Options */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {unreadEmailCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleMarkAllAsRead}
+                    title="Mark all unread contact messages as read"
+                    className="px-3 py-2 rounded-xl text-xs font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  >
+                    <CheckCheck className="w-3.5 h-3.5" />
+                    <span>Mark All Read ({unreadEmailCount})</span>
                   </button>
-                );
-              })}
+                )}
+
+                {messages.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteAll("ALL")}
+                    title="Permanently delete all contact messages"
+                    className="px-3 py-2 rounded-xl text-xs font-bold bg-rose-500/15 border border-rose-500/30 text-rose-400 hover:bg-rose-500/25 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete All</span>
+                  </button>
+                )}
+
+                {readEmailCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteAll("READ")}
+                    title="Delete all read / resolved contact messages"
+                    className="px-2.5 py-2 rounded-xl text-xs font-medium bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-rose-400 hover:border-rose-500/30 transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-neutral-500" />
+                    <span>Clear Read ({readEmailCount})</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Search */}
-            <div className="relative flex-1 sm:w-72">
+            <div className="relative flex-1 lg:max-w-xs">
               <input
                 type="text"
                 value={emailSearchQuery}
@@ -972,62 +1212,145 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
             </div>
           </div>
 
-          {initialMessages.length > 0 ? (
+          {/* Bulk Action Bar (when messages are selected) */}
+          {selectedIds.size > 0 && (
+            <div className="p-3 px-4 rounded-2xl bg-sky-950/50 border border-sky-500/40 flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-1 shadow-lg">
+              <div className="flex items-center gap-2 text-xs text-sky-200 font-bold">
+                <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
+                <span>{selectedIds.size} message(s) selected</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleBulkMarkRead}
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30 flex items-center gap-1.5 cursor-pointer transition-colors"
+                >
+                  <CheckCheck className="w-3.5 h-3.5" />
+                  <span>Mark as Read</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBulkDelete}
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 hover:bg-rose-500/30 flex items-center gap-1.5 cursor-pointer transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete Selected</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedIds(new Set())}
+                  className="text-xs text-neutral-400 hover:text-white px-2 py-1 cursor-pointer transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {messages.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* List */}
-              <div className="md:col-span-1 rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl divide-y divide-neutral-800/60 overflow-hidden shadow-xl max-h-[700px] overflow-y-auto">
-                {filteredEmailMessages.length === 0 ? (
-                  <div className="p-8 text-center text-xs text-neutral-500">
-                    No inquiries matched your filter.
-                  </div>
-                ) : (
-                  filteredEmailMessages.map((msg) => {
-                    const isSelected = selectedMessage?.id === msg.id;
-                    const isUnread = msg.status === "UNREAD";
-                    return (
-                      <div
-                        key={msg.id}
-                        onClick={() => {
-                          setSelectedMessage(msg);
-                          if (msg.status === "UNREAD") updateEmailStatus(msg.id, "READ");
-                        }}
-                        className={`p-4 cursor-pointer transition-all text-xs relative ${
-                          isSelected
-                            ? "bg-sky-500/10 border-l-4 border-l-sky-400"
-                            : "hover:bg-neutral-800/30"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            {isUnread && (
-                              <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse flex-shrink-0" />
-                            )}
-                            <span
-                              className={`font-semibold truncate ${
-                                isUnread ? "text-white font-bold" : "text-neutral-300"
-                              }`}
-                            >
-                              {msg.name}
-                            </span>
-                          </div>
-                          <span className="text-[10px] text-neutral-500 flex-shrink-0 ml-2">
-                            {formatDate(msg.created_at)}
-                          </span>
-                        </div>
-                        <p
-                          className={`truncate mb-1 text-xs ${
-                            isUnread ? "text-sky-300 font-semibold" : "text-neutral-300"
+              <div className="md:col-span-1 rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl overflow-hidden shadow-xl max-h-[720px] flex flex-col">
+                {/* Select All in View Header */}
+                <div className="p-3 px-4 bg-neutral-950/70 border-b border-neutral-800 flex items-center justify-between text-xs text-neutral-400">
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={
+                        filteredEmailMessages.length > 0 &&
+                        filteredEmailMessages.every((m) => selectedIds.has(m.id))
+                      }
+                      onChange={toggleSelectAll}
+                      className="rounded border-neutral-700 bg-neutral-900 text-sky-500 focus:ring-sky-500 cursor-pointer w-3.5 h-3.5"
+                    />
+                    <span className="text-[11px] font-medium text-neutral-300">Select All in View</span>
+                  </label>
+                  <span className="text-[11px] text-neutral-500 font-mono">{filteredEmailMessages.length} shown</span>
+                </div>
+
+                <div className="divide-y divide-neutral-800/60 overflow-y-auto flex-1">
+                  {filteredEmailMessages.length === 0 ? (
+                    <div className="p-8 text-center text-xs text-neutral-500">
+                      No inquiries matched your filter.
+                    </div>
+                  ) : (
+                    filteredEmailMessages.map((msg) => {
+                      const isSelected = selectedMessage?.id === msg.id;
+                      const isChecked = selectedIds.has(msg.id);
+                      const isUnread = msg.status === "UNREAD";
+                      return (
+                        <div
+                          key={msg.id}
+                          onClick={() => {
+                            setSelectedMessage(msg);
+                            if (msg.status === "UNREAD") updateEmailStatus(msg.id, "READ");
+                          }}
+                          className={`p-3.5 cursor-pointer transition-all text-xs relative group flex items-start gap-2.5 ${
+                            isSelected
+                              ? "bg-sky-500/10 border-l-4 border-l-sky-400"
+                              : "hover:bg-neutral-800/30"
                           }`}
                         >
-                          {msg.subject}
-                        </p>
-                        <p className="text-[11px] text-neutral-400 line-clamp-2 leading-relaxed">
-                          {msg.message}
-                        </p>
-                      </div>
-                    );
-                  })
-                )}
+                          {/* Item Checkbox */}
+                          <div
+                            onClick={(e) => toggleSelect(msg.id, e)}
+                            className="pt-0.5 flex-shrink-0"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => {}}
+                              className="rounded border-neutral-700 bg-neutral-900 text-sky-500 focus:ring-sky-500 cursor-pointer w-3.5 h-3.5"
+                            />
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                {isUnread && (
+                                  <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse flex-shrink-0" />
+                                )}
+                                <span
+                                  className={`font-semibold truncate ${
+                                    isUnread ? "text-white font-bold" : "text-neutral-300"
+                                  }`}
+                                >
+                                  {msg.name}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+                                <span className="text-[10px] text-neutral-500">
+                                  {formatDate(msg.created_at)}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteEmail(msg.id);
+                                  }}
+                                  title="Delete message"
+                                  className="opacity-0 group-hover:opacity-100 p-1 text-neutral-400 hover:text-rose-400 rounded transition-all cursor-pointer"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+                            <p
+                              className={`truncate mb-1 text-xs ${
+                                isUnread ? "text-sky-300 font-semibold" : "text-neutral-300"
+                              }`}
+                            >
+                              {msg.subject}
+                            </p>
+                            <p className="text-[11px] text-neutral-400 line-clamp-2 leading-relaxed">
+                              {msg.message}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
               </div>
 
               {/* Selected Message Viewer */}
