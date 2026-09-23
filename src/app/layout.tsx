@@ -205,6 +205,12 @@ export default async function RootLayout({
         <meta name="google-site-verification" content="google38f31838101be6e4" />
         {/* Google AdSense Meta Verification */}
         <meta name="google-adsense-account" content="ca-pub-1960459798233871" />
+        {/* Google AdSense Script for Instant Site Approval & Verification */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1960459798233871"
+          crossOrigin="anonymous"
+        />
         {/* Global Structured Data JSON-LD */}
         <script
           type="application/ld+json"
