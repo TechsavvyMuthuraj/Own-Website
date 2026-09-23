@@ -12,10 +12,17 @@ import { YouTubeMiniPlayer } from "@/components/media/youtube-mini-player";
 import { GlobalSiteMascot } from "@/components/mascot/global-site-mascot";
 import { ContactSupportPopup } from "@/components/support/contact-support-popup";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60; // 60s Edge ISR cache — unlocks instant CDN page switching
+
+let cachedMaintenance: { value: boolean; expires: number } | null = null;
+let cachedNavLinks: { value: NavLinkItem[]; expires: number } | null = null;
 
 async function checkMaintenanceMode(): Promise<boolean> {
+  const now = Date.now();
+  if (cachedMaintenance && cachedMaintenance.expires > now) {
+    return cachedMaintenance.value;
+  }
+
   try {
     const supabaseAdmin = createAdminClient();
     const { data } = await supabaseAdmin
@@ -32,13 +39,19 @@ async function checkMaintenanceMode(): Promise<boolean> {
         isMaintenanceActive = data.value === "true";
       }
     }
+    cachedMaintenance = { value: isMaintenanceActive, expires: now + 60000 };
     return isMaintenanceActive;
   } catch {
-    return false;
+    return cachedMaintenance ? cachedMaintenance.value : false;
   }
 }
 
 async function getNavbarLinks(): Promise<NavLinkItem[]> {
+  const now = Date.now();
+  if (cachedNavLinks && cachedNavLinks.expires > now) {
+    return cachedNavLinks.value;
+  }
+
   try {
     const supabaseAdmin = createAdminClient();
     const { data } = await supabaseAdmin
@@ -50,10 +63,12 @@ async function getNavbarLinks(): Promise<NavLinkItem[]> {
     if (data?.value) {
       const parsed = typeof data.value === "string" ? JSON.parse(data.value) : data.value;
       if (parsed?.navbar_items && Array.isArray(parsed.navbar_items)) {
+        cachedNavLinks = { value: parsed.navbar_items, expires: now + 60000 };
         return parsed.navbar_items;
       }
     }
   } catch {}
+
   return DEFAULT_NAV_LINKS;
 }
 

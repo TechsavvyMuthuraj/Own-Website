@@ -18,7 +18,7 @@ interface PageLoaderProps {
 let hasShownInThisSession = false;
 
 export function PageLoader({
-  duration = 3000,
+  duration = 450,
   forceShow = false,
 }: PageLoaderProps) {
   const pathname = usePathname();

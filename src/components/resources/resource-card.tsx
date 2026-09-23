@@ -46,6 +46,7 @@ export function ResourceCard({ resource }: ResourceCardProps) {
     >
       <Link
         href={`/resource/${resource.slug}`}
+        prefetch={true}
         className="relative flex flex-col h-full p-4 cursor-pointer"
       >
         {/* Media / Visual Showcase area */}

@@ -178,7 +178,14 @@ export function Header({ navLinks }: HeaderProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
           {/* Brand Logo */}
           <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-2 group" aria-label="NammaTech Home">
+            <Link
+              href="/"
+              prefetch={true}
+              onMouseEnter={() => router.prefetch("/")}
+              onTouchStart={() => router.prefetch("/")}
+              className="flex items-center gap-2 group"
+              aria-label="NammaTech Home"
+            >
               <div className="relative w-10 h-10 rounded-full overflow-hidden ring-2 ring-[var(--border)] group-hover:ring-amber-500/60 group-hover:scale-105 transition-all shadow-md flex-shrink-0">
                 <Image
                   src="/images/nammatech-logo.png"
@@ -200,6 +207,8 @@ export function Header({ navLinks }: HeaderProps) {
                     key={link.id || link.href}
                     href={link.href}
                     prefetch={true}
+                    onMouseEnter={() => router.prefetch(link.href)}
+                    onTouchStart={() => router.prefetch(link.href)}
                     className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                       isActive
                         ? "bg-[var(--secondary)] text-[var(--primary)] font-semibold"
@@ -373,6 +382,8 @@ export function Header({ navLinks }: HeaderProps) {
                 key={link.id || link.href}
                 href={link.href}
                 prefetch={true}
+                onMouseEnter={() => router.prefetch(link.href)}
+                onTouchStart={() => router.prefetch(link.href)}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium ${
                   pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href))
