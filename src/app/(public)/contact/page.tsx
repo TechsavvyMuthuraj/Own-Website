@@ -34,6 +34,7 @@ import { Zap } from "lucide-react";
 export default function ContactPage() {
   const router = useRouter();
   const [contactMode, setContactMode] = useState<"live_chat" | "email">("live_chat");
+  const [isChatActive, setIsChatActive] = useState<boolean>(false);
 
   const [formState, setFormState] = useState<FormState>({
     name: "",
@@ -150,6 +151,14 @@ export default function ContactPage() {
   const activeErrorConfig = hasError ? errorConfig[status] : null;
   const ErrorIcon = activeErrorConfig?.icon ?? AlertCircle;
 
+  if (contactMode === "live_chat" && isChatActive) {
+    return (
+      <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 py-3 sm:py-4">
+        <LiveSupportChat onActiveStateChange={setIsChatActive} />
+      </div>
+    );
+  }
+
   return (
     <div className={`max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full ${contactMode === "live_chat" ? "py-4 sm:py-6" : "py-12"}`}>
       {/* ── Page Header ───────────────────────────────────────────────────── */}
@@ -199,7 +208,7 @@ export default function ContactPage() {
 
       {contactMode === "live_chat" ? (
         <div className="space-y-8">
-          <LiveSupportChat />
+          <LiveSupportChat onActiveStateChange={setIsChatActive} />
 
           {/* Quick info strip below chat */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-[var(--border)]">

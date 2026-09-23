@@ -55,9 +55,10 @@ const STORAGE_SESSION_KEY = "nammatech_support_session_id_v2";
 
 export interface LiveSupportChatProps {
   compact?: boolean;
+  onActiveStateChange?: (active: boolean) => void;
 }
 
-export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) {
+export function LiveSupportChat({ compact = false, onActiveStateChange }: LiveSupportChatProps = {}) {
   const { user, profile, loading: authLoading } = useAuth();
   const { showToast, confirm } = useToast();
 
@@ -67,6 +68,12 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
   const [userEmail, setUserEmail] = useState<string>("");
   const [category, setCategory] = useState<string>("Software Installation");
   const [hasJoined, setHasJoined] = useState<boolean>(false);
+  const [isMaximized, setIsMaximized] = useState<boolean>(false);
+  const [showInspector, setShowInspector] = useState<boolean>(true);
+
+  useEffect(() => {
+    onActiveStateChange?.(hasJoined);
+  }, [hasJoined, onActiveStateChange]);
 
   // Chat data state
   const [session, setSession] = useState<SupportSession | null>(null);
@@ -809,10 +816,204 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
           </form>
         </div>
       ) : (
-        /* ── STEP 2: ACTIVE LIVE TECHNICAL SUPPORT CONSOLE ── */
-        <div className={compact ? "rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xl overflow-hidden flex flex-col h-[500px] relative text-left" : "rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-2xl overflow-hidden flex flex-col h-[calc(100vh-270px)] min-h-[440px] max-h-[640px] relative"}>
-          {/* Top Control Bar */}
-          <div className="px-5 py-3.5 border-b border-[var(--border)] bg-[var(--card)]/90 backdrop-blur-md flex items-center justify-between gap-3 z-10">
+        /* ── STEP 2: ACTIVE LIVE TECHNICAL SUPPORT CONSOLE (WINDOWS OS FORMAT) ── */
+        <div
+          className={
+            isMaximized
+              ? "fixed inset-1 sm:inset-3 z-50 rounded-2xl border border-neutral-700 bg-[#08090f] shadow-2xl overflow-hidden flex flex-col text-left"
+              : compact
+              ? "rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xl overflow-hidden flex flex-col h-[500px] relative text-left"
+              : "rounded-2xl sm:rounded-3xl border border-neutral-800 bg-[#08090f] shadow-2xl overflow-hidden flex flex-col h-[calc(100vh-170px)] min-h-[580px] max-h-[820px] relative text-left"
+          }
+        >
+          {/* 1. Windows OS Application Titlebar */}
+          <div className="px-3.5 py-2 bg-[#10121a] border-b border-neutral-800 flex items-center justify-between text-xs select-none z-20">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="w-5 h-5 rounded bg-blue-600/20 border border-blue-500/40 text-blue-400 flex items-center justify-center text-[11px] font-bold">
+                🪟
+              </span>
+              <span className="font-bold text-slate-100 truncate">
+                NammaTech Remote Assist Console v3.2
+              </span>
+              <span className="hidden sm:inline-block text-[11px] font-mono text-neutral-400">
+                [{session?.id ? session.id.slice(0, 16) : "Connecting"}...]
+              </span>
+              <span className="hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                TLS 1.3 Encrypted
+              </span>
+            </div>
+
+            {/* Windows Action Controls */}
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowInspector((prev) => !prev)}
+                className="px-2 py-1 rounded hover:bg-neutral-800 text-[11px] text-neutral-400 hover:text-white transition-colors cursor-pointer hidden sm:inline-block"
+                title="Toggle Technical Inspector Sidebar"
+              >
+                {showInspector ? "Hide Inspector" : "Show Inspector"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsMaximized((prev) => !prev)}
+                className="w-7 h-6 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer text-xs font-mono"
+                title={isMaximized ? "Restore Window" : "Maximize to Fullscreen"}
+              >
+                {isMaximized ? "❐" : "▢"}
+              </button>
+              <button
+                type="button"
+                onClick={handleCloseChatSession}
+                className="w-7 h-6 rounded hover:bg-red-600 text-neutral-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer text-xs font-bold"
+                title="Close Session"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          {/* 2. Windows Menu Bar */}
+          <div className="px-3.5 py-1.5 bg-[#0b0c12] border-b border-neutral-800/80 flex items-center justify-between text-[11px] text-neutral-400 select-none z-10">
+            <div className="flex items-center gap-4 overflow-x-auto scrollbar-none">
+              <span className="hover:text-slate-200 cursor-pointer">File</span>
+              <span className="hover:text-slate-200 cursor-pointer">Diagnostics</span>
+              <span className="hover:text-slate-200 cursor-pointer">Crash Logs</span>
+              <span className="hover:text-slate-200 cursor-pointer">Direct Mirrors</span>
+              <a
+                href="https://wa.me/919944875726?text=Hi%20NammaTech%20Support,%20I%20am%20connected%20to%20session:%20"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-emerald-400 hover:underline flex items-center gap-1 font-semibold"
+              >
+                <span>Specialist Hotline: +91 99448 75726</span>
+              </a>
+            </div>
+            <div className="hidden sm:flex items-center gap-2 text-[10px] text-neutral-500 font-mono">
+              <span>Direct Edge: 10 Gbps</span>
+              <span>•</span>
+              <span>Status: 100% Online</span>
+            </div>
+          </div>
+
+          {/* 3. Split 2-Pane Technical Support Workspace */}
+          <div className="flex-1 flex overflow-hidden min-h-0">
+            {/* LEFT PANE: Technical Support Inspector (Width 280px on desktop) */}
+            {showInspector && (
+              <aside className="w-64 sm:w-72 border-r border-neutral-800 bg-[#0d0f17] flex flex-col justify-between overflow-y-auto p-4 text-xs select-none flex-shrink-0">
+                <div className="space-y-4">
+                  <div>
+                    <div className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">
+                      Active Client Session
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-neutral-900 border border-neutral-800 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-neutral-400">Client:</span>
+                        <span className="font-bold text-white truncate max-w-[130px]">
+                          {session?.userName || userName}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-neutral-400">Issue:</span>
+                        <span className="text-sky-400 font-semibold truncate max-w-[130px]">
+                          {session?.category || category}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between pt-1 border-t border-neutral-800 text-[10px]">
+                        <span className="text-neutral-500 font-mono truncate max-w-[130px]">
+                          {session?.id ? session.id.slice(0, 14) : ""}...
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (session?.id) {
+                              navigator.clipboard.writeText(session.id);
+                              showToast({ message: "Session ID copied to clipboard!", type: "success" });
+                            }
+                          }}
+                          className="text-sky-400 hover:underline cursor-pointer"
+                          title="Copy Session ID"
+                        >
+                          Copy ID
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Assigned Specialist Card */}
+                  <div>
+                    <div className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">
+                      On-Duty Specialist
+                    </div>
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-neutral-900 to-neutral-950 border border-neutral-800 space-y-2">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
+                          {session?.assignedSpecialistName ? session.assignedSpecialistName.charAt(0) : "S"}
+                        </div>
+                        <div>
+                          <div className="font-bold text-white text-xs">
+                            {session?.assignedSpecialistName || "Specialist Desk"}
+                          </div>
+                          <div className="text-[10px] text-emerald-400 flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            Live Triage Active
+                          </div>
+                        </div>
+                      </div>
+                      <a
+                        href="https://wa.me/919944875726"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full py-1.5 px-2 rounded-lg bg-[#25D366]/15 hover:bg-[#25D366]/25 border border-[#25D366]/30 text-[#25D366] font-bold text-[11px] flex items-center justify-center gap-1.5 transition-colors"
+                      >
+                        <span>WhatsApp: +91 99448 75726</span>
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Quick Technical Presets */}
+                  <div>
+                    <div className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">
+                      Quick Technical Presets
+                    </div>
+                    <div className="space-y-1.5">
+                      {[
+                        "🛡️ Windows Defender False Positive",
+                        "🎮 Missing DirectX / VC++ Runtime",
+                        "📦 Archive Password (nammatech)",
+                        "🔗 Mirror Stuck at 99%",
+                      ].map((preset, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setInputText(preset)}
+                          className="w-full text-left p-2 rounded-lg bg-neutral-900/60 hover:bg-neutral-800/80 border border-neutral-800/60 text-[11px] text-neutral-300 hover:text-white transition-colors cursor-pointer truncate"
+                        >
+                          {preset}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Actions */}
+                <div className="pt-3 border-t border-neutral-800 space-y-2">
+                  <button
+                    type="button"
+                    onClick={handleExportTranscript}
+                    className="w-full py-1.5 px-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 hover:text-white text-[11px] flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Save Session Transcript</span>
+                  </button>
+                </div>
+              </aside>
+            )}
+
+            {/* RIGHT PANE: Chat Stream & Message Input */}
+            <div className="flex-1 flex flex-col min-w-0 bg-[#090a0f] overflow-hidden">
+              {/* Top Control Bar */}
+              <div className="px-5 py-3 border-b border-neutral-800 bg-[#0c0d14]/90 backdrop-blur-md flex items-center justify-between gap-3 z-10">
             <div className="flex items-center gap-3 min-w-0">
               <div className="relative">
                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[var(--primary)] to-rose-600 flex items-center justify-center text-white font-black text-sm shadow-md">
@@ -1335,7 +1536,9 @@ export function LiveSupportChat({ compact = false }: LiveSupportChatProps = {}) 
             )}
           </div>
         </div>
-      )}
+      </div>
     </div>
+  )}
+</div>
   );
 }
