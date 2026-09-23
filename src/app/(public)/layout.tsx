@@ -8,7 +8,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { AdminMaintenanceBanner } from "@/components/admin/admin-maintenance-banner";
 import { TopLoader } from "@/components/navigation/top-loader";
 import { PageLoader } from "@/components/ui/page-loader";
-import { YouTubeMiniPlayer } from "@/components/media/youtube-mini-player";
 import { GlobalSiteMascot } from "@/components/mascot/global-site-mascot";
 import { ContactSupportPopup } from "@/components/support/contact-support-popup";
 
@@ -89,7 +88,6 @@ export default async function PublicLayout({
       <Suspense fallback={null}>
         <PageLoader />
         <TopLoader />
-        <YouTubeMiniPlayer />
         <GlobalSiteMascot />
         <ContactSupportPopup />
       </Suspense>
