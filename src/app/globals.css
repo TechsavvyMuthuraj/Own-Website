@@ -109,276 +109,56 @@ html:not([data-theme]) {
   animation: marquee 32s linear infinite;
 }
 
-/* 1. MIDNIGHT SLATE (Apple/Stripe Obsidian) */
+/* ══════════════════════════════════════════════════════════════════ */
+/* TRUE OBSIDIAN DARK THEME (No purple, no tint - Pure Pro Tech Dark) */
+/* ══════════════════════════════════════════════════════════════════ */
 html[data-theme="midnight"],
 [data-theme="midnight"],
 html[data-theme="dark"],
-[data-theme="dark"] {
-  --background: #090b14;
+[data-theme="dark"],
+html[data-theme="amethyst"],
+[data-theme="amethyst"],
+html[data-theme="sapphire"],
+[data-theme="sapphire"],
+html[data-theme="emerald"],
+[data-theme="emerald"],
+html[data-theme="cyber-amber"],
+[data-theme="cyber-amber"],
+html[data-theme="crimson"],
+[data-theme="crimson"],
+html[data-theme="titanium"],
+[data-theme="titanium"],
+html[data-theme="amoled"],
+[data-theme="amoled"],
+html.dark,
+.dark {
+  --background: #090a0f;
   --foreground: #f8fafc;
-  --card: #111524;
+  --card: #11131c;
   --card-foreground: #f8fafc;
-  --card-border: #1c243d;
-  --popover: #111524;
+  --card-border: #1f2230;
+  --popover: #11131c;
   --popover-foreground: #f8fafc;
-  --primary: #38bdf8;
-  --primary-hover: #0284c7;
-  --primary-foreground: #090b14;
-  --secondary: #171c30;
+  --primary: #f59e0b;
+  --primary-hover: #d97706;
+  --primary-foreground: #090a0f;
+  --secondary: #171924;
   --secondary-foreground: #e2e8f0;
-  --muted: #131728;
+  --muted: #151722;
   --muted-foreground: #94a3b8;
   --accent: #38bdf8;
-  --accent-foreground: #090b14;
+  --accent-foreground: #090a0f;
   --success: #10b981;
   --success-foreground: #ffffff;
   --warning: #f59e0b;
   --warning-foreground: #ffffff;
   --destructive: #f43f5e;
   --destructive-foreground: #ffffff;
-  --border: #1c243d;
-  --input: #1c243d;
+  --border: #1f2230;
+  --input: #1f2230;
   --ring: #38bdf8;
   --badge-new: #10b981;
   --badge-updated: #38bdf8;
-  --badge-premium: #f59e0b;
-  --badge-free: #10b981;
-}
-
-/* 2. CYBER AMBER & GOLD */
-html[data-theme="cyber-amber"],
-[data-theme="cyber-amber"] {
-  --background: #0a0805;
-  --foreground: #fffbf0;
-  --card: #15120a;
-  --card-foreground: #fffbf0;
-  --card-border: #38260f;
-  --popover: #15120a;
-  --popover-foreground: #fffbf0;
-  --primary: #f59e0b;
-  --primary-hover: #fbbf24;
-  --primary-foreground: #0a0805;
-  --secondary: #241c10;
-  --secondary-foreground: #fde68a;
-  --muted: #1a150e;
-  --muted-foreground: #b8aba0;
-  --accent: #f59e0b;
-  --accent-foreground: #0a0805;
-  --success: #10b981;
-  --success-foreground: #ffffff;
-  --warning: #f59e0b;
-  --warning-foreground: #ffffff;
-  --destructive: #f43f5e;
-  --destructive-foreground: #ffffff;
-  --border: #38260f;
-  --input: #38260f;
-  --ring: #f59e0b;
-  --badge-new: #10b981;
-  --badge-updated: #f59e0b;
-  --badge-premium: #f59e0b;
-  --badge-free: #10b981;
-}
-
-/* 3. DEEP EMERALD MATRIX */
-html[data-theme="emerald"],
-[data-theme="emerald"] {
-  --background: #021208;
-  --foreground: #f0fdf4;
-  --card: #062211;
-  --card-foreground: #f0fdf4;
-  --card-border: #0f4a25;
-  --popover: #062211;
-  --popover-foreground: #f0fdf4;
-  --primary: #10b981;
-  --primary-hover: #34d399;
-  --primary-foreground: #021208;
-  --secondary: #0c331a;
-  --secondary-foreground: #a7f3d0;
-  --muted: #082613;
-  --muted-foreground: #8cb89f;
-  --accent: #10b981;
-  --accent-foreground: #021208;
-  --success: #10b981;
-  --success-foreground: #ffffff;
-  --warning: #f59e0b;
-  --warning-foreground: #ffffff;
-  --destructive: #f43f5e;
-  --destructive-foreground: #ffffff;
-  --border: #0f4a25;
-  --input: #0f4a25;
-  --ring: #10b981;
-  --badge-new: #10b981;
-  --badge-updated: #34d399;
-  --badge-premium: #10b981;
-  --badge-free: #10b981;
-}
-
-/* 4. OCEANIC SAPPHIRE */
-html[data-theme="sapphire"],
-[data-theme="sapphire"] {
-  --background: #030f24;
-  --foreground: #f0f7ff;
-  --card: #071a3a;
-  --card-foreground: #f0f7ff;
-  --card-border: #0e3775;
-  --popover: #071a3a;
-  --popover-foreground: #f0f7ff;
-  --primary: #3b82f6;
-  --primary-hover: #60a5fa;
-  --primary-foreground: #030f24;
-  --secondary: #0c2552;
-  --secondary-foreground: #bfdbfe;
-  --muted: #091c3d;
-  --muted-foreground: #94b0d6;
-  --accent: #3b82f6;
-  --accent-foreground: #030f24;
-  --success: #10b981;
-  --success-foreground: #ffffff;
-  --warning: #f59e0b;
-  --warning-foreground: #ffffff;
-  --destructive: #f43f5e;
-  --destructive-foreground: #ffffff;
-  --border: #0e3775;
-  --input: #0e3775;
-  --ring: #3b82f6;
-  --badge-new: #10b981;
-  --badge-updated: #60a5fa;
-  --badge-premium: #3b82f6;
-  --badge-free: #10b981;
-}
-
-/* 5. ROYAL AMETHYST */
-html[data-theme="amethyst"],
-[data-theme="amethyst"] {
-  --background: #0f041f;
-  --foreground: #faf5ff;
-  --card: #1c0938;
-  --card-foreground: #faf5ff;
-  --card-border: #3d1373;
-  --popover: #1c0938;
-  --popover-foreground: #faf5ff;
-  --primary: #a855f7;
-  --primary-hover: #c084fc;
-  --primary-foreground: #0f041f;
-  --secondary: #2b0e57;
-  --secondary-foreground: #e9d5ff;
-  --muted: #1d0a3a;
-  --muted-foreground: #b29ccc;
-  --accent: #a855f7;
-  --accent-foreground: #0f041f;
-  --success: #10b981;
-  --success-foreground: #ffffff;
-  --warning: #f59e0b;
-  --warning-foreground: #ffffff;
-  --destructive: #f43f5e;
-  --destructive-foreground: #ffffff;
-  --border: #3d1373;
-  --input: #3d1373;
-  --ring: #a855f7;
-  --badge-new: #10b981;
-  --badge-updated: #c084fc;
-  --badge-premium: #a855f7;
-  --badge-free: #10b981;
-}
-
-/* 6. ELECTRIC CRIMSON */
-html[data-theme="crimson"],
-[data-theme="crimson"] {
-  --background: #19030c;
-  --foreground: #fff1f2;
-  --card: #2c0717;
-  --card-foreground: #fff1f2;
-  --card-border: #5c1233;
-  --popover: #2c0717;
-  --popover-foreground: #fff1f2;
-  --primary: #f43f5e;
-  --primary-hover: #fb7185;
-  --primary-foreground: #19030c;
-  --secondary: #3f0c22;
-  --secondary-foreground: #fecdd3;
-  --muted: #2d0818;
-  --muted-foreground: #c295a3;
-  --accent: #f43f5e;
-  --accent-foreground: #19030c;
-  --success: #10b981;
-  --success-foreground: #ffffff;
-  --warning: #f59e0b;
-  --warning-foreground: #ffffff;
-  --destructive: #f43f5e;
-  --destructive-foreground: #ffffff;
-  --border: #5c1233;
-  --input: #5c1233;
-  --ring: #f43f5e;
-  --badge-new: #10b981;
-  --badge-updated: #fb7185;
-  --badge-premium: #f43f5e;
-  --badge-free: #10b981;
-}
-
-/* 7. WARM TITANIUM GRAPHITE */
-html[data-theme="titanium"],
-[data-theme="titanium"] {
-  --background: #121319;
-  --foreground: #f4f4f5;
-  --card: #1d1e27;
-  --card-foreground: #f4f4f5;
-  --card-border: #34384a;
-  --popover: #1d1e27;
-  --popover-foreground: #f4f4f5;
-  --primary: #e4e4e7;
-  --primary-hover: #ffffff;
-  --primary-foreground: #121319;
-  --secondary: #272a38;
-  --secondary-foreground: #fafafa;
-  --muted: #20222e;
-  --muted-foreground: #a1a1aa;
-  --accent: #e4e4e7;
-  --accent-foreground: #121319;
-  --success: #10b981;
-  --success-foreground: #ffffff;
-  --warning: #f59e0b;
-  --warning-foreground: #ffffff;
-  --destructive: #f43f5e;
-  --destructive-foreground: #ffffff;
-  --border: #34384a;
-  --input: #34384a;
-  --ring: #a1a1aa;
-  --badge-new: #10b981;
-  --badge-updated: #a1a1aa;
-  --badge-premium: #e4e4e7;
-  --badge-free: #10b981;
-}
-
-/* 8. PURE AMOLED (100% PITCH BLACK) */
-html[data-theme="amoled"],
-[data-theme="amoled"] {
-  --background: #000000;
-  --foreground: #ffffff;
-  --card: #09090c;
-  --card-foreground: #ffffff;
-  --card-border: #22222a;
-  --popover: #09090c;
-  --popover-foreground: #ffffff;
-  --primary: #fbbf24;
-  --primary-hover: #f59e0b;
-  --primary-foreground: #000000;
-  --secondary: #141418;
-  --secondary-foreground: #ffffff;
-  --muted: #0e0e12;
-  --muted-foreground: #a1a1aa;
-  --accent: #fbbf24;
-  --accent-foreground: #000000;
-  --success: #10b981;
-  --success-foreground: #ffffff;
-  --warning: #f59e0b;
-  --warning-foreground: #ffffff;
-  --destructive: #f43f5e;
-  --destructive-foreground: #ffffff;
-  --border: #22222a;
-  --input: #22222a;
-  --ring: #fbbf24;
-  --badge-new: #10b981;
-  --badge-updated: #fbbf24;
   --badge-premium: #f59e0b;
   --badge-free: #10b981;
 }

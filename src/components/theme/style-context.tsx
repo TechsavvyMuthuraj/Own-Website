@@ -123,17 +123,21 @@ const STORAGE_KEY = "nammatech_style_prefs_v1";
 function applyDomTheme(themeId: ThemePreset, accentId: AccentPreset, fontId: FontPreset) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
-  root.setAttribute("data-theme", themeId);
+  const isLight = (themeId as string) === "nordic-light" || (themeId as string) === "light";
+  const normalizedTheme: ThemePreset = isLight ? "nordic-light" : "midnight";
+
+  root.setAttribute("data-theme", normalizedTheme);
   root.setAttribute("data-accent", accentId);
   root.setAttribute("data-font", fontId);
 
-  const isLight = themeId === "nordic-light" || themeId === "warm-ivory";
   if (isLight) {
     root.classList.remove("dark");
     root.classList.add("light");
+    root.style.colorScheme = "light";
   } else {
     root.classList.remove("light");
     root.classList.add("dark");
+    root.style.colorScheme = "dark";
   }
 }
 
@@ -148,35 +152,26 @@ export function StyleProvider({ children }: { children: React.ReactNode }) {
   // Mutable ref so rapid sequential clicks ALWAYS read the freshest active theme with 0ms lag
   const currentThemeRef = React.useRef<ThemePreset>("midnight");
 
-  // Load preferences on initial mount, prioritizing pre-hydration DOM attributes
+  // Load preferences on initial mount, strictly normalizing to Dark (midnight) or Light (nordic-light)
   useEffect(() => {
     let initialTheme: ThemePreset = "midnight";
     let initialAccent: AccentPreset = "amber";
     let initialFont: FontPreset = "jakarta";
-    let initialDark: ThemePreset = "midnight";
 
     try {
-      // 1. Check if pre-hydration script already applied theme to DOM
-      const domTheme = document.documentElement.getAttribute("data-theme") as ThemePreset | null;
-      const domAccent = document.documentElement.getAttribute("data-accent") as AccentPreset | null;
-      const domFont = document.documentElement.getAttribute("data-font") as FontPreset | null;
-
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (parsed.theme) initialTheme = parsed.theme;
-        if (parsed.lastDarkTheme) initialDark = parsed.lastDarkTheme;
+        if (parsed.theme === "nordic-light" || parsed.theme === "light") {
+          initialTheme = "nordic-light";
+        } else {
+          initialTheme = "midnight";
+        }
         if (parsed.accent) initialAccent = parsed.accent;
         if (parsed.fontStyle) initialFont = parsed.fontStyle;
-      } else if (domTheme) {
-        initialTheme = domTheme;
-        if (domAccent) initialAccent = domAccent;
-        if (domFont) initialFont = domFont;
       } else {
         const storedTheme = localStorage.getItem("theme");
-        if (storedTheme === "light") {
-          initialTheme = "nordic-light";
-        }
+        initialTheme = storedTheme === "light" ? "nordic-light" : "midnight";
       }
     } catch {
       // Ignore
@@ -184,7 +179,7 @@ export function StyleProvider({ children }: { children: React.ReactNode }) {
 
     currentThemeRef.current = initialTheme;
     setThemeState(initialTheme);
-    setLastDarkTheme(initialDark);
+    setLastDarkTheme("midnight");
     setAccentState(initialAccent);
     setFontStyleState(initialFont);
     setMounted(true);
@@ -192,7 +187,7 @@ export function StyleProvider({ children }: { children: React.ReactNode }) {
     // Apply immediately upon client hydration
     applyDomTheme(initialTheme, initialAccent, initialFont);
 
-    const isLight = initialTheme === "nordic-light" || initialTheme === "warm-ivory";
+    const isLight = initialTheme === "nordic-light";
     setNextTheme(isLight ? "light" : "dark");
   }, [setNextTheme]);
 
