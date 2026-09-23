@@ -190,8 +190,20 @@ export function TechnicalSupportClient() {
           prevTotalUnreadRef.current = newTotalUnread;
 
           if (selectedSessionId) {
-            const found = data.sessions.find((s: SupportSession) => s.id === selectedSessionId);
-            if (found) setActiveSession(found);
+            if (deletedSessionIdsRef.current.has(selectedSessionId)) {
+              setSelectedSessionId(null);
+              setActiveSession(null);
+            } else {
+              const found = filtered.find((s: SupportSession) => s.id === selectedSessionId);
+              if (found) {
+                setActiveSession(found);
+              } else {
+                setSelectedSessionId(null);
+                setActiveSession(null);
+              }
+            }
+          } else {
+            setActiveSession(null);
           }
         }
       }
@@ -375,12 +387,36 @@ export function TechnicalSupportClient() {
     }
 
     const fetchActiveSessionOnly = async () => {
+      if (!selectedSessionId || deletedSessionIdsRef.current.has(selectedSessionId)) {
+        setActiveSession(null);
+        setSelectedSessionId(null);
+        return;
+      }
+
       try {
         const res = await fetch(`/api/support/chat?sessionId=${encodeURIComponent(selectedSessionId)}`);
+        if (res.status === 410 || res.status === 404) {
+          deletedSessionIdsRef.current.add(selectedSessionId);
+          if (typeof window !== "undefined") {
+            try {
+              localStorage.setItem(
+                SPECIALIST_DELETED_KEY,
+                JSON.stringify(Array.from(deletedSessionIdsRef.current))
+              );
+            } catch {}
+          }
+          setActiveSession(null);
+          setSelectedSessionId(null);
+          return;
+        }
+
         if (res.ok) {
           const data = await res.json();
-          if (data.session) {
+          if (data.session && !deletedSessionIdsRef.current.has(data.session.id)) {
             setActiveSession(data.session);
+          } else {
+            setActiveSession(null);
+            setSelectedSessionId(null);
           }
         }
       } catch {}
@@ -792,7 +828,7 @@ export function TechnicalSupportClient() {
           } catch {}
         }
         setSessions((prev) => prev.filter((s) => s.id !== targetId));
-        if (selectedSessionId === targetId) {
+        if (selectedSessionId === targetId || activeSession?.id === targetId) {
           setSelectedSessionId(null);
           setActiveSession(null);
         }
@@ -1541,7 +1577,7 @@ export function TechnicalSupportClient() {
         <main className={`lg:col-span-5 border-r flex flex-col h-[calc(100vh-61px)] ${
           isLight ? "bg-slate-50/50 border-slate-200" : "bg-[#090610]/40 border-neutral-800/80"
         }`}>
-          {activeSession ? (
+          {activeSession && !deletedSessionIdsRef.current.has(activeSession.id) ? (
             <>
               {/* Active Header */}
               <div className={`px-4 py-3 border-b flex items-center justify-between gap-3 backdrop-blur-md ${
