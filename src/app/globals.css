@@ -132,30 +132,30 @@ html[data-theme="amoled"],
 [data-theme="amoled"],
 html.dark,
 .dark {
-  --background: #090a0f;
+  --background: #000000;
   --foreground: #f8fafc;
-  --card: #11131c;
+  --card: #08090e;
   --card-foreground: #f8fafc;
-  --card-border: #1f2230;
-  --popover: #11131c;
+  --card-border: #141724;
+  --popover: #08090e;
   --popover-foreground: #f8fafc;
   --primary: #f59e0b;
   --primary-hover: #d97706;
-  --primary-foreground: #090a0f;
-  --secondary: #171924;
+  --primary-foreground: #000000;
+  --secondary: #0f1118;
   --secondary-foreground: #e2e8f0;
-  --muted: #151722;
+  --muted: #0d0f17;
   --muted-foreground: #94a3b8;
   --accent: #38bdf8;
-  --accent-foreground: #090a0f;
+  --accent-foreground: #000000;
   --success: #10b981;
   --success-foreground: #ffffff;
   --warning: #f59e0b;
   --warning-foreground: #ffffff;
   --destructive: #f43f5e;
   --destructive-foreground: #ffffff;
-  --border: #1f2230;
-  --input: #1f2230;
+  --border: #141724;
+  --input: #141724;
   --ring: #38bdf8;
   --badge-new: #10b981;
   --badge-updated: #38bdf8;
@@ -435,20 +435,17 @@ p, h1, h2, h3, h4, h5, h6, span, li, blockquote, code, pre, input, textarea {
 
 .namma-ambient-mesh {
   position: absolute;
-  top: -10%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90vw;
-  max-width: 1200px;
-  height: 600px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--primary) 0%, var(--primary) 20%, transparent 75%);
-  filter: blur(140px);
+  inset: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.22;
-  transition: background 0.3s ease, opacity 0.3s ease;
-  animation: ambientPulse 12s ease-in-out infinite alternate;
+  background:
+    radial-gradient(ellipse 70% 35% at 50% -5%, rgba(56, 189, 248, 0.18), transparent 70%),
+    radial-gradient(ellipse 45% 30% at 85% 15%, rgba(245, 158, 11, 0.12), transparent 60%),
+    radial-gradient(ellipse 45% 35% at 15% 35%, rgba(99, 102, 241, 0.14), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 50% 65%, rgba(56, 189, 248, 0.08), transparent 70%);
+  filter: blur(80px);
+  opacity: 0.9;
+  transition: opacity 0.4s ease;
 }
 
 /* Card hover lift & spring physics */

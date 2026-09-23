@@ -27,8 +27,6 @@ import { HomepageWallpapers } from "@/components/wallpapers/homepage-wallpapers"
 import { FeaturesGrid } from "@/components/home/features-grid";
 import { YouTubeShowcase } from "@/components/home/youtube-showcase";
 import { HeroInteractiveBanner } from "@/components/home/hero-interactive-banner";
-import { InfiniteMarqueeTicker } from "@/components/home/infinite-marquee-ticker";
-import { SecurityTerminalWidget } from "@/components/home/security-terminal-widget";
 import { MetricCountUp } from "@/components/ui/metric-count-up";
 
 import type { Metadata } from "next";
@@ -254,12 +252,9 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* 1.5 INFINITE HIGH-SPEED MARQUEE TICKER */}
-      <InfiniteMarqueeTicker />
-
-      {/* 2. REAL-TIME PLATFORM DETAILS & ECOSYSTEM (PRO DEVELOPER TELEMETRY) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 space-y-4">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 py-3.5 px-5 rounded-2xl border border-[var(--border)] bg-[var(--card)]/60 backdrop-blur-xl shadow-xs">
+      {/* 2. REAL-TIME PLATFORM DETAILS & ECOSYSTEM */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 py-3.5 px-5 rounded-2xl border border-[var(--border)] bg-[var(--card)]/80 backdrop-blur-xl shadow-xs">
           {/* Key Metrics in Minimal Text Style with CountUp Animation */}
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-[var(--muted-foreground)]">
             <div className="flex items-center gap-1.5">
@@ -338,11 +333,6 @@ export default async function HomePage() {
               <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
-        </div>
-
-        {/* Pro Developer Real-Time Diagnostics Terminal */}
-        <div className="pt-1">
-          <SecurityTerminalWidget />
         </div>
       </section>
 
