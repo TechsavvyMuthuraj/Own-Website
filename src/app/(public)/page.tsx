@@ -27,6 +27,9 @@ import { HomepageWallpapers } from "@/components/wallpapers/homepage-wallpapers"
 import { FeaturesGrid } from "@/components/home/features-grid";
 import { YouTubeShowcase } from "@/components/home/youtube-showcase";
 import { HeroInteractiveBanner } from "@/components/home/hero-interactive-banner";
+import { InfiniteMarqueeTicker } from "@/components/home/infinite-marquee-ticker";
+import { SecurityTerminalWidget } from "@/components/home/security-terminal-widget";
+import { MetricCountUp } from "@/components/ui/metric-count-up";
 
 import type { Metadata } from "next";
 
@@ -251,24 +254,33 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* 2. REAL-TIME PLATFORM DETAILS & ECOSYSTEM (SUITABLE TEXT STYLE) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
+      {/* 1.5 INFINITE HIGH-SPEED MARQUEE TICKER */}
+      <InfiniteMarqueeTicker />
+
+      {/* 2. REAL-TIME PLATFORM DETAILS & ECOSYSTEM (PRO DEVELOPER TELEMETRY) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 space-y-4">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 py-3.5 px-5 rounded-2xl border border-[var(--border)] bg-[var(--card)]/60 backdrop-blur-xl shadow-xs">
-          {/* Key Metrics in Minimal Text Style */}
+          {/* Key Metrics in Minimal Text Style with CountUp Animation */}
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-[var(--muted-foreground)]">
             <div className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
-              <span className="font-bold text-[var(--foreground)] font-mono text-sm">{totalResourcesCount}+</span>
+              <span className="font-bold text-[var(--foreground)] font-mono text-sm">
+                <MetricCountUp end={totalResourcesCount} suffix="+" />
+              </span>
               <span>Verified Resources</span>
             </div>
             <span className="hidden sm:inline text-[var(--border)]">|</span>
             <div className="flex items-center gap-1.5">
-              <span className="font-bold text-[var(--foreground)] font-mono text-sm">{totalCategoriesCount}</span>
+              <span className="font-bold text-[var(--foreground)] font-mono text-sm">
+                <MetricCountUp end={totalCategoriesCount} />
+              </span>
               <span>Active Categories</span>
             </div>
             <span className="hidden sm:inline text-[var(--border)]">|</span>
             <div className="flex items-center gap-1.5">
-              <span className="font-bold text-[var(--foreground)] font-mono text-sm">{totalWallpapersCount}+</span>
+              <span className="font-bold text-[var(--foreground)] font-mono text-sm">
+                <MetricCountUp end={totalWallpapersCount} suffix="+" />
+              </span>
               <span>4K Wallpapers</span>
             </div>
             <span className="hidden md:inline text-[var(--border)]">|</span>
@@ -326,6 +338,11 @@ export default async function HomePage() {
               <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
+        </div>
+
+        {/* Pro Developer Real-Time Diagnostics Terminal */}
+        <div className="pt-1">
+          <SecurityTerminalWidget />
         </div>
       </section>
 
