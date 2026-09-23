@@ -335,22 +335,23 @@ export async function DELETE(request: NextRequest) {
       } catch {}
     }
 
-    // Always sync latest state before mutating
-    await SupportChatStore.syncFromSupabase();
-
     if (all) {
       // Nuclear clear: purge all sessions from memory and Supabase site_settings
-      await SupportChatStore.purgeAll();
+      void SupportChatStore.purgeAll();
       return NextResponse.json({ success: true, purged: true, message: "Queue purged completely" });
     }
 
-    if (!sessionId) {
+    const cleanSessionId = sessionId?.trim();
+    if (!cleanSessionId) {
       return NextResponse.json({ error: "Missing sessionId" }, { status: 400 });
     }
 
-    await SupportChatStore.deleteSession(sessionId);
+    // Immediately delete in memory and blacklist
+    SupportChatStore.deleteSessionSync(cleanSessionId);
+    // Non-blocking persist to Supabase site_settings
+    void SupportChatStore.persistToSupabase();
 
-    return NextResponse.json({ success: true, deletedSessionId: sessionId });
+    return NextResponse.json({ success: true, deletedSessionId: cleanSessionId });
   } catch (err: any) {
     console.error("[Support Chat DELETE Error]:", err);
     return NextResponse.json({ error: "Failed to delete session" }, { status: 500 });

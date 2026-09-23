@@ -437,10 +437,15 @@ export const SupportChatStore = {
     session.updatedAt = new Date().toISOString();
   },
 
-  // Delete session permanently and persist across all lambdas
-  async deleteSession(sessionId: string) {
+  // Delete session immediately in memory
+  deleteSessionSync(sessionId: string) {
     sessionsStore.delete(sessionId);
     deletedSessions.add(sessionId);
+  },
+
+  // Delete session permanently and persist across all lambdas
+  async deleteSession(sessionId: string) {
+    this.deleteSessionSync(sessionId);
     await this.persistToSupabase();
   },
 

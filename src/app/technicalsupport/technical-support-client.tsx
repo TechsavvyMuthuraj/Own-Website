@@ -782,7 +782,7 @@ export function TechnicalSupportClient() {
       confirmText: "Delete Session",
       cancelText: "Cancel",
       variant: "danger",
-      onConfirm: async () => {
+      onConfirm: () => {
         // Immediately blacklist and persist to localStorage so even after page refresh it never returns!
         deletedSessionIdsRef.current.add(targetId);
         if (typeof window !== "undefined") {
@@ -797,20 +797,16 @@ export function TechnicalSupportClient() {
           setActiveSession(null);
         }
 
-        try {
-          const res = await fetch(`/api/support/chat?sessionId=${encodeURIComponent(targetId)}`, {
-            method: "DELETE",
-          });
-          if (res.ok) {
-            showToast({
-              type: "info",
-              title: "Session Deleted",
-              message: "Support ticket permanently removed from queue.",
-            });
-          }
-        } catch {
-          showToast({ type: "error", message: "Failed to delete session." });
-        }
+        showToast({
+          type: "info",
+          title: "Session Deleted",
+          message: "Support ticket permanently removed from queue.",
+        });
+
+        // Instant non-blocking delete request (modal closes in 0ms)
+        fetch(`/api/support/chat?sessionId=${encodeURIComponent(targetId)}`, {
+          method: "DELETE",
+        }).catch(() => {});
       },
     });
   };
@@ -824,7 +820,7 @@ export function TechnicalSupportClient() {
       confirmText: "Clear All",
       cancelText: "Cancel",
       variant: "danger",
-      onConfirm: async () => {
+      onConfirm: () => {
         // Collect all IDs to blacklist in localStorage
         sessions.forEach((s) => deletedSessionIdsRef.current.add(s.id));
         if (typeof window !== "undefined") {
@@ -839,18 +835,14 @@ export function TechnicalSupportClient() {
         setSelectedSessionId(null);
         setActiveSession(null);
 
-        try {
-          const res = await fetch("/api/support/chat?all=true", { method: "DELETE" });
-          if (res.ok) {
-            showToast({
-              type: "success",
-              title: "Queue Cleared",
-              message: "All support sessions have been purged from the queue and database.",
-            });
-          }
-        } catch {
-          showToast({ type: "error", message: "Failed to purge queue." });
-        }
+        showToast({
+          type: "success",
+          title: "Queue Cleared",
+          message: "All support sessions have been purged from the queue and database.",
+        });
+
+        // Instant non-blocking purge request (modal closes in 0ms)
+        fetch("/api/support/chat?all=true", { method: "DELETE" }).catch(() => {});
       },
     });
   };
@@ -900,11 +892,17 @@ export function TechnicalSupportClient() {
   // ══════════════════════════════════════════════════════════════════════
   if (!specialist) {
     return (
-      <main className="min-h-screen bg-[#05030A] text-white flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden">
-        {/* Background Cyber Glow */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-cyan-600/15 via-emerald-600/10 to-indigo-600/10 rounded-full blur-[140px] pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-20 pointer-events-none" />
-
+      <main
+        className="min-h-screen text-white flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden"
+        style={{
+          backgroundColor: "#0d0d0d",
+          backgroundImage: `
+            radial-gradient(ellipse 65% 55% at 10% 12%, rgba(139, 92, 246, 0.22), transparent 100%),
+            radial-gradient(ellipse 55% 55% at 90% 88%, rgba(245, 158, 11, 0.16), transparent 100%),
+            radial-gradient(ellipse at center, transparent 35%, rgba(0, 0, 0, 0.75) 100%)
+          `,
+        }}
+      >
         <div className="w-full max-w-md relative z-10">
           {/* Brand & Terminal Header */}
           <div className="text-center mb-8">
@@ -1018,7 +1016,26 @@ export function TechnicalSupportClient() {
   const isLight = theme === "light";
 
   return (
-    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-200 ${isLight ? "bg-slate-100 text-slate-900" : "bg-[#06040A] text-white"}`}>
+    <div
+      className={`min-h-screen flex flex-col font-sans transition-colors duration-300 relative ${
+        isLight ? "bg-[#f8fafc] text-slate-900" : "bg-[#0d0d0d] text-white"
+      }`}
+      style={
+        !isLight
+          ? {
+              backgroundColor: "#0d0d0d",
+              backgroundImage: `
+                radial-gradient(ellipse 65% 55% at 12% 14%, rgba(139, 92, 246, 0.18), transparent 100%),
+                radial-gradient(ellipse 55% 55% at 88% 86%, rgba(245, 158, 11, 0.14), transparent 100%),
+                radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.75) 100%)
+              `,
+              backgroundAttachment: "fixed",
+            }
+          : {
+              backgroundColor: "#f8fafc",
+            }
+      }
+    >
       {/* ── TOP SPECIALIST CONTROL BAR ── */}
       <header className={`px-4 sm:px-6 py-3 border-b sticky top-0 z-30 flex items-center justify-between gap-4 backdrop-blur-xl transition-colors ${isLight ? "bg-white/95 border-slate-200 shadow-xs text-slate-900" : "bg-neutral-950/90 border-neutral-800/80 text-white"}`}>
         {/* Left: Brand & Specialist Identity */}
