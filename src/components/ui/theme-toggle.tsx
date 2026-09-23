@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { useTheme } from "next-themes";
-import { Sun, Moon, Palette, Sparkles } from "lucide-react";
-import { useStyleOptional, THEME_OPTIONS } from "@/components/theme/style-context";
+import { Sun, Moon } from "lucide-react";
+import { useStyleOptional } from "@/components/theme/style-context";
 
 export function ThemeToggle() {
   const { setTheme, resolvedTheme, theme: nextThemeValue } = useTheme();
@@ -14,68 +14,77 @@ export function ThemeToggle() {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
-    return (
-      <button
-        type="button"
-        id="theme-toggle-btn"
-        aria-label="Theme toggle"
-        className="w-9 h-9 rounded-xl border border-[var(--border)] flex items-center justify-center text-[var(--muted-foreground)] opacity-50 cursor-default"
-      >
-        <Palette className="w-4 h-4" />
-      </button>
-    );
-  }
-
-  const currentOption = style?.currentThemeOption || THEME_OPTIONS[0];
-  const currentIndex = THEME_OPTIONS.findIndex((t) => t.id === currentOption.id);
-  const isLight = currentOption.category === "light";
+  const isLight = style ? style.theme === "nordic-light" : resolvedTheme === "light" || nextThemeValue === "light";
 
   const handleToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (style) {
-      style.cycleNextTheme();
+      style.toggleDarkLight();
     } else {
-      const isDark = resolvedTheme ? resolvedTheme === "dark" : nextThemeValue === "dark";
-      setTheme(isDark ? "light" : "dark");
+      setTheme(isLight ? "dark" : "light");
     }
   };
+
+  if (!mounted) {
+    return (
+      <div
+        className="h-9 px-1 rounded-full border border-neutral-700/50 bg-neutral-900/50 flex items-center justify-between gap-1 opacity-50 select-none pointer-events-none"
+        style={{ width: "68px" }}
+      >
+        <span className="w-6 h-6 rounded-full flex items-center justify-center text-neutral-400">
+          <Sun className="w-3.5 h-3.5" />
+        </span>
+        <span className="w-6 h-6 rounded-full flex items-center justify-center text-neutral-400">
+          <Moon className="w-3.5 h-3.5" />
+        </span>
+      </div>
+    );
+  }
 
   return (
     <button
       type="button"
       id="theme-toggle-btn"
       onClick={handleToggle}
-      aria-label={`Theme: ${currentOption.name}. Click to cycle to next theme.`}
-      title={`Theme: ${currentOption.name} (${currentIndex + 1}/10) — Click to cycle to next theme`}
-      className="group relative w-9 h-9 rounded-xl border border-[var(--border)] bg-[var(--card)] hover:bg-[var(--secondary)] flex items-center justify-center text-[var(--foreground)] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[var(--ring)] shadow-xs cursor-pointer active:scale-90"
+      role="switch"
+      aria-checked={!isLight}
+      aria-label={isLight ? "Light theme active. Click to switch to Dark theme." : "Dark theme active. Click to switch to Light theme."}
+      title={isLight ? "Switch to Dark Theme" : "Switch to Light Theme"}
+      className="group relative h-9 p-1 rounded-full border transition-all duration-300 select-none cursor-pointer flex items-center justify-between gap-1 shadow-sm hover:shadow-md active:scale-95 border-neutral-300/80 bg-slate-100/90 hover:bg-slate-200/80 dark:border-neutral-800 dark:bg-neutral-950/80 dark:hover:bg-neutral-900/90 backdrop-blur-xl"
+      style={{ width: "68px" }}
     >
-      {/* Dynamic Theme Icon */}
-      {isLight ? (
-        <Sun className="w-4 h-4 text-amber-500 group-hover:rotate-90 group-hover:scale-110 transition-transform duration-300" />
-      ) : currentOption.id === "amoled" ? (
-        <Moon className="w-4 h-4 text-white group-hover:-rotate-45 group-hover:scale-110 transition-transform duration-300" />
-      ) : (
-        <Palette
-          className="w-4 h-4 group-hover:rotate-45 group-hover:scale-110 transition-transform duration-300"
-          style={{ color: currentOption.accent }}
-        />
-      )}
-
-      {/* Mini Color Swatch Pip */}
+      {/* Sliding Active Pill Capsule */}
       <span
-        className="absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full ring-1 ring-black/40 group-hover:scale-125 transition-transform"
-        style={{ backgroundColor: currentOption.accent }}
+        aria-hidden="true"
+        className={`absolute top-1 bottom-1 w-6 rounded-full transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+          isLight
+            ? "left-1 bg-white text-amber-500 shadow-sm shadow-amber-500/20 border border-amber-200/50"
+            : "left-[36px] bg-neutral-800 text-sky-400 shadow-sm shadow-sky-500/20 border border-neutral-700/60"
+        }`}
       />
 
-      {/* Theme Index Step Badge (1..10) */}
+      {/* Sun Icon (Light) */}
       <span
-        className="absolute -top-1 -right-1 px-1 min-w-[15px] h-[15px] rounded-full text-[9px] font-black bg-[var(--primary)] text-[var(--primary-foreground)] flex items-center justify-center shadow-xs select-none pointer-events-none"
+        className={`relative z-10 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
+          isLight
+            ? "text-amber-500 rotate-0 scale-100"
+            : "text-neutral-400 dark:text-neutral-500 rotate-45 scale-90 hover:text-neutral-300"
+        }`}
       >
-        {currentIndex + 1}
+        <Sun className={`w-3.5 h-3.5 transition-transform duration-500 ${isLight ? "rotate-90 text-amber-500" : ""}`} />
+      </span>
+
+      {/* Moon Icon (Dark) */}
+      <span
+        className={`relative z-10 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
+          !isLight
+            ? "text-sky-400 rotate-0 scale-100"
+            : "text-neutral-400 rotate-[-30deg] scale-90 hover:text-neutral-600"
+        }`}
+      >
+        <Moon className={`w-3.5 h-3.5 transition-transform duration-500 ${!isLight ? "rotate-[-15deg] text-sky-400" : ""}`} />
       </span>
     </button>
   );
 }
-
