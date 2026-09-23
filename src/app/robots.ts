@@ -7,12 +7,51 @@ export default function robots(): MetadataRoute.Robots {
       ? process.env.NEXT_PUBLIC_SITE_URL
       : "https://www.techsavvymuthuraj.dev";
 
+  const privateDisallows = [
+    "/admin/",
+    "/technicalsupport/",
+    "/account/",
+    "/checkout/",
+    "/cart/",
+    "/api/",
+  ];
+
   return {
     rules: [
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin/", "/account/", "/checkout/", "/cart/", "/api/"],
+        disallow: privateDisallows,
+      },
+      {
+        userAgent: "Googlebot",
+        allow: "/",
+        disallow: privateDisallows,
+      },
+      {
+        userAgent: "Bingbot",
+        allow: "/",
+        disallow: privateDisallows,
+      },
+      {
+        userAgent: "DuckDuckBot",
+        allow: "/",
+        disallow: privateDisallows,
+      },
+      {
+        userAgent: "Applebot",
+        allow: "/",
+        disallow: privateDisallows,
+      },
+      {
+        userAgent: "YandexBot",
+        allow: "/",
+        disallow: privateDisallows,
+      },
+      {
+        userAgent: "Slurp", // Yahoo!
+        allow: "/",
+        disallow: privateDisallows,
       },
       {
         userAgent: "Mediapartners-Google",
@@ -22,12 +61,8 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "AdsBot-Google",
         allow: "/",
       },
-      {
-        userAgent: "Googlebot",
-        allow: "/",
-        disallow: ["/admin/", "/account/", "/checkout/", "/cart/", "/api/"],
-      },
     ],
     sitemap: `${siteUrl}/sitemap.xml`,
+    host: siteUrl,
   };
 }

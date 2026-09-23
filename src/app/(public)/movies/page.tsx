@@ -17,6 +17,9 @@ export const metadata: Metadata = {
     "VIP 4K releases",
     "NammaTech movies",
   ],
+  alternates: {
+    canonical: "https://www.techsavvymuthuraj.dev/movies",
+  },
   openGraph: {
     title: "Movies & Cinema Hub - Free & 4K VIP Downloads | NammaTech",
     description:

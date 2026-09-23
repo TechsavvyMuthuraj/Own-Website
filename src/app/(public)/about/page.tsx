@@ -6,13 +6,28 @@ import { FounderProfile } from "@/components/home/founder-profile";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "About NammaTech & Founder Muthuraj C",
+  title: "About Founder Muthuraj C & NammaTech | Techsavvy Muthuraj",
   description:
-    "Learn about NammaTech's mission to deliver verified open-source software, developer tools, and digital resources. Founded by Muthuraj C.",
+    "Discover the story of Techsavvy Muthuraj (Muthuraj C) and NammaTech — engineered to deliver verified open-source software, freeware utilities, Android APKs, and 4K cinema.",
+  keywords: [
+    "Techsavvy Muthuraj",
+    "Muthuraj C",
+    "NammaTech founder",
+    "techsavvymuthuraj",
+    "Muthuraj developer",
+    "NammaTech story",
+    "Tamil tech creator",
+    "Muthuraj portfolio",
+  ],
+  alternates: {
+    canonical: "https://www.techsavvymuthuraj.dev/about",
+  },
   openGraph: {
-    title: "About NammaTech & Founder Muthuraj C",
+    title: "About Founder Muthuraj C & NammaTech | Techsavvy Muthuraj",
     description:
-      "Learn about NammaTech's mission to deliver verified digital resources and open-source software.",
+      "Discover the story of Techsavvy Muthuraj (Muthuraj C) and NammaTech — verified software and cinema hub.",
+    url: "https://www.techsavvymuthuraj.dev/about",
+    type: "profile",
   },
 };
 
@@ -21,9 +36,24 @@ const aboutJsonLd = {
   "@type": "AboutPage",
   mainEntity: {
     "@type": "Person",
+    "@id": "https://www.techsavvymuthuraj.dev/#person",
     name: "Muthuraj C",
-    jobTitle: "Founder & Lead Architect",
+    alternateName: ["Techsavvy Muthuraj", "techsavvymuthuraj"],
+    jobTitle: "Founder, Software Engineer & Content Creator",
     image: "https://www.techsavvymuthuraj.dev/images/founder-muthuraj.png",
+    url: "https://www.techsavvymuthuraj.dev/about",
+    sameAs: [
+      "https://www.youtube.com/@TechsavvyMuthuraj",
+      "https://github.com/TechsavvyMuthuraj",
+    ],
+    knowsAbout: [
+      "Full-Stack Web Development",
+      "Next.js & React",
+      "Software Architecture",
+      "Android Security",
+      "Cloud Infrastructure",
+      "Tamil Tech Community",
+    ],
     worksFor: {
       "@type": "Organization",
       name: "NammaTech",

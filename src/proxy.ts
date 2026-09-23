@@ -40,6 +40,7 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/_next") ||
     pathname.startsWith("/sounds") ||
     pathname.startsWith("/google") ||
+    pathname.endsWith(".txt") ||
     pathname === "/ads.txt" ||
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml";

@@ -33,7 +33,27 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: {
-    absolute: "NammaTech - Movies, APKs, Software, AI Tools & Downloads",
+    absolute: "NammaTech - Techsavvy Muthuraj | Movies, APKs, Software, AI Tools & Free Downloads",
+  },
+  description:
+    "Official technology platform by Techsavvy Muthuraj (Muthuraj C). Download verified open-source software, Android APKs, developer tools, AI utilities, and 4K cinema releases. 100% safe, fast, and malware-free.",
+  keywords: [
+    "Techsavvy Muthuraj",
+    "techsavvymuthuraj",
+    "NammaTech",
+    "Muthuraj C",
+    "Tamil tech website",
+    "Free software download",
+    "Android APK downloads safe",
+    "Tamil movies 4K download",
+    "Developer tools free",
+    "Open-source software",
+    "Freeware utilities download",
+    "Safe software downloads malware free",
+    "Tech support online live chat",
+  ],
+  alternates: {
+    canonical: "https://www.techsavvymuthuraj.dev",
   },
 };
 
@@ -205,8 +225,61 @@ export default async function HomePage() {
     hpSettings.latest_subtitle ||
     "Recently verified releases, updates, and open-source packages.";
 
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "What is NammaTech by Techsavvy Muthuraj?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "NammaTech is a premier digital technology platform founded by Techsavvy Muthuraj (Muthuraj C), providing verified open-source software, freeware utilities, Android APKs, developer tools, and high-definition 4K cinema releases.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Are downloads on NammaTech safe and virus-free?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes, 100%. Every single software package, tool, and APK hosted on NammaTech undergoes strict automated hash verification, sandbox testing, and malware scanning before being published.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Can I request custom software, games, or movies?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes, you can submit software, game, and movie requests directly through the Request portal or connect with our engineering team via Live Technical Support.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "How can I contact technical support for installation issues?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "We offer real-time live chat assistance on our Technical Support page, along with WhatsApp and phone support at +91 99448 75726.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Is NammaTech free to use?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes, the vast majority of resources, software, open-source utilities, and articles on NammaTech are 100% free with direct high-speed download links.",
+        },
+      },
+    ],
+  };
+
   return (
     <div className="relative flex flex-col gap-16 py-8 sm:py-12 overflow-hidden">
+      {/* FAQ Schema.org JSON-LD for rich Google Search results */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+
       {/* Background Ambient Mesh Light */}
       <div className="namma-ambient-mesh" />
 
