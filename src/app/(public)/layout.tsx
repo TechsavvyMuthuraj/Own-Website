@@ -10,6 +10,7 @@ import { TopLoader } from "@/components/navigation/top-loader";
 import { PageLoader } from "@/components/ui/page-loader";
 import { GlobalSiteMascot } from "@/components/mascot/global-site-mascot";
 import { ContactSupportPopup } from "@/components/support/contact-support-popup";
+import { AuroraBackground } from "@/components/ui/aurora-background";
 
 export const revalidate = 60; // 60s Edge ISR cache — unlocks instant CDN page switching
 
@@ -84,7 +85,12 @@ export default async function PublicLayout({
   ]);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen relative">
+      {/* Ambient Animated Aurora Background for all pages */}
+      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden opacity-30 dark:opacity-45" aria-hidden="true">
+        <AuroraBackground className="!w-full !h-full !bg-transparent" starCount={35} />
+      </div>
+
       <Suspense fallback={null}>
         <PageLoader />
         <TopLoader />
