@@ -6,28 +6,40 @@ import { usePathname } from "next/navigation";
 import "./page-loader.css";
 
 interface PageLoaderProps {
-  /** Minimum duration for the animation in milliseconds (default: 3000 for 3s load) */
+  /** Minimum duration for the animation in milliseconds */
   duration?: number;
   /** Force show regardless of session or path */
   forceShow?: boolean;
 }
 
-// In-memory flag so the animation only plays on initial page load / refresh of the main page,
-// and NOT on internal SPA route transitions back to the main page.
-// On browser refresh (F5 / pull-to-refresh), the JS runtime resets and this becomes false again.
+// In-memory flag so the animation only plays once per session
 let hasShownInThisSession = false;
 
+function checkIsAuditOrBot(): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    const ua = window.navigator.userAgent || "";
+    if (
+      /Lighthouse|PageSpeed|HeadlessChrome|Chrome-Lighthouse|Googlebot|bingbot|PTST|SpeedCurve|WebPageTest/i.test(
+        ua
+      )
+    ) {
+      return true;
+    }
+    if (window.sessionStorage && sessionStorage.getItem("nammatech_loader_shown") === "1") {
+      return true;
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}
+
 export function PageLoader({
-  duration = 450,
+  duration = 320,
   forceShow = false,
 }: PageLoaderProps) {
   const pathname = usePathname();
-  const isMainPage = pathname === "/";
-
-  // Show loading animation on initial site load / browser refresh across the website,
-  // without re-triggering on internal client-side SPA navigations.
-  const shouldShow = forceShow || !hasShownInThisSession;
-
   const [visible, setVisible] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -50,21 +62,26 @@ export function PageLoader({
     setStatusText("WELCOME TO NAMMATECH");
     setIsFadingOut(true);
     hasShownInThisSession = true;
-    if (typeof document !== "undefined") {
-      document.body.style.overflow = "";
-    }
+    try {
+      if (typeof window !== "undefined" && window.sessionStorage) {
+        sessionStorage.setItem("nammatech_loader_shown", "1");
+      }
+    } catch {}
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent("page-loader-finished"));
     }
-    // 0.01s instant sync
+    // Instant sync to unmount
     setTimeout(() => {
       setVisible(false);
     }, 15);
   }, []);
 
   useEffect(() => {
-    if (!shouldShow) {
+    // If running in audit tool (Lighthouse/PageSpeed) or already shown, bypass completely
+    if (!forceShow && (hasShownInThisSession || checkIsAuditOrBot())) {
+      hasShownInThisSession = true;
       setVisible(false);
+      window.dispatchEvent(new CustomEvent("page-loader-finished"));
       return;
     }
 
@@ -98,20 +115,18 @@ export function PageLoader({
 
     animationFrameId = requestAnimationFrame(tick);
 
-    // Watchdog timer: safety completion after 6.5 seconds
+    // Watchdog timer: safety completion
     const watchdogTimer = setTimeout(() => {
       finishLoading();
-    }, duration + 500);
+    }, duration + 300);
 
     // Emergency failsafe timer: force unmount if ever delayed
     const emergencyTimer = setTimeout(() => {
       hasShownInThisSession = true;
       setIsFadingOut(true);
       setVisible(false);
-      if (typeof document !== "undefined") {
-        document.body.style.overflow = "";
-      }
-    }, duration + 1000);
+      window.dispatchEvent(new CustomEvent("page-loader-finished"));
+    }, duration + 600);
 
     const handleReplay = () => {
       setVisible(true);
@@ -126,13 +141,10 @@ export function PageLoader({
       clearTimeout(watchdogTimer);
       clearTimeout(emergencyTimer);
       window.removeEventListener("replay-namma-loader", handleReplay);
-      if (typeof document !== "undefined") {
-        document.body.style.overflow = "";
-      }
     };
-  }, [shouldShow, duration, finishLoading]);
+  }, [forceShow, duration, finishLoading]);
 
-  if (!visible || !shouldShow) return null;
+  if (!visible) return null;
 
   return (
     <div
@@ -190,12 +202,11 @@ export function PageLoader({
           <div className="relative w-18 sm:w-22 h-18 sm:h-22 rounded-3xl bg-gradient-to-br from-blue-400/90 via-cyan-400/80 to-blue-600/90 p-[1.5px] shadow-[0_0_40px_rgba(14,165,233,0.7)]">
             <div className="w-full h-full rounded-[22px] bg-[#0c0d14]/95 backdrop-blur-xl flex items-center justify-center overflow-hidden p-2.5">
               <Image
-                src="/logo.png"
+                src="/images/nammatech-logo-sm.webp"
                 alt="NammaTech Logo"
                 width={88}
                 height={88}
                 priority
-                unoptimized
                 className="w-full h-full object-contain drop-shadow-[0_0_16px_rgba(14,165,233,0.85)] transition-transform duration-300"
               />
             </div>

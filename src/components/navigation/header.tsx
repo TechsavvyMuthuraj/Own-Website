@@ -66,10 +66,22 @@ export function Header({ navLinks }: HeaderProps) {
   const { itemCount } = useCart();
   const { user, profile, isAdmin, signOut } = useAuth();
 
-  // Scroll detection for dynamic island compaction
+  // Scroll detection for dynamic island compaction - 60fps raf throttled
   useEffect(() => {
+    let ticking = false;
+    let lastState = false;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const nowScrolled = window.scrollY > 20;
+          if (nowScrolled !== lastState) {
+            lastState = nowScrolled;
+            setIsScrolled(nowScrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
@@ -221,12 +233,12 @@ export function Header({ navLinks }: HeaderProps) {
                 <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full p-0.5 bg-gradient-to-br from-amber-500/30 via-transparent to-cyan-500/30 ring-1 ring-black/10 dark:ring-white/15 group-hover:ring-amber-500/70 group-hover:scale-105 transition-all duration-300 shadow-md flex-shrink-0">
                   <div className="relative w-full h-full rounded-full overflow-hidden">
                     <Image
-                      src="/images/nammatech-logo.png"
+                      src="/images/nammatech-logo-sm.webp"
                       alt="NammaTech Logo"
                       fill
-                      className="object-cover"
+                      sizes="40px"
                       priority
-                      unoptimized
+                      className="object-cover"
                     />
                   </div>
                 </div>

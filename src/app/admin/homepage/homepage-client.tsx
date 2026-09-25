@@ -217,7 +217,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
       "Muthuraj C is a dedicated software developer, digital architect, and tech creator behind Techsavvy Muthuraj and NammaTech. Driven by a mission to build transparent, high-speed, and secure digital infrastructure, he engineered NammaTech to give developers, students, and digital creators direct access to verified software, open-source tools, developer utilities, and cinema media — zero deceptive ads, zero mock data, and 100% community-first trust."
   );
   const [founderImageUrl, setFounderImageUrl] = useState(
-    initialSettings.founder_image_url || "/images/founder-muthuraj.png"
+    initialSettings.founder_image_url || "/images/founder-muthuraj.webp"
   );
   const [founderInstagram, setFounderInstagram] = useState(
     initialSettings.founder_instagram ||

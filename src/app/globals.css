@@ -4,20 +4,33 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
   font-family: var(--font-jakarta), var(--font-inter), var(--font-outfit), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--background);
   color: var(--foreground);
-  transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 body {
   font-family: var(--font-jakarta), var(--font-inter), var(--font-outfit), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: var(--background);
   color: var(--foreground);
-  transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ══════════════════════════════════════════════════════════════════ */
@@ -592,4 +605,26 @@ h2 {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: textShimmer 4s linear infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════════ */
+/* 0.001 ACCURACY PERFORMANCE & 60-120FPS HARDWARE-ACCELERATED SMOOTH SCROLL */
+/* ══════════════════════════════════════════════════════════════════ */
+.smooth-scroll-ready {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: none;
+}
+
+/* Offscreen section rendering virtualization: skips rendering work until in or near viewport */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 750px;
+}
+
+/* GPU composite layer promotion for zero-jank buttery smooth 120fps motion */
+.gpu-accel {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform;
 }

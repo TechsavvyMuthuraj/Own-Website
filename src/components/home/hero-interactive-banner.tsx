@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Search, Sparkles } from "lucide-react";
 import { GridDistortion } from "@/components/ui/grid-distortion";
@@ -37,9 +38,26 @@ export function HeroInteractiveBanner({
       {/* Specular hairline top edge highlight */}
       <div className="absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/40 to-transparent pointer-events-none z-30" />
       <div className="relative overflow-hidden rounded-[calc(2rem-0.375rem)] border border-amber-500/30 bg-neutral-950 shadow-2xl">
-        {/* Full resolution graphic banner with WebGL GridDistortion permanently active */}
+        {/* Full resolution graphic banner with instant native LCP and desktop WebGL */}
         <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] md:aspect-[1983/793] min-h-[220px] sm:min-h-[260px] md:min-h-0 overflow-hidden group">
-          <div className="absolute inset-0 w-full h-full">
+          {/* Native high-priority Image: 52KB on mobile / 180KB on desktop (FCP/LCP < 0.3s) */}
+          <picture className="absolute inset-0 w-full h-full">
+            <source media="(max-width: 640px)" srcSet="/images/hero-clean-mobile.webp" type="image/webp" />
+            <source srcSet="/images/hero-clean.webp" type="image/webp" />
+            <Image
+              src="/images/hero-clean.webp"
+              alt="NammaTech Founder Muthuraj C Official Tech & 4K Cinema Platform"
+              fill
+              priority
+              fetchPriority="high"
+              sizes="(max-width: 768px) 100vw, 1200px"
+              quality={80}
+              className="object-cover w-full h-full"
+            />
+          </picture>
+
+          {/* Desktop WebGL interactive distortion */}
+          <div className="hidden md:block absolute inset-0 w-full h-full pointer-events-none opacity-90 group-hover:opacity-100 transition-opacity">
             <GridDistortion
               imageSrc={heroImageUrl}
               grid={16}

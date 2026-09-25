@@ -21,7 +21,7 @@ export function FounderProfile({ settings }: { settings?: Record<string, any> })
   const title = settings?.founder_title || "Founder & Chief Executive Officer";
   const role = settings?.founder_role || "Lead Software Architect • Digital Creator • Tech Entrepreneur";
   const bio = settings?.founder_bio || "Muthuraj C is a dedicated software developer, digital architect, and tech creator behind Techsavvy Muthuraj and NammaTech. Driven by a mission to build transparent, high-speed, and secure digital infrastructure, he engineered NammaTech to give developers, students, and digital creators direct access to verified software, open-source tools, developer utilities, and cinema media — zero deceptive ads, zero mock data, and 100% community-first trust.";
-  const imageUrl = settings?.founder_image_url || "/images/founder-muthuraj.png";
+  const imageUrl = settings?.founder_image_url || "/images/founder-muthuraj.webp";
   const instagramUrl = settings?.founder_instagram || "https://www.instagram.com/techiemuthuraj/";
   const youtubeUrl = settings?.founder_youtube || "https://www.youtube.com/@techiemuthuraj/";
 

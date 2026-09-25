@@ -18,6 +18,8 @@ import {
   Monitor,
   Activity,
   Volume2,
+  AlertCircle,
+  RotateCcw,
 } from "lucide-react";
 import { CommunityRole, CommunityPresenceUser } from "./community-types";
 import { playMicStartSound, playMicEndSound, playPopSound } from "@/lib/sound";
@@ -381,9 +383,27 @@ export function WebRTCLounge({
             </div>
 
             {error && (
-              <p className="text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl p-2.5">
-                {error}
-              </p>
+              <div className="text-left text-xs text-rose-300 bg-rose-500/10 border border-rose-500/30 rounded-2xl p-4 space-y-2.5">
+                <div className="flex items-center gap-2 text-rose-400 font-bold">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>Microphone / Camera Permission Required</span>
+                </div>
+                <p className="text-[11px] text-zinc-300 leading-relaxed">
+                  Your browser blocked media device access. To fix:
+                </p>
+                <div className="p-2 rounded-xl bg-black/40 border border-rose-500/20 space-y-1 font-mono text-[10px]">
+                  <p>1. In the Chrome address bar, click the 🎚 tune / 🔒 icon on the left of the URL.</p>
+                  <p>2. Set <strong>Microphone</strong> &amp; <strong>Camera</strong> to <strong>Allow</strong>.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={joinNativeStage}
+                  className="w-full py-2 px-3 rounded-xl bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white border border-rose-500/30 font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Try Again</span>
+                </button>
+              </div>
             )}
 
             {/* Join Action Buttons */}

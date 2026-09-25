@@ -151,7 +151,7 @@ export function YouTubeShowcase({ settings = {} }: YouTubeShowcaseProps) {
             <div className="relative p-[3px] rounded-full bg-gradient-to-tr from-red-600 via-rose-500 to-amber-500 shadow-lg shadow-red-600/25 flex-shrink-0">
               <div className="relative w-16 h-16 sm:w-18 sm:h-18 rounded-full overflow-hidden border-2 border-neutral-950 bg-neutral-900">
                 <Image
-                  src="/images/founder-muthuraj.png"
+                  src="/images/founder-muthuraj.webp"
                   alt={`${channelName} on YouTube`}
                   fill
                   sizes="72px"

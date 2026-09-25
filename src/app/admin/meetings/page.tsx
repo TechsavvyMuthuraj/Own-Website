@@ -25,6 +25,7 @@ import {
   Phone,
   Mail,
   FileText,
+  Pencil,
 } from "lucide-react";
 import { ZoomMeeting, ZoomRegistration, MeetingStatus, MeetingType } from "@/lib/meetings/meeting-types";
 import { playPopSound } from "@/lib/sound";
@@ -37,8 +38,9 @@ export default function AdminMeetingsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  // Modal state
+  // Modal & Edit state
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingMeeting, setEditingMeeting] = useState<ZoomMeeting | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -82,38 +84,91 @@ export default function AdminMeetingsPage() {
     fetchMeetings();
   }, []);
 
-  const handleCreateMeeting = async (e: React.FormEvent) => {
+  const openCreateModal = () => {
+    setEditingMeeting(null);
+    resetForm();
+    setFormError(null);
+    setIsModalOpen(true);
+    playPopSound();
+  };
+
+  const openEditModal = (m: ZoomMeeting) => {
+    setEditingMeeting(m);
+    setTitle(m.title);
+    setDescription(m.description || "");
+    setMeetingType(m.meeting_type);
+    setHostName(m.host_name);
+    setHostEmail(m.host_email);
+    setJoinUrl(m.join_url);
+    setMeetingId(m.meeting_id || "");
+    setPasscode(m.passcode || "");
+    try {
+      const d = new Date(m.scheduled_start);
+      // format YYYY-MM-DDTHH:mm in local time for datetime-local input
+      const localIso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      setScheduledStart(localIso);
+    } catch {
+      setScheduledStart(new Date().toISOString().slice(0, 16));
+    }
+    setDurationMinutes(m.duration_minutes);
+    setMaxParticipants(m.max_participants);
+    setStatus(m.status);
+    setFormError(null);
+    setIsModalOpen(true);
+    playPopSound();
+  };
+
+  const handleSaveMeeting = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("/api/admin/meetings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          description,
-          meeting_type: meetingType,
-          host_name: hostName,
-          host_email: hostEmail,
-          join_url: joinUrl,
-          meeting_url: joinUrl,
-          meeting_id: meetingId,
-          passcode,
-          scheduled_start: scheduledStart,
-          duration_minutes: durationMinutes,
-          max_participants: maxParticipants,
-          status,
-        }),
-      });
+      const payload = {
+        title,
+        description,
+        meeting_type: meetingType,
+        host_name: hostName,
+        host_email: hostEmail,
+        join_url: joinUrl,
+        meeting_url: joinUrl,
+        meeting_id: meetingId,
+        passcode,
+        scheduled_start: scheduledStart,
+        duration_minutes: durationMinutes,
+        max_participants: maxParticipants,
+        status,
+      };
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to create meeting");
+      if (editingMeeting) {
+        const res = await fetch(`/api/admin/meetings/${editingMeeting.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to update meeting");
+
+        setMeetings((prev) =>
+          prev.map((item) => (item.id === editingMeeting.id ? data.meeting : item))
+        );
+      } else {
+        const res = await fetch("/api/admin/meetings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to create meeting");
+
+        setMeetings((prev) => [data.meeting, ...prev]);
+      }
 
       setIsModalOpen(false);
+      setEditingMeeting(null);
       resetForm();
-      fetchMeetings();
       playPopSound();
     } catch (err: any) {
       setFormError(err.message);
@@ -229,10 +284,7 @@ Powered by NammaTech Community & Technical Support.`;
 
           <button
             type="button"
-            onClick={() => {
-              resetForm();
-              setIsModalOpen(true);
-            }}
+            onClick={openCreateModal}
             className="px-4 py-2 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-black tracking-wide shadow-md active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
@@ -324,8 +376,8 @@ Powered by NammaTech Community & Technical Support.`;
           </p>
           <button
             type="button"
-            onClick={() => setIsModalOpen(true)}
-            className="px-4 py-2 rounded-2xl bg-amber-500 text-black font-bold text-xs shadow-md"
+            onClick={openCreateModal}
+            className="px-4 py-2 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs shadow-md cursor-pointer transition-all active:scale-95"
           >
             Schedule Now
           </button>
@@ -376,6 +428,17 @@ Powered by NammaTech Community & Technical Support.`;
                     </div>
 
                     <div className="flex items-center gap-1">
+                      {/* EDIT AND UPDATE OPTION */}
+                      <button
+                        type="button"
+                        onClick={() => openEditModal(m)}
+                        title="Edit and update meeting details"
+                        className="p-1.5 rounded-lg border border-black/10 dark:border-white/10 hover:bg-amber-500/20 hover:text-amber-400 hover:border-amber-500/30 text-[var(--muted-foreground)] text-xs transition-colors cursor-pointer"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                        <span className="sr-only">Edit Meeting</span>
+                      </button>
+
                       <button
                         type="button"
                         onClick={() => copyInvitation(m)}
@@ -507,7 +570,9 @@ Powered by NammaTech Community & Technical Support.`;
             <div className="flex items-center justify-between border-b border-black/10 dark:border-white/10 pb-3">
               <div className="flex items-center gap-2">
                 <Video className="w-5 h-5 text-amber-500" />
-                <h2 className="text-base font-bold text-[var(--foreground)]">Schedule Zoom Meeting</h2>
+                <h2 className="text-base font-bold text-[var(--foreground)]">
+                  {editingMeeting ? "Edit & Update Zoom Meeting" : "Schedule Zoom Meeting"}
+                </h2>
               </div>
               <button
                 type="button"
@@ -524,7 +589,7 @@ Powered by NammaTech Community & Technical Support.`;
               </div>
             )}
 
-            <form onSubmit={handleCreateMeeting} className="space-y-3.5">
+            <form onSubmit={handleSaveMeeting} className="space-y-3.5">
               <div className="space-y-1">
                 <label className="text-xs font-bold text-[var(--foreground)]">Meeting Title *</label>
                 <input
@@ -673,7 +738,13 @@ Powered by NammaTech Community & Technical Support.`;
                   disabled={isSubmitting}
                   className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-black text-xs shadow-md transition-all cursor-pointer"
                 >
-                  {isSubmitting ? "Scheduling..." : "Save Meeting"}
+                  {isSubmitting
+                    ? editingMeeting
+                      ? "Updating Meeting..."
+                      : "Scheduling Meeting..."
+                    : editingMeeting
+                    ? "Save & Update Meeting"
+                    : "Schedule Meeting Now"}
                 </button>
               </div>
             </form>

@@ -285,20 +285,26 @@ export default async function HomePage() {
 
       {/* 2. THEATRICAL CINEMA & 4K MASTER PRINTS */}
       {movieResources.length > 0 && (
-        <CinemaShowcase movies={movieResources} />
+        <div className="cv-auto">
+          <CinemaShowcase movies={movieResources} />
+        </div>
       )}
 
       {/* 3. NAMMATECH JOURNAL & TECH GUIDES */}
       {articleItems.length > 0 && (
-        <ArticlesShowcase articles={articleItems} />
+        <div className="cv-auto">
+          <ArticlesShowcase articles={articleItems} />
+        </div>
       )}
 
       {/* 4. REAL-TIME COMMUNITY & LIVE WEBRTC STAGE */}
-      <CommunityBanner />
+      <div className="cv-auto">
+        <CommunityBanner />
+      </div>
 
       {/* 5. FEATURED RESOURCES (IF ANY PUBLISHED) */}
       {showFeatured && featuredResources.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 cv-auto">
           <div className="flex items-center justify-between mb-7">
             <div>
               <div className="eyebrow-pill bg-amber-500/10 text-amber-500 border-amber-500/30 mb-2">
@@ -319,7 +325,7 @@ export default async function HomePage() {
 
       {/* 6. LATEST RELEASES */}
       {showLatest && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 cv-auto">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-7">
             <div>
               <div className="eyebrow-pill bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/30 mb-2">
@@ -355,20 +361,26 @@ export default async function HomePage() {
       )}
 
       {/* 7. WHY NAMMATECH - SECURITY & SPEED STANDARDS */}
-      <FeaturesGrid />
+      <div className="cv-auto">
+        <FeaturesGrid />
+      </div>
 
       {/* IN-FEED AD BANNER */}
       {inFeedAd && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 cv-auto">
           <AdSlot ad={inFeedAd} location="IN_FEED" format="auto" showLabel={false} />
         </section>
       )}
 
       {/* 8. YOUTUBE CHANNEL SHOWCASE */}
-      <YouTubeShowcase settings={hpSettings} />
+      <div className="cv-auto">
+        <YouTubeShowcase settings={hpSettings} />
+      </div>
 
       {/* 10. FOUNDER & LEAD DEVELOPER PROFILE */}
-      <FounderProfile settings={hpSettings} />
+      <div className="cv-auto">
+        <FounderProfile settings={hpSettings} />
+      </div>
     </div>
   );
 }

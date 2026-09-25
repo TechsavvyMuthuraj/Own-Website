@@ -20,7 +20,7 @@ export function ArticleAuthorCard({ authorName }: ArticleAuthorCardProps) {
           {isFounder && !imageFailed ? (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
-              src="/images/founder-muthuraj.png"
+              src="/images/founder-muthuraj.webp"
               alt="Muthuraj C - Founder"
               className="w-full h-full object-cover object-top"
               onError={() => setImageFailed(true)}

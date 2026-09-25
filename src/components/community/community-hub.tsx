@@ -24,6 +24,7 @@ import {
   AlertTriangle,
   RotateCcw,
   ShieldAlert,
+  Mic,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -35,6 +36,7 @@ import {
 } from "@/lib/community/moderation";
 import { VoiceRecorder } from "./voice-recorder";
 import { VoiceMessagePlayer } from "./voice-message-player";
+import { MicrophonePermissionModal } from "@/components/ui/microphone-permission-modal";
 import {
   CommunityMessage,
   CommunityRole,
@@ -135,6 +137,7 @@ export function CommunityHub() {
   const [presenceUsers, setPresenceUsers] = useState<CommunityPresenceUser[]>([]);
   const [timeoutSeconds, setTimeoutSeconds] = useState<number>(0);
   const [moderationAlert, setModerationAlert] = useState<string | null>(null);
+  const [isMicModalOpen, setIsMicModalOpen] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -573,10 +576,18 @@ export function CommunityHub() {
               )}
             </button>
 
+            <button
+              type="button"
+              onClick={() => setIsMicModalOpen(true)}
+              title="Inbuilt Microphone Access & Diagnostics for Any Browser"
+              className="p-2 sm:px-3 sm:py-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-xs font-semibold text-amber-400 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+            >
+              <Mic className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Allow Mic</span>
+            </button>
+
             <Link
               href="/meetings"
-              target="_blank"
-              rel="noopener noreferrer"
               title="Schedule or Join a Live 1-on-1 Zoom Session with Founder Muthuraj C"
               className="p-2 sm:px-3 sm:py-2 rounded-2xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs font-semibold text-rose-300 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
             >
@@ -1041,6 +1052,12 @@ export function CommunityHub() {
           )}
         </div>
       </div>
+
+      {/* Inbuilt Microphone Access Modal for Any Browser */}
+      <MicrophonePermissionModal
+        isOpen={isMicModalOpen}
+        onClose={() => setIsMicModalOpen(false)}
+      />
     </div>
   );
 }

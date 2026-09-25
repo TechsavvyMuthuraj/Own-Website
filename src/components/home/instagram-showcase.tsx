@@ -53,7 +53,7 @@ export function InstagramShowcase({ settings = {} }: InstagramShowcaseProps) {
       viewsOrLikes: "24.5K views",
       comments: "382",
       tag: "#Windows11",
-      imageUrl: "/images/hero-clean.png",
+      imageUrl: "/images/hero-clean.webp",
     },
     {
       id: "ig-2",
@@ -83,7 +83,7 @@ export function InstagramShowcase({ settings = {} }: InstagramShowcaseProps) {
       viewsOrLikes: "15.9K views",
       comments: "188",
       tag: "#TechCreator",
-      imageUrl: "/images/founder-muthuraj.png",
+      imageUrl: "/images/founder-muthuraj.webp",
     },
   ];
 
@@ -105,7 +105,7 @@ export function InstagramShowcase({ settings = {} }: InstagramShowcaseProps) {
             <div className="relative p-[3px] rounded-full bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] shadow-lg shadow-rose-500/25 flex-shrink-0">
               <div className="relative w-16 h-16 sm:w-18 sm:h-18 rounded-full overflow-hidden border-2 border-neutral-950 bg-neutral-900">
                 <Image
-                  src="/images/founder-muthuraj.png"
+                  src="/images/founder-muthuraj.webp"
                   alt="Muthuraj C on Instagram"
                   fill
                   sizes="72px"

@@ -296,7 +296,7 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col font-sans bg-[var(--background)] text-[var(--foreground)] antialiased">
+      <body className="min-h-full flex flex-col font-sans bg-[var(--background)] text-[var(--foreground)] antialiased smooth-scroll-ready">
         <GoogleAnalytics />
         <SpeedInsights />
         <Analytics />

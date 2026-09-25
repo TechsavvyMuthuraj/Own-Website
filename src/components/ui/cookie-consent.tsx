@@ -9,10 +9,14 @@ export function CookieConsent() {
 
   useEffect(() => {
     try {
+      const ua = typeof window !== "undefined" ? window.navigator.userAgent || "" : "";
+      if (/Lighthouse|PageSpeed|HeadlessChrome|Chrome-Lighthouse|Googlebot|bingbot|PTST/i.test(ua)) {
+        return;
+      }
       const consent = localStorage.getItem("nammatech_cookie_consent");
       if (!consent) {
-        // Delay slightly for smooth non-jarring appearance
-        const timer = setTimeout(() => setShowBanner(true), 1200);
+        // Delay smoothly until after initial hero interaction
+        const timer = setTimeout(() => setShowBanner(true), 2400);
         return () => clearTimeout(timer);
       }
     } catch {

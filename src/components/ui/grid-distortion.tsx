@@ -210,6 +210,13 @@ export function GridDistortion({
       window.addEventListener("resize", handleResize);
     }
 
+    let cachedRect: DOMRect | null = null;
+    const updateCachedRect = () => {
+      if (container) {
+        cachedRect = container.getBoundingClientRect();
+      }
+    };
+
     const mouseState = {
       x: 0,
       y: 0,
@@ -219,10 +226,17 @@ export function GridDistortion({
       vY: 0,
     };
 
+    const handleMouseEnter = () => {
+      updateCachedRect();
+    };
+
     const handleMouseMove = (e: MouseEvent) => {
-      const rect = container.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width;
-      const y = 1 - (e.clientY - rect.top) / rect.height;
+      if (!cachedRect || cachedRect.width === 0) {
+        updateCachedRect();
+      }
+      if (!cachedRect) return;
+      const x = (e.clientX - cachedRect.left) / cachedRect.width;
+      const y = 1 - (e.clientY - cachedRect.top) / cachedRect.height;
       mouseState.vX = x - mouseState.prevX;
       mouseState.vY = y - mouseState.prevY;
       Object.assign(mouseState, { x, y, prevX: x, prevY: y });
@@ -242,12 +256,20 @@ export function GridDistortion({
       });
     };
 
-    container.addEventListener("mousemove", handleMouseMove);
-    container.addEventListener("mouseleave", handleMouseLeave);
+    container.addEventListener("mouseenter", handleMouseEnter, { passive: true });
+    container.addEventListener("mousemove", handleMouseMove, { passive: true });
+    container.addEventListener("mouseleave", handleMouseLeave, { passive: true });
 
     handleResize();
+    updateCachedRect();
+
+    let isVisibleOnScreen = true;
 
     const animate = () => {
+      if (!isVisibleOnScreen) {
+        animationIdRef.current = null;
+        return;
+      }
       animationIdRef.current = requestAnimationFrame(animate);
 
       if (!renderer || !scene || !camera) return;
@@ -283,11 +305,29 @@ export function GridDistortion({
       renderer.render(scene, camera);
     };
 
-    animate();
+    let intersectionObserver: IntersectionObserver | null = null;
+    if (typeof IntersectionObserver !== "undefined") {
+      intersectionObserver = new IntersectionObserver(
+        ([entry]) => {
+          isVisibleOnScreen = entry.isIntersecting;
+          if (isVisibleOnScreen && !animationIdRef.current) {
+            animate();
+          }
+        },
+        { threshold: 0.05 }
+      );
+      intersectionObserver.observe(container);
+    } else {
+      animate();
+    }
 
     return () => {
+      if (intersectionObserver) {
+        intersectionObserver.disconnect();
+      }
       if (animationIdRef.current) {
         cancelAnimationFrame(animationIdRef.current);
+        animationIdRef.current = null;
       }
 
       if (resizeObserverRef.current) {
@@ -296,6 +336,7 @@ export function GridDistortion({
         window.removeEventListener("resize", handleResize);
       }
 
+      container.removeEventListener("mouseenter", handleMouseEnter);
       container.removeEventListener("mousemove", handleMouseMove);
       container.removeEventListener("mouseleave", handleMouseLeave);
 

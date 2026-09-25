@@ -40,7 +40,7 @@ const aboutJsonLd = {
     name: "Muthuraj C",
     alternateName: ["Techsavvy Muthuraj", "techsavvymuthuraj"],
     jobTitle: "Founder, Software Engineer & Content Creator",
-    image: "https://www.techsavvymuthuraj.dev/images/founder-muthuraj.png",
+    image: "https://www.techsavvymuthuraj.dev/images/founder-muthuraj.webp",
     url: "https://www.techsavvymuthuraj.dev/about",
     sameAs: [
       "https://www.youtube.com/@TechsavvyMuthuraj",

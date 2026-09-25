@@ -29,13 +29,30 @@ export function ArticleReadingControls({
   const [showBackToTop, setShowBackToTop] = useState(false);
 
   useEffect(() => {
+    let ticking = false;
+    let lastProgress = 0;
+    let lastShowTop = false;
+
     const handleScroll = () => {
-      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-      if (totalHeight > 0) {
-        const currentProgress = (window.scrollY / totalHeight) * 100;
-        setScrollProgress(Math.min(100, Math.max(0, currentProgress)));
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+          if (totalHeight > 0) {
+            const currentProgress = Math.round((window.scrollY / totalHeight) * 100);
+            if (currentProgress !== lastProgress) {
+              lastProgress = currentProgress;
+              setScrollProgress(Math.min(100, Math.max(0, currentProgress)));
+            }
+          }
+          const nowShowTop = window.scrollY > 400;
+          if (nowShowTop !== lastShowTop) {
+            lastShowTop = nowShowTop;
+            setShowBackToTop(nowShowTop);
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
-      setShowBackToTop(window.scrollY > 400);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
