@@ -266,18 +266,3 @@ export interface Article {
   // Joins
   author?: Profile | null;
 }
-
-export interface Wallpaper {
-  id: string;
-  name: string;
-  preview_url: string;
-  download_url: string;
-  category?: string;
-  resolution?: string;
-  is_featured?: boolean;
-  is_active?: boolean;
-  sort_order?: number;
-  downloads_count?: number;
-  created_at: string;
-  updated_at: string;
-}

@@ -1,12 +1,11 @@
 import React from "react";
-import { Download, Sparkles } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Resource } from "@/types/database";
 import type { Metadata } from "next";
-import { ResourceGrid } from "@/components/resources/resource-grid";
+import { FreeClient } from "./free-client";
 
 export const metadata: Metadata = {
-  title: "Free Digital Resources & Open-Source Downloads",
+  title: "Free Digital Resources & Open-Source Downloads | NammaTech",
   description:
     "Discover 100% free open-source software, developer tools, authorized APKs, and design templates. No hidden fees, completely verified.",
   openGraph: {
@@ -32,7 +31,7 @@ export default async function FreeResourcesPage() {
       .eq("status", "PUBLISHED")
       .eq("access_type", "FREE")
       .order("published_at", { ascending: false })
-      .limit(36);
+      .limit(60);
 
     if (data) {
       resources = (data as unknown[])
@@ -54,27 +53,8 @@ export default async function FreeResourcesPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
-      <div className="mb-8">
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1">
-          <Download className="w-4 h-4" />
-          <span>Open & Free</span>
-        </div>
-        <h1 className="text-3xl font-extrabold text-[var(--foreground)] tracking-tight">
-          Free Digital Resources
-        </h1>
-        <p className="text-sm text-[var(--muted-foreground)] mt-1">
-          Completely free, open-source software, public domain assets, and tools. Zero charges, no hidden fees.
-        </p>
-      </div>
-
-      <ResourceGrid
-        resources={resources}
-        emptyTitle="No free resources available yet"
-        emptyDescription="There are currently no free resources published in the catalog. Check back soon as new open-source resources are curated."
-        emptyActionText="Browse All Categories"
-        emptyActionHref="/categories"
-      />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full">
+      <FreeClient initialResources={resources} />
     </div>
   );
 }

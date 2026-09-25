@@ -340,31 +340,31 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
       {/* 1. Global AdSense & Monetization Hub */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* AdSense Publisher Credentials Card */}
-        <div className="p-6 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm space-y-4 lg:col-span-2">
+        <div className="p-6 rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 backdrop-blur-xl shadow-xs space-y-4 lg:col-span-2">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
                 <DollarSign className="w-5 h-5 text-amber-500" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-[var(--foreground)]">
+                <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
                   Google AdSense Verification &amp; Account
                 </h3>
-                <p className="text-xs text-[var(--muted-foreground)]">
-                  Publisher ID: <span className="font-mono font-semibold text-[var(--foreground)]">{initialSettings.adsense_client_id}</span>
+                <p className="text-xs text-neutral-600 dark:text-neutral-400">
+                  Publisher ID: <span className="font-mono font-semibold text-neutral-900 dark:text-white">{initialSettings.adsense_client_id}</span>
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
               {adsTxtStatus === "VERIFIED" && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 shadow-xs">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   ads.txt Verified
                 </span>
               )}
               {adsTxtStatus === "CHECKING" && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20 shadow-xs">
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   Checking ads.txt...
                 </span>
@@ -373,20 +373,20 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
                 href="/ads.txt"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-medium border border-[var(--border)] hover:bg-[var(--secondary)] transition-colors"
+                className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-medium border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors shadow-xs"
               >
                 <span>View /ads.txt</span>
-                <ExternalLink className="w-3 h-3 text-[var(--muted-foreground)]" />
+                <ExternalLink className="w-3 h-3 text-neutral-400 dark:text-neutral-500" />
               </a>
             </div>
           </div>
 
           {/* Master Controls */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-            <div className="p-4 rounded-2xl bg-[var(--secondary)]/50 border border-[var(--border)] flex items-center justify-between">
+            <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-neutral-800 flex items-center justify-between shadow-xs">
               <div>
-                <h4 className="text-xs font-semibold text-[var(--foreground)]">Platform Master Ads Switch</h4>
-                <p className="text-[11px] text-[var(--muted-foreground)]">Globally enable or pause all ad units</p>
+                <h4 className="text-xs font-semibold text-neutral-900 dark:text-white">Platform Master Ads Switch</h4>
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400">Globally enable or pause all ad units</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -395,14 +395,14 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
                   onChange={(e) => handleToggleGlobalAds(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-[var(--border)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                <div className="w-11 h-6 bg-neutral-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
               </label>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[var(--secondary)]/50 border border-[var(--border)] flex items-center justify-between">
+            <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-950/50 border border-neutral-200 dark:border-neutral-800 flex items-center justify-between shadow-xs">
               <div>
-                <h4 className="text-xs font-semibold text-[var(--foreground)]">AdSense Auto-Ads</h4>
-                <p className="text-[11px] text-[var(--muted-foreground)]">Allow Google AI automated in-page ads</p>
+                <h4 className="text-xs font-semibold text-neutral-900 dark:text-white">AdSense Auto-Ads</h4>
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400">Allow Google AI automated in-page ads</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -411,23 +411,23 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
                   onChange={(e) => handleToggleAutoAds(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-[var(--border)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--primary)]"></div>
+                <div className="w-11 h-6 bg-neutral-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-500"></div>
               </label>
             </div>
           </div>
         </div>
 
         {/* Quick Setup Actions Card */}
-        <div className="p-6 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm space-y-4 flex flex-col justify-between">
+        <div className="p-6 rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 backdrop-blur-xl shadow-xs space-y-4 flex flex-col justify-between">
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#FD1843]/10 text-[#FD1843] border border-[#FD1843]/20 mb-3">
               <Sparkles className="w-3 h-3" />
               <span>Earnings Acceleration</span>
             </div>
-            <h3 className="text-sm font-bold text-[var(--foreground)]">
+            <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
               Recommended Placements Setup
             </h3>
-            <p className="text-xs text-[var(--muted-foreground)] mt-1">
+            <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1">
               Initialize optimized slots (Header, Sidebar, Download Page, Footer) with one click.
             </p>
           </div>
@@ -437,7 +437,7 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
               type="button"
               onClick={handleSeedDefaults}
               disabled={seeding}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] transition-all shadow-sm disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500 text-white text-xs font-bold hover:bg-sky-400 transition-all shadow-xs disabled:opacity-50 cursor-pointer"
             >
               {seeding ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -450,7 +450,7 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
             <button
               type="button"
               onClick={openCreateModal}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--border)] hover:bg-[var(--secondary)] text-[var(--foreground)] text-xs font-semibold transition-all"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-semibold transition-all cursor-pointer shadow-xs"
             >
               <Plus className="w-4 h-4" />
               <span>Custom Ad Placement</span>
@@ -463,10 +463,10 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-base font-bold text-[var(--foreground)]">
+            <h3 className="text-base font-bold text-neutral-900 dark:text-white">
               Active Ad Placement Units ({ads.length})
             </h3>
-            <p className="text-xs text-[var(--muted-foreground)]">
+            <p className="text-xs text-neutral-600 dark:text-neutral-400">
               Toggle specific slots on/off instantly or adjust their embed code and priority.
             </p>
           </div>
@@ -474,7 +474,7 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
           <button
             type="button"
             onClick={openCreateModal}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] transition-all shadow-sm"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sky-500 text-white text-xs font-bold hover:bg-sky-400 transition-all shadow-xs cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Add Slot</span>
@@ -495,17 +495,17 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
                   key={ad.id}
                   className={`p-5 rounded-3xl border transition-all flex flex-col justify-between gap-4 ${
                     ad.is_active
-                      ? "border-[var(--border)] bg-[var(--card)] shadow-sm hover:border-[var(--ring)]/50"
-                      : "border-[var(--border)]/50 bg-[var(--secondary)]/20 opacity-70"
+                      ? "border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 shadow-xs hover:border-sky-500/50"
+                      : "border-neutral-200/50 dark:border-neutral-800/50 bg-neutral-50/50 dark:bg-neutral-950/20 opacity-70"
                   }`}
                 >
                   <div className="space-y-3">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <span className="inline-block px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-[var(--secondary)] text-[var(--foreground)] border border-[var(--border)]">
+                        <span className="inline-block px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700">
                           {info.name}
                         </span>
-                        <h4 className="font-bold text-sm text-[var(--foreground)] mt-1.5 line-clamp-1">
+                        <h4 className="font-bold text-sm text-neutral-900 dark:text-white mt-1.5 line-clamp-1">
                           {ad.title}
                         </h4>
                       </div>
@@ -518,36 +518,36 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
                           onChange={() => handleToggleSlot(ad.id, ad.is_active)}
                           className="sr-only peer"
                         />
-                        <div className="w-9 h-5 bg-[var(--border)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                        <div className="w-9 h-5 bg-neutral-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
                       </label>
                     </div>
 
-                    <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                    <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
                       {info.desc}
                     </p>
 
                     <div className="flex items-center gap-2 pt-1 text-[11px]">
-                      <span className="px-2 py-0.5 rounded-md font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                      <span className="px-2 py-0.5 rounded-md font-semibold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
                         {info.rpm}
                       </span>
-                      <span className="text-[var(--muted-foreground)]">•</span>
-                      <span className="font-mono text-[var(--muted-foreground)]">
+                      <span className="text-neutral-400 dark:text-neutral-600">•</span>
+                      <span className="font-mono text-neutral-500 dark:text-neutral-400">
                         Provider: {ad.provider || "ADSENSE"}
                       </span>
                     </div>
                   </div>
 
                   {/* Actions Bar */}
-                  <div className="pt-3 border-t border-[var(--border)] flex items-center justify-between text-xs">
-                    <span className="text-[11px] text-[var(--muted-foreground)]">
-                      Priority: <strong className="text-[var(--foreground)]">{ad.priority}</strong>
+                  <div className="pt-3 border-t border-neutral-200/80 dark:border-neutral-800/80 flex items-center justify-between text-xs">
+                    <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                      Priority: <strong className="text-neutral-800 dark:text-neutral-200">{ad.priority}</strong>
                     </span>
 
                     <div className="flex items-center gap-1.5">
                       <button
                         type="button"
                         onClick={() => openEditModal(ad)}
-                        className="p-1.5 rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--secondary)] transition-colors"
+                        className="p-1.5 rounded-lg text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                         title="Edit Slot Configuration"
                       >
                         <Edit2 className="w-4 h-4" />
@@ -556,7 +556,7 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
                       <button
                         type="button"
                         onClick={() => handleDelete(ad.id)}
-                        className="p-1.5 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
+                        className="p-1.5 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors cursor-pointer"
                         title="Delete Placement"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -579,24 +579,24 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
       </div>
 
       {/* 3. Monetization Best Practices Card */}
-      <div className="p-6 rounded-3xl border border-[var(--border)] bg-gradient-to-r from-[var(--secondary)]/40 via-[var(--card)] to-[var(--card)] shadow-sm space-y-4">
+      <div className="p-6 rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-gradient-to-r from-neutral-50 via-white to-white dark:from-neutral-950/40 dark:via-neutral-900/40 dark:to-neutral-900/40 shadow-xs space-y-4">
         <div className="flex items-center gap-2.5">
           <ShieldCheck className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-          <h4 className="text-sm font-bold text-[var(--foreground)]">
+          <h4 className="text-sm font-bold text-neutral-900 dark:text-white">
             NammaTech High-Yield AdSense Compliance Guidelines
           </h4>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-[var(--muted-foreground)]">
-          <div className="p-3.5 rounded-2xl bg-[var(--background)]/60 border border-[var(--border)]">
-            <h5 className="font-semibold text-[var(--foreground)] mb-1">Clear Differentiation</h5>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-neutral-600 dark:text-neutral-400">
+          <div className="p-3.5 rounded-2xl bg-white/80 dark:bg-neutral-950/60 border border-neutral-200/80 dark:border-neutral-800/80 shadow-xs">
+            <h5 className="font-semibold text-neutral-900 dark:text-white mb-1">Clear Differentiation</h5>
             <p>Every ad slot automatically includes an &quot;Advertisement&quot; label. Never disguise ads as fake download triggers.</p>
           </div>
-          <div className="p-3.5 rounded-2xl bg-[var(--background)]/60 border border-[var(--border)]">
-            <h5 className="font-semibold text-[var(--foreground)] mb-1">Download Page Monetization</h5>
+          <div className="p-3.5 rounded-2xl bg-white/80 dark:bg-neutral-950/60 border border-neutral-200/80 dark:border-neutral-800/80 shadow-xs">
+            <h5 className="font-semibold text-neutral-900 dark:text-white mb-1">Download Page Monetization</h5>
             <p>During download link verification, ads receive high attention. The countdown timer gives users value while maximizing ad viewability.</p>
           </div>
-          <div className="p-3.5 rounded-2xl bg-[var(--background)]/60 border border-[var(--border)]">
-            <h5 className="font-semibold text-[var(--foreground)] mb-1">Zero Layout Shift</h5>
+          <div className="p-3.5 rounded-2xl bg-white/80 dark:bg-neutral-950/60 border border-neutral-200/80 dark:border-neutral-800/80 shadow-xs">
+            <h5 className="font-semibold text-neutral-900 dark:text-white mb-1">Zero Layout Shift</h5>
             <p>All containers include reserved CSS minimum heights so pages don&apos;t jump when Google ads dynamically populate.</p>
           </div>
         </div>
@@ -605,27 +605,27 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
       {/* 4. Edit / Create Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative w-full max-w-xl p-6 sm:p-8 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-2xl space-y-5 animate-in zoom-in-95 duration-200">
+          <div className="relative w-full max-w-xl p-6 sm:p-8 rounded-3xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 shadow-2xl space-y-5 animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-bold text-[var(--foreground)]">
+                <h3 className="text-base font-bold text-neutral-900 dark:text-white">
                   {editingAd ? "Configure Ad Placement" : "Create New Ad Placement"}
                 </h3>
-                <p className="text-xs text-[var(--muted-foreground)]">
+                <p className="text-xs text-neutral-600 dark:text-neutral-400">
                   Adjust slot dimensions, provider, and embed script.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setModalOpen(false)}
-                className="p-2 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--secondary)]"
+                className="p-2 rounded-xl text-neutral-500 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {errorMsg && (
-              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs flex items-center gap-2">
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4" />
                 <span>{errorMsg}</span>
               </div>
@@ -633,7 +633,7 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
 
             <form onSubmit={handleSaveModal} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-[var(--foreground)] mb-1.5">
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
                   Slot Label / Description *
                 </label>
                 <input
@@ -642,19 +642,19 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. Download Page Waiting Screen Unit"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-xs"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-[var(--foreground)] mb-1.5">
+                  <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
                     Placement Location
                   </label>
                   <select
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs text-[var(--foreground)]"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-xs"
                   >
                     <option value="HEADER">Header Leaderboard (Top)</option>
                     <option value="SIDEBAR">Detail Page Sidebar</option>
@@ -666,13 +666,13 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[var(--foreground)] mb-1.5">
+                  <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
                     Ad Provider
                   </label>
                   <select
                     value={provider}
                     onChange={(e) => setProvider(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs text-[var(--foreground)]"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-xs"
                   >
                     <option value="ADSENSE">Google AdSense (Responsive)</option>
                     <option value="CUSTOM">Custom HTML / Script / Affiliate</option>
@@ -681,7 +681,7 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[var(--foreground)] mb-1.5">
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
                   Embed Code / Unit Config
                 </label>
                 <textarea
@@ -693,20 +693,20 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
                       ? "<!-- Leave blank to use standard responsive AdSense unit, or paste custom <ins> snippet -->"
                       : "<!-- Paste custom HTML banner, iframe, or affiliate embed code -->"
                   }
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs text-[var(--foreground)] font-mono resize-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white font-mono resize-none focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-xs"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
                 <div>
-                  <label className="block text-xs font-semibold text-[var(--foreground)] mb-1.5">
+                  <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
                     Priority (Higher loads first)
                   </label>
                   <input
                     type="number"
                     value={priority}
                     onChange={(e) => setPriority(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-mono"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-xs font-mono text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-xs"
                   />
                 </div>
 
@@ -716,27 +716,27 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
                       type="checkbox"
                       checked={isActive}
                       onChange={(e) => setIsActive(e.target.checked)}
-                      className="w-4 h-4 rounded text-[var(--primary)] focus:ring-[var(--ring)]"
+                      className="w-4 h-4 rounded text-sky-500 focus:ring-sky-500"
                     />
-                    <span className="text-xs font-semibold text-[var(--foreground)]">
+                    <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
                       Immediately Active
                     </span>
                   </label>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--border)]">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-neutral-200 dark:border-neutral-800">
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-medium text-[var(--foreground)] hover:bg-[var(--secondary)]"
+                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex items-center gap-2 px-5 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] transition-all disabled:opacity-50"
+                  className="flex items-center gap-2 px-5 py-2 rounded-xl bg-sky-500 text-white text-xs font-semibold hover:bg-sky-400 transition-all disabled:opacity-50 shadow-xs cursor-pointer"
                 >
                   {submitting ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />

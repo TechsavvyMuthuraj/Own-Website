@@ -617,7 +617,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
   return (
     <div className="space-y-6">
       {/* ── Top Hub Switcher ── */}
-      <div className="flex items-center justify-between gap-4 p-2 rounded-2xl bg-neutral-950/80 border border-neutral-800">
+      <div className="flex items-center justify-between gap-4 p-2 rounded-2xl bg-neutral-100 dark:bg-neutral-950/80 border border-neutral-200 dark:border-neutral-800 shadow-xs">
         <div className="flex items-center gap-2">
           {/* Live Support Tab */}
           <button
@@ -625,8 +625,8 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
             onClick={() => setHubMode("LIVE_SUPPORT")}
             className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2.5 cursor-pointer ${
               hubMode === "LIVE_SUPPORT"
-                ? "bg-gradient-to-r from-sky-500 to-indigo-600 text-neutral-950 font-black shadow-lg shadow-sky-500/20"
-                : "text-neutral-400 hover:text-white hover:bg-neutral-900"
+                ? "bg-gradient-to-r from-sky-500 to-indigo-600 text-white font-black shadow-md shadow-sky-500/20"
+                : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/60 dark:hover:bg-neutral-900"
             }`}
           >
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -646,14 +646,14 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
             onClick={() => setHubMode("EMAIL_INBOX")}
             className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2.5 cursor-pointer ${
               hubMode === "EMAIL_INBOX"
-                ? "bg-neutral-800 text-white shadow-md border border-neutral-700"
-                : "text-neutral-400 hover:text-white hover:bg-neutral-900"
+                ? "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs border border-neutral-200 dark:border-neutral-700"
+                : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/60 dark:hover:bg-neutral-900"
             }`}
           >
             <Mail className="w-4 h-4" />
             <span>📧 Contact Inquiries</span>
             {unreadEmailCount > 0 && (
-              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-sky-500/20 text-sky-400 border border-sky-500/30">
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-sky-500/20 text-sky-600 dark:text-sky-400 border border-sky-500/30">
                 {unreadEmailCount} unread
               </span>
             )}
@@ -674,7 +674,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
               });
             }}
             title={isMuted ? "Audio muted" : "Audio enabled"}
-            className="p-2 rounded-xl bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800 cursor-pointer"
+            className="p-2 rounded-xl bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white border border-neutral-200 dark:border-neutral-800 shadow-xs cursor-pointer"
           >
             {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
           </button>
@@ -685,17 +685,17 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
         /* ── SECTION 1: LIVE SUPPORT DESK (REALTIME 1-ON-1 CHAT) ── */
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[780px]">
           {/* Left Sessions Sidebar */}
-          <div className="lg:col-span-4 rounded-3xl border border-neutral-800 bg-neutral-900/40 backdrop-blur-xl flex flex-col overflow-hidden shadow-xl">
+          <div className="lg:col-span-4 rounded-3xl border border-neutral-200/90 dark:border-neutral-800 bg-white dark:bg-neutral-900/40 backdrop-blur-xl flex flex-col overflow-hidden shadow-xs">
             {/* Sidebar Search & Status Filter */}
-            <div className="p-3.5 border-b border-neutral-800 space-y-2.5">
+            <div className="p-3.5 border-b border-neutral-200 dark:border-neutral-800 space-y-2.5">
               <div className="relative">
-                <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" />
+                <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500" />
                 <input
                   type="text"
                   value={sessionSearch}
                   onChange={(e) => setSessionSearch(e.target.value)}
                   placeholder="Search user, issue, message..."
-                  className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-neutral-800 bg-neutral-950/80 text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                  className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
                 />
               </div>
 
@@ -708,8 +708,8 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                     onClick={() => setSessionFilter(st)}
                     className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
                       sessionFilter === st
-                        ? "bg-sky-500 text-neutral-950 font-black"
-                        : "bg-neutral-950/60 text-neutral-400 hover:text-white border border-neutral-800/80"
+                        ? "bg-sky-500 text-white font-black shadow-xs"
+                        : "bg-neutral-100 dark:bg-neutral-950/60 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white border border-neutral-200 dark:border-neutral-800/80"
                     }`}
                   >
                     {st}
@@ -719,12 +719,12 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
             </div>
 
             {/* Sessions List */}
-            <div className="flex-1 overflow-y-auto divide-y divide-neutral-800/60">
+            <div className="flex-1 overflow-y-auto divide-y divide-neutral-200/80 dark:divide-neutral-800/60">
               {filteredSessions.length === 0 ? (
                 <div className="p-8 text-center text-xs text-neutral-500 flex flex-col items-center">
-                  <Headphones className="w-8 h-8 mb-2 opacity-30 text-sky-400" />
-                  <p className="font-semibold text-neutral-400">No active live sessions</p>
-                  <p className="text-[11px] text-neutral-600 mt-1">
+                  <Headphones className="w-8 h-8 mb-2 opacity-30 text-sky-500" />
+                  <p className="font-semibold text-neutral-800 dark:text-neutral-400">No active live sessions</p>
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-600 mt-1">
                     When visitors click &apos;Connect to Live Support&apos;, they appear here in real-time.
                   </p>
                 </div>
@@ -743,8 +743,8 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                       onClick={() => setSelectedSessionId(s.id)}
                       className={`p-3.5 cursor-pointer transition-all text-xs relative ${
                         isSelected
-                          ? "bg-sky-500/10 border-l-4 border-l-sky-400"
-                          : "hover:bg-neutral-800/30"
+                          ? "bg-sky-50 dark:bg-sky-500/10 border-l-4 border-l-sky-500"
+                          : "hover:bg-neutral-50 dark:hover:bg-neutral-800/30"
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
@@ -754,13 +754,13 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                               s.status === "ACTIVE"
                                 ? "bg-emerald-400 animate-pulse"
                                 : s.status === "RESOLVED"
-                                ? "bg-neutral-600"
+                                ? "bg-neutral-400 dark:bg-neutral-600"
                                 : "bg-amber-400"
                             }`}
                           />
                           <span
-                            className={`font-bold truncate ${
-                              hasUnread ? "text-white font-black" : "text-neutral-300"
+                            className={`truncate ${
+                              hasUnread ? "text-neutral-900 dark:text-white font-black" : "text-neutral-800 dark:text-neutral-300 font-bold"
                             }`}
                           >
                             {s.userName}
@@ -772,7 +772,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                       </div>
 
                       <div className="flex items-center gap-2 mb-1.5">
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-neutral-800 text-sky-400 truncate max-w-[140px]">
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-neutral-100 dark:bg-neutral-800 text-sky-600 dark:text-sky-400 truncate max-w-[140px]">
                           {s.category || "General Support"}
                         </span>
                         {hasUnread && (
@@ -783,15 +783,15 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                         <span
                           className={`text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded ${
                             s.status === "RESOLVED"
-                              ? "bg-emerald-950 text-emerald-400"
-                              : "bg-neutral-900 text-neutral-400"
+                              ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400"
+                              : "bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400"
                           }`}
                         >
                           {s.status}
                         </span>
                       </div>
 
-                      <p className="text-[11px] text-neutral-400 line-clamp-1">
+                      <p className="text-[11px] text-neutral-600 dark:text-neutral-400 line-clamp-1">
                         {s.lastMessage || "No messages yet"}
                       </p>
                     </div>
@@ -802,32 +802,32 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
           </div>
 
           {/* Right Main Chat Panel */}
-          <div className="lg:col-span-8 rounded-3xl border border-neutral-800 bg-neutral-900/40 backdrop-blur-xl flex flex-col overflow-hidden shadow-xl">
+          <div className="lg:col-span-8 rounded-3xl border border-neutral-200/90 dark:border-neutral-800 bg-white dark:bg-neutral-900/40 backdrop-blur-xl flex flex-col overflow-hidden shadow-xs">
             {activeSession ? (
               <>
                 {/* Chat Header */}
-                <div className="p-4 border-b border-neutral-800 bg-neutral-950/60 flex items-center justify-between gap-4">
+                <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/60 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-2xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center font-bold">
+                    <div className="w-10 h-10 rounded-2xl bg-sky-500/15 border border-sky-500/30 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold">
                       <User className="w-5 h-5" />
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-extrabold text-sm text-white truncate">
+                        <h3 className="font-extrabold text-sm text-neutral-900 dark:text-white truncate">
                           {activeSession.userName}
                         </h3>
                         {activeSession.userEmail && (
-                          <span className="text-xs text-neutral-400 font-mono hidden sm:inline-block">
+                          <span className="text-xs text-neutral-500 dark:text-neutral-400 font-mono hidden sm:inline-block">
                             ({activeSession.userEmail})
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-neutral-400">
-                        <span className="text-sky-400 font-medium">
+                      <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
+                        <span className="text-sky-600 dark:text-sky-400 font-medium">
                           {activeSession.category || "General Support"}
                         </span>
                         <span>&bull;</span>
-                        <span className="text-[10px] text-neutral-500 font-mono">
+                        <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-mono">
                           ID: {activeSession.id}
                         </span>
                       </div>
@@ -842,7 +842,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                       onChange={(e) =>
                         handleUpdateSessionStatus(activeSession.id, e.target.value as any)
                       }
-                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-neutral-900 border border-neutral-700 text-white focus:outline-none cursor-pointer"
+                      className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-none cursor-pointer shadow-xs"
                     >
                       <option value="ACTIVE">⚡ ACTIVE</option>
                       <option value="WAITING">⏳ WAITING</option>
@@ -856,7 +856,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/30 transition-colors"
+                      className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/30 transition-colors"
                       title="Continue on WhatsApp"
                     >
                       <ExternalLink className="w-4 h-4" />
@@ -866,7 +866,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                     <button
                       type="button"
                       onClick={() => handleClearSession(activeSession.id)}
-                      className="p-2 rounded-xl text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition-colors cursor-pointer"
+                      className="p-2 rounded-xl text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 border border-amber-500/20 transition-colors cursor-pointer"
                       title="Clear Chat History"
                     >
                       <RotateCcw className="w-4 h-4" />
@@ -876,7 +876,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                     <button
                       type="button"
                       onClick={() => handleDeleteSession(activeSession.id)}
-                      className="p-2 rounded-xl text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 transition-colors cursor-pointer"
+                      className="p-2 rounded-xl text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 transition-colors cursor-pointer"
                       title="Delete Session"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -885,7 +885,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                 </div>
 
                 {/* Message Stream */}
-                <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-neutral-950/40">
+                <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-neutral-50/50 dark:bg-neutral-950/40">
                   {activeSession.messages.map((msg: SupportMessage) => {
                     const isUser = msg.sender === "user";
                     const isSystem = msg.sender === "system";
@@ -897,8 +897,8 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                     if (isSystem) {
                       return (
                         <div key={msg.id} className="flex justify-center my-2">
-                          <div className="px-3.5 py-1.5 rounded-xl bg-neutral-900/80 border border-neutral-800 text-[11px] text-neutral-400 flex items-center gap-1.5 shadow-sm">
-                            <Sparkles className="w-3 h-3 text-sky-400" />
+                          <div className="px-3.5 py-1.5 rounded-xl bg-white/90 dark:bg-neutral-900/80 border border-neutral-200 dark:border-neutral-800 text-[11px] text-neutral-600 dark:text-neutral-400 flex items-center gap-1.5 shadow-xs">
+                            <Sparkles className="w-3 h-3 text-sky-500" />
                             <span>{msg.text}</span>
                           </div>
                         </div>
@@ -911,8 +911,8 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                         className={`flex flex-col group ${isUser ? "items-start" : "items-end"}`}
                       >
                         {/* Sender Label */}
-                        <div className="flex items-center gap-1.5 mb-1 px-1 text-[10px] text-neutral-400">
-                          <span className="font-semibold text-neutral-300">
+                        <div className="flex items-center gap-1.5 mb-1 px-1 text-[10px] text-neutral-500 dark:text-neutral-400">
+                          <span className="font-semibold text-neutral-800 dark:text-neutral-300">
                             {isUser ? activeSession.userName : (msg.senderName || activeSession.assignedSpecialistName || "Specialist (Technical Team)")}
                           </span>
                           <span>&bull;</span>
@@ -921,10 +921,10 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
 
                         {/* Bubble */}
                         <div
-                          className={`max-w-[85%] sm:max-w-[70%] rounded-2xl p-3.5 shadow-md relative ${
+                          className={`max-w-[85%] sm:max-w-[70%] rounded-2xl p-3.5 shadow-xs relative ${
                             isUser
-                              ? "bg-neutral-900 border border-neutral-800 text-neutral-100 rounded-tl-xs"
-                              : "bg-gradient-to-r from-sky-600 to-indigo-600 text-white rounded-tr-xs"
+                              ? "bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100 rounded-tl-xs"
+                              : "bg-gradient-to-r from-sky-600 to-indigo-600 text-white rounded-tr-xs shadow-md"
                           }`}
                         >
                           <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-line break-words font-sans">
@@ -933,7 +933,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
 
                           {/* Code Snippet Box */}
                           {msg.codeSnippet && (
-                            <div className="mt-2.5 rounded-xl bg-black/90 border border-neutral-800 p-2.5 font-mono text-xs overflow-x-auto text-neutral-200">
+                            <div className="mt-2.5 rounded-xl bg-neutral-900 dark:bg-black/90 border border-neutral-800 p-2.5 font-mono text-xs overflow-x-auto text-neutral-200">
                               <div className="flex items-center justify-between text-[10px] text-neutral-400 border-b border-neutral-800 pb-1 mb-1.5">
                                 <span className="flex items-center gap-1 text-sky-400">
                                   <Terminal className="w-3 h-3" />
@@ -977,8 +977,8 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                                 onClick={() => handleAddReaction(activeSession.id, msg.id, emoji)}
                                 className={`px-2 py-0.5 rounded-full text-[10px] flex items-center gap-1 border transition-all cursor-pointer ${
                                   senders.includes("admin")
-                                    ? "bg-sky-500/20 border-sky-500 text-white"
-                                    : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white"
+                                    ? "bg-sky-500/20 border-sky-500 text-sky-600 dark:text-white"
+                                    : "bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
                                 }`}
                               >
                                 <span>{emoji}</span>
@@ -992,7 +992,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                                 key={emoji}
                                 type="button"
                                 onClick={() => handleAddReaction(activeSession.id, msg.id, emoji)}
-                                className="w-5 h-5 rounded hover:bg-neutral-800 text-xs flex items-center justify-center transition-colors cursor-pointer"
+                                className="w-5 h-5 rounded hover:bg-neutral-200 dark:hover:bg-neutral-800 text-xs flex items-center justify-center transition-colors cursor-pointer"
                               >
                                 {emoji}
                               </button>
@@ -1005,9 +1005,9 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
 
                   {/* User Typing Indicator */}
                   {activeSession.isUserTyping && (
-                    <div className="flex items-center gap-2 text-xs text-neutral-400 p-2">
-                      <div className="px-3 py-1.5 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center gap-1.5">
-                        <span className="font-semibold text-white">{activeSession.userName}</span>{" "}
+                    <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 p-2">
+                      <div className="px-3 py-1.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 flex items-center gap-1.5 shadow-xs">
+                        <span className="font-semibold text-neutral-900 dark:text-white">{activeSession.userName}</span>{" "}
                         is typing
                         <span className="inline-flex gap-0.5">
                           <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-bounce [animation-delay:-0.3s]" />
@@ -1022,9 +1022,9 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                 </div>
 
                 {/* Canned Responses Toolbar */}
-                <div className="px-4 py-2 border-t border-neutral-800 bg-neutral-950/80 overflow-x-auto flex items-center gap-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 whitespace-nowrap flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-sky-400" />
+                <div className="px-4 py-2 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/90 dark:bg-neutral-950/80 overflow-x-auto flex items-center gap-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 whitespace-nowrap flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-sky-500" />
                     Presets:
                   </span>
                   {CANNED_RESPONSES.map((preset) => (
@@ -1032,7 +1032,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                       key={preset.title}
                       type="button"
                       onClick={() => handleSendAdminReply(preset.text)}
-                      className="px-2.5 py-1 rounded-xl text-xs bg-neutral-900 hover:bg-sky-500/20 hover:text-sky-300 text-neutral-300 border border-neutral-800 whitespace-nowrap transition-all cursor-pointer"
+                      className="px-2.5 py-1 rounded-xl text-xs bg-white dark:bg-neutral-900 hover:bg-sky-50 dark:hover:bg-sky-500/20 hover:text-sky-600 dark:hover:text-sky-300 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-800 whitespace-nowrap transition-all cursor-pointer shadow-xs"
                     >
                       {preset.title}
                     </button>
@@ -1041,16 +1041,16 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
 
                 {/* Code Snippet Box */}
                 {showCodeBox && (
-                  <div className="p-3 border-t border-neutral-800 bg-black text-neutral-200">
-                    <div className="flex items-center justify-between text-xs text-neutral-400 mb-1.5">
-                      <span className="flex items-center gap-1.5 font-bold text-sky-400">
+                  <div className="p-3 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-black text-neutral-800 dark:text-neutral-200">
+                    <div className="flex items-center justify-between text-xs text-neutral-600 dark:text-neutral-400 mb-1.5">
+                      <span className="flex items-center gap-1.5 font-bold text-sky-600 dark:text-sky-400">
                         <Terminal className="w-3.5 h-3.5" />
                         Send Command / Registry Fix / Code
                       </span>
                       <button
                         type="button"
                         onClick={() => setShowCodeBox(false)}
-                        className="hover:text-white text-xs cursor-pointer"
+                        className="hover:text-neutral-900 dark:hover:text-white text-xs cursor-pointer font-medium"
                       >
                         Close
                       </button>
@@ -1060,22 +1060,22 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                       onChange={(e) => setAdminCodeSnippet(e.target.value)}
                       placeholder="e.g. reg add HKLM\SOFTWARE\Policies\Microsoft\Windows Defender /v DisableAntiSpyware /t REG_DWORD /d 1 /f"
                       rows={2}
-                      className="w-full p-2 rounded-xl bg-neutral-900 border border-neutral-800 text-xs font-mono text-neutral-100 placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-sky-500 resize-none"
+                      className="w-full p-2 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs font-mono text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-sky-500 resize-none shadow-xs"
                     />
                   </div>
                 )}
 
                 {/* Admin Message Input Bar */}
-                <div className="p-3.5 border-t border-neutral-800 bg-neutral-950 flex items-end gap-2">
+                <div className="p-3.5 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50/90 dark:bg-neutral-950 flex items-end gap-2">
                   {/* Code box toggle */}
                   <button
                     type="button"
                     onClick={() => setShowCodeBox((prev) => !prev)}
                     title="Attach Code / Terminal command"
-                    className={`p-2.5 rounded-xl border transition-colors cursor-pointer flex-shrink-0 ${
+                    className={`p-2.5 rounded-xl border transition-colors cursor-pointer flex-shrink-0 shadow-xs ${
                       showCodeBox
-                        ? "bg-sky-500/20 border-sky-500 text-sky-400"
-                        : "border-neutral-800 bg-neutral-900 text-neutral-400 hover:text-white"
+                        ? "bg-sky-500/20 border-sky-500 text-sky-600 dark:text-sky-400"
+                        : "border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
                     }`}
                   >
                     <Code className="w-4 h-4" />
@@ -1094,7 +1094,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                       }}
                       placeholder={`Reply to ${activeSession.userName}... (Enter to send, Shift+Enter for newline)`}
                       rows={1}
-                      className="w-full px-4 py-2.5 rounded-2xl border border-neutral-800 bg-neutral-900 text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-sky-500 resize-none max-h-28"
+                      className="w-full px-4 py-2.5 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-sky-500 resize-none max-h-28 shadow-xs"
                     />
                   </div>
 
@@ -1105,7 +1105,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                     disabled={
                       (!adminReplyText.trim() && !adminCodeSnippet.trim()) || isSendingReply
                     }
-                    className="p-3 rounded-2xl bg-sky-500 text-neutral-950 font-bold hover:bg-sky-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md shadow-sky-500/20 flex-shrink-0 cursor-pointer"
+                    className="p-3 rounded-2xl bg-sky-500 text-white font-bold hover:bg-sky-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md shadow-sky-500/20 flex-shrink-0 cursor-pointer"
                   >
                     <Send className="w-4 h-4" />
                   </button>
@@ -1113,8 +1113,8 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
               </>
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center p-12 text-center text-neutral-500">
-                <Headphones className="w-12 h-12 text-neutral-600 mb-3" />
-                <p className="font-bold text-neutral-300 mb-1">Select a Live Session</p>
+                <Headphones className="w-12 h-12 text-neutral-400 dark:text-neutral-600 mb-3" />
+                <p className="font-bold text-neutral-800 dark:text-neutral-300 mb-1">Select a Live Session</p>
                 <p className="text-xs text-neutral-500 max-w-sm">
                   Click on any visitor conversation on the left panel to begin real-time technical
                   troubleshooting.
@@ -1143,14 +1143,14 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                       onClick={() => setEmailTab(tab.id as any)}
                       className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-2 ${
                         isActive
-                          ? "bg-sky-500 text-neutral-950 shadow-md shadow-sky-500/20"
-                          : "bg-neutral-900/60 border border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-700"
+                          ? "bg-sky-500 text-white shadow-xs"
+                          : "bg-white dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:border-neutral-300 dark:hover:border-neutral-700 shadow-xs"
                       }`}
                     >
                       <span>{tab.label}</span>
                       <span
                         className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
-                          isActive ? "bg-neutral-950 text-sky-400" : "bg-neutral-800 text-neutral-400"
+                          isActive ? "bg-white/20 text-white" : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
                         }`}
                       >
                         {tab.count}
@@ -1167,7 +1167,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                     type="button"
                     onClick={handleMarkAllAsRead}
                     title="Mark all unread contact messages as read"
-                    className="px-3 py-2 rounded-xl text-xs font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    className="px-3 py-2 rounded-xl text-xs font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
                   >
                     <CheckCheck className="w-3.5 h-3.5" />
                     <span>Mark All Read ({unreadEmailCount})</span>
@@ -1179,7 +1179,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                     type="button"
                     onClick={() => handleDeleteAll("ALL")}
                     title="Permanently delete all contact messages"
-                    className="px-3 py-2 rounded-xl text-xs font-bold bg-rose-500/15 border border-rose-500/30 text-rose-400 hover:bg-rose-500/25 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    className="px-3 py-2 rounded-xl text-xs font-bold bg-rose-500/15 border border-rose-500/30 text-rose-600 dark:text-rose-400 hover:bg-rose-500/25 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>Delete All</span>
@@ -1191,9 +1191,9 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                     type="button"
                     onClick={() => handleDeleteAll("READ")}
                     title="Delete all read / resolved contact messages"
-                    className="px-2.5 py-2 rounded-xl text-xs font-medium bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-rose-400 hover:border-rose-500/30 transition-all flex items-center gap-1.5 cursor-pointer"
+                    className="px-2.5 py-2 rounded-xl text-xs font-medium bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-500/30 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
                   >
-                    <Trash2 className="w-3.5 h-3.5 text-neutral-500" />
+                    <Trash2 className="w-3.5 h-3.5 text-neutral-400 dark:text-neutral-500" />
                     <span>Clear Read ({readEmailCount})</span>
                   </button>
                 )}
@@ -1207,23 +1207,23 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                 value={emailSearchQuery}
                 onChange={(e) => setEmailSearchQuery(e.target.value)}
                 placeholder="Search sender, email, subject..."
-                className="w-full pl-4 pr-10 py-2 rounded-xl border border-neutral-800 bg-neutral-900/60 text-xs text-white placeholder-neutral-500 focus:ring-1 focus:ring-sky-500 focus:outline-none"
+                className="w-full pl-4 pr-10 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:ring-1 focus:ring-sky-500 focus:outline-none shadow-xs"
               />
             </div>
           </div>
 
           {/* Bulk Action Bar (when messages are selected) */}
           {selectedIds.size > 0 && (
-            <div className="p-3 px-4 rounded-2xl bg-sky-950/50 border border-sky-500/40 flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-1 shadow-lg">
-              <div className="flex items-center gap-2 text-xs text-sky-200 font-bold">
-                <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
+            <div className="p-3 px-4 rounded-2xl bg-sky-50 dark:bg-sky-950/50 border border-sky-300 dark:border-sky-500/40 flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-1 shadow-sm">
+              <div className="flex items-center gap-2 text-xs text-sky-800 dark:text-sky-200 font-bold">
+                <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse" />
                 <span>{selectedIds.size} message(s) selected</span>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={handleBulkMarkRead}
-                  className="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30 flex items-center gap-1.5 cursor-pointer transition-colors"
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30 flex items-center gap-1.5 cursor-pointer transition-colors"
                 >
                   <CheckCheck className="w-3.5 h-3.5" />
                   <span>Mark as Read</span>
@@ -1231,7 +1231,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                 <button
                   type="button"
                   onClick={handleBulkDelete}
-                  className="px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 hover:bg-rose-500/30 flex items-center gap-1.5 cursor-pointer transition-colors"
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30 hover:bg-rose-500/30 flex items-center gap-1.5 cursor-pointer transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   <span>Delete Selected</span>
@@ -1239,7 +1239,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                 <button
                   type="button"
                   onClick={() => setSelectedIds(new Set())}
-                  className="text-xs text-neutral-400 hover:text-white px-2 py-1 cursor-pointer transition-colors"
+                  className="text-xs text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white px-2 py-1 cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>
@@ -1250,9 +1250,9 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
           {messages.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* List */}
-              <div className="md:col-span-1 rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl overflow-hidden shadow-xl max-h-[720px] flex flex-col">
+              <div className="md:col-span-1 rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 backdrop-blur-xl overflow-hidden shadow-xs max-h-[720px] flex flex-col">
                 {/* Select All in View Header */}
-                <div className="p-3 px-4 bg-neutral-950/70 border-b border-neutral-800 flex items-center justify-between text-xs text-neutral-400">
+                <div className="p-3 px-4 bg-neutral-50/90 dark:bg-neutral-950/70 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs text-neutral-600 dark:text-neutral-400">
                   <label className="flex items-center gap-2 cursor-pointer select-none">
                     <input
                       type="checkbox"
@@ -1261,14 +1261,14 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                         filteredEmailMessages.every((m) => selectedIds.has(m.id))
                       }
                       onChange={toggleSelectAll}
-                      className="rounded border-neutral-700 bg-neutral-900 text-sky-500 focus:ring-sky-500 cursor-pointer w-3.5 h-3.5"
+                      className="rounded border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 text-sky-500 focus:ring-sky-500 cursor-pointer w-3.5 h-3.5"
                     />
-                    <span className="text-[11px] font-medium text-neutral-300">Select All in View</span>
+                    <span className="text-[11px] font-medium text-neutral-800 dark:text-neutral-300">Select All in View</span>
                   </label>
                   <span className="text-[11px] text-neutral-500 font-mono">{filteredEmailMessages.length} shown</span>
                 </div>
 
-                <div className="divide-y divide-neutral-800/60 overflow-y-auto flex-1">
+                <div className="divide-y divide-neutral-200/80 dark:divide-neutral-800/60 overflow-y-auto flex-1">
                   {filteredEmailMessages.length === 0 ? (
                     <div className="p-8 text-center text-xs text-neutral-500">
                       No inquiries matched your filter.
@@ -1287,8 +1287,8 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                           }}
                           className={`p-3.5 cursor-pointer transition-all text-xs relative group flex items-start gap-2.5 ${
                             isSelected
-                              ? "bg-sky-500/10 border-l-4 border-l-sky-400"
-                              : "hover:bg-neutral-800/30"
+                              ? "bg-sky-50 dark:bg-sky-500/10 border-l-4 border-l-sky-500"
+                              : "hover:bg-neutral-50 dark:hover:bg-neutral-800/30"
                           }`}
                         >
                           {/* Item Checkbox */}
@@ -1300,7 +1300,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                               type="checkbox"
                               checked={isChecked}
                               onChange={() => {}}
-                              className="rounded border-neutral-700 bg-neutral-900 text-sky-500 focus:ring-sky-500 cursor-pointer w-3.5 h-3.5"
+                              className="rounded border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 text-sky-500 focus:ring-sky-500 cursor-pointer w-3.5 h-3.5"
                             />
                           </div>
 
@@ -1308,11 +1308,11 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                             <div className="flex items-center justify-between mb-1">
                               <div className="flex items-center gap-1.5 min-w-0">
                                 {isUnread && (
-                                  <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse flex-shrink-0" />
+                                  <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse flex-shrink-0" />
                                 )}
                                 <span
-                                  className={`font-semibold truncate ${
-                                    isUnread ? "text-white font-bold" : "text-neutral-300"
+                                  className={`truncate ${
+                                    isUnread ? "text-neutral-900 dark:text-white font-bold" : "text-neutral-800 dark:text-neutral-300 font-medium"
                                   }`}
                                 >
                                   {msg.name}
@@ -1329,7 +1329,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                                     handleDeleteEmail(msg.id);
                                   }}
                                   title="Delete message"
-                                  className="opacity-0 group-hover:opacity-100 p-1 text-neutral-400 hover:text-rose-400 rounded transition-all cursor-pointer"
+                                  className="opacity-0 group-hover:opacity-100 p-1 text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 rounded transition-all cursor-pointer"
                                 >
                                   <Trash2 className="w-3 h-3" />
                                 </button>
@@ -1337,12 +1337,12 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                             </div>
                             <p
                               className={`truncate mb-1 text-xs ${
-                                isUnread ? "text-sky-300 font-semibold" : "text-neutral-300"
+                                isUnread ? "text-sky-600 dark:text-sky-300 font-semibold" : "text-neutral-700 dark:text-neutral-300"
                               }`}
                             >
                               {msg.subject}
                             </p>
-                            <p className="text-[11px] text-neutral-400 line-clamp-2 leading-relaxed">
+                            <p className="text-[11px] text-neutral-600 dark:text-neutral-400 line-clamp-2 leading-relaxed">
                               {msg.message}
                             </p>
                           </div>
@@ -1354,20 +1354,20 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
               </div>
 
               {/* Selected Message Viewer */}
-              <div className="md:col-span-2 rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl p-6 shadow-xl relative">
+              <div className="md:col-span-2 rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 backdrop-blur-xl p-6 shadow-xs relative">
                 {selectedMessage ? (
                   <div className="space-y-6 text-xs">
-                    <div className="flex items-start justify-between border-b border-neutral-800 pb-5">
+                    <div className="flex items-start justify-between border-b border-neutral-200 dark:border-neutral-800 pb-5">
                       <div>
-                        <h3 className="text-lg font-bold text-white mb-1.5 tracking-tight">
+                        <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-1.5 tracking-tight">
                           {selectedMessage.subject}
                         </h3>
-                        <div className="flex flex-wrap items-center gap-2 text-neutral-400 text-xs">
+                        <div className="flex flex-wrap items-center gap-2 text-neutral-500 dark:text-neutral-400 text-xs">
                           <span>
-                            From: <strong className="text-white">{selectedMessage.name}</strong>
+                            From: <strong className="text-neutral-900 dark:text-white">{selectedMessage.name}</strong>
                           </span>
                           <span>&bull;</span>
-                          <span className="font-mono text-neutral-400">
+                          <span className="font-mono text-neutral-600 dark:text-neutral-400">
                             {selectedMessage.email}
                           </span>
                           <span>&bull;</span>
@@ -1378,7 +1378,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                         <button
                           type="button"
                           onClick={() => handleDeleteEmail(selectedMessage.id)}
-                          className="p-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition-colors border border-rose-500/20 cursor-pointer"
+                          className="p-2 text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition-colors border border-rose-500/20 cursor-pointer"
                           title="Delete message"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -1386,7 +1386,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                       </div>
                     </div>
 
-                    <div className="p-5 rounded-2xl bg-neutral-950/60 border border-neutral-800/80 text-sm text-neutral-200 leading-relaxed whitespace-pre-line font-sans shadow-inner">
+                    <div className="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-950/60 border border-neutral-200 dark:border-neutral-800/80 text-sm text-neutral-800 dark:text-neutral-200 leading-relaxed whitespace-pre-line font-sans shadow-inner">
                       {selectedMessage.message}
                     </div>
 
@@ -1395,7 +1395,7 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                         href={`mailto:${selectedMessage.email}?subject=Re: ${encodeURIComponent(
                           selectedMessage.subject
                         )}`}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-500 text-neutral-950 font-bold hover:bg-sky-400 shadow-md shadow-sky-500/20 transition-all text-xs"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-500 text-white font-bold hover:bg-sky-400 shadow-md shadow-sky-500/20 transition-all text-xs"
                       >
                         <Mail className="w-4 h-4" />
                         <span>Reply via Email</span>
@@ -1408,9 +1408,9 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                             selectedMessage.status === "READ" ? "UNREAD" : "READ"
                           )
                         }
-                        className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-neutral-800 bg-neutral-900/60 text-neutral-300 hover:text-white hover:border-neutral-700 text-xs font-semibold transition-all cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white hover:border-neutral-300 dark:hover:border-neutral-700 text-xs font-semibold transition-all cursor-pointer shadow-xs"
                       >
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                         <span>
                           Mark as {selectedMessage.status === "READ" ? "Unread" : "Read"}
                         </span>
@@ -1419,10 +1419,10 @@ export function MessagesClient({ initialMessages }: { initialMessages: ContactMe
                   </div>
                 ) : (
                   <div className="p-16 text-center text-xs text-neutral-500 flex flex-col items-center justify-center">
-                    <div className="w-12 h-12 rounded-2xl bg-neutral-800/50 flex items-center justify-center text-neutral-400 mb-3 border border-neutral-700/50">
+                    <div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-neutral-800/50 flex items-center justify-center text-neutral-500 dark:text-neutral-400 mb-3 border border-neutral-200 dark:border-neutral-700/50">
                       <MessageSquare className="w-6 h-6" />
                     </div>
-                    <p className="font-semibold text-neutral-300 mb-1">No inquiry selected</p>
+                    <p className="font-semibold text-neutral-800 dark:text-neutral-300 mb-1">No inquiry selected</p>
                     <p className="text-neutral-500 max-w-xs">
                       Select any submission on the left panel to inspect details and respond.
                     </p>

@@ -209,7 +209,7 @@ export function PageLoader({
 
         {/* Tagline */}
         <p className="text-[11px] sm:text-xs font-bold tracking-[0.35em] text-neutral-400/90 uppercase mb-8">
-          Movies • APKs • Software • 4K Wallpapers
+          Movies • APKs • Software • Free Tools
         </p>
 
         {/* High-Tech Progress Track (Electric Blue & Cyan Laser) */}

@@ -49,7 +49,13 @@ function AdminLoginForm() {
           .eq("id", data.user.id)
           .single();
 
-        if (!profile || (profile.role !== "ADMIN" && profile.role !== "SUPER_ADMIN")) {
+        const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || "techsavvy.muthuraj.dev@gmail.com")
+          .split(",")
+          .map((e) => e.trim().toLowerCase());
+        const isEmailAdmin = data.user.email && adminEmails.includes(data.user.email.toLowerCase());
+        const hasAdminRole = profile?.role === "ADMIN" || profile?.role === "SUPER_ADMIN" || isEmailAdmin;
+
+        if (!hasAdminRole) {
           setErrorMsg("Access Denied: Your account does not have administrator privileges.");
           await supabase.auth.signOut();
           setLoading(false);

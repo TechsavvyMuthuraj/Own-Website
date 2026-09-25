@@ -286,16 +286,16 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
   return (
     <div className="space-y-6">
       {/* Top Action Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-3xl border border-neutral-800/80 bg-neutral-900/50 backdrop-blur-xl shadow-xl">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white/95 dark:bg-neutral-900/50 backdrop-blur-xl shadow-xs">
         {/* Reordering helper note */}
-        <div className="flex items-center gap-2 text-xs text-neutral-300">
-          <ArrowUpDown className="w-4 h-4 text-indigo-400" />
+        <div className="flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-300">
+          <ArrowUpDown className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
           <span>
-            Drag rows using the <strong className="text-white font-mono">⠿</strong> grip or use{" "}
-            <strong className="text-white">↑ ↓</strong> arrows to reorganize navigation hierarchy.
+            Drag rows using the <strong className="text-neutral-900 dark:text-white font-mono">⠿</strong> grip or use{" "}
+            <strong className="text-neutral-900 dark:text-white">↑ ↓</strong> arrows to reorganize navigation hierarchy.
           </span>
           {isSavingOrder && (
-            <span className="inline-flex items-center gap-1.5 text-xs text-indigo-400 font-semibold animate-pulse ml-2">
+            <span className="inline-flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-400 font-semibold animate-pulse ml-2">
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
               <span>Saving order...</span>
             </span>
@@ -305,7 +305,7 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
         <button
           type="button"
           onClick={() => setShowAddForm(!showAddForm)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold text-xs transition-all shadow-lg shadow-indigo-500/20 active:scale-95 cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs transition-all shadow-md shadow-indigo-500/20 active:scale-95 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>{showAddForm ? "Cancel" : "+ Add Category"}</span>
@@ -313,14 +313,14 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
       </div>
 
       {showAddForm && (
-        <form onSubmit={handleCreate} className="p-6 rounded-3xl border border-neutral-800/80 bg-neutral-900/50 backdrop-blur-xl shadow-2xl space-y-4 max-w-2xl">
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-            <Layers className="w-4 h-4 text-indigo-400" />
+        <form onSubmit={handleCreate} className="p-6 rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white/95 dark:bg-neutral-900/50 backdrop-blur-xl shadow-xs space-y-4 max-w-2xl">
+          <h3 className="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+            <Layers className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             <span>Create New Taxonomy Node</span>
           </h3>
 
           {errorMsg && (
-            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center gap-2">
+            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
               <span>{errorMsg}</span>
             </div>
@@ -328,7 +328,7 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-neutral-300 mb-1">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                 Category Name *
               </label>
               <input
@@ -337,11 +337,11 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
                 value={name}
                 onChange={(e) => handleNameChange(e.target.value)}
                 placeholder="e.g. Developer Tools"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950 text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 shadow-inner"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-neutral-300 mb-1">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                 Slug *
               </label>
               <input
@@ -350,13 +350,13 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
                 placeholder="e.g. developer-tools"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950 text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 shadow-inner font-mono"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 font-mono"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
               Description
             </label>
             <input
@@ -364,29 +364,29 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Brief summary of resources included..."
-              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                 Sort Order
               </label>
               <input
                 type="number"
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-mono"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950 text-xs text-neutral-900 dark:text-white font-mono"
               />
             </div>
             <div className="flex items-center pt-5">
-              <label className="flex items-center gap-2 cursor-pointer text-xs">
+              <label className="flex items-center gap-2 cursor-pointer text-xs text-neutral-800 dark:text-neutral-200">
                 <input
                   type="checkbox"
                   checked={isActive}
                   onChange={(e) => setIsActive(e.target.checked)}
-                  className="rounded text-[var(--primary)]"
+                  className="rounded text-indigo-600 focus:ring-indigo-500"
                 />
                 <span>Active (Publicly Visible)</span>
               </label>
@@ -396,7 +396,7 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
           <button
             type="submit"
             disabled={loading}
-            className="px-5 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] transition-all disabled:opacity-50"
+            className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition-all disabled:opacity-50 shadow-xs cursor-pointer"
           >
             {loading ? "Saving..." : "Save Category"}
           </button>
@@ -404,10 +404,10 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
       )}
 
       {categories.length > 0 ? (
-        <div className="rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl overflow-hidden shadow-2xl">
+        <div className="rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 backdrop-blur-xl overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
-              <thead className="bg-neutral-950/70 text-neutral-400 uppercase tracking-wider font-semibold border-b border-neutral-800 text-[10px]">
+              <thead className="bg-neutral-50/90 dark:bg-neutral-950/70 text-neutral-600 dark:text-neutral-400 uppercase tracking-wider font-semibold border-b border-neutral-200 dark:border-neutral-800 text-[10px]">
                 <tr>
                   <th className="w-20 px-4 py-4 text-center">Reorder</th>
                   <th className="px-6 py-4">Category Details</th>
@@ -417,7 +417,7 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-800/60">
+              <tbody className="divide-y divide-neutral-200/80 dark:divide-neutral-800/60">
                 {categories.map((cat, idx) => {
                   const isDragging = draggedIndex === idx;
                   const isOver = dragOverIndex === idx && draggedIndex !== idx;
@@ -456,8 +456,8 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
                       }}
                       className={`transition-all select-none ${
                         isDragging
-                          ? "opacity-30 bg-neutral-800"
-                          : "hover:bg-neutral-800/30"
+                          ? "opacity-30 bg-neutral-200 dark:bg-neutral-800"
+                          : "hover:bg-neutral-50/70 dark:hover:bg-neutral-800/30"
                       } ${
                         isOver
                           ? "border-t-2 border-indigo-500 bg-indigo-500/10"
@@ -468,7 +468,7 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
                       <td className="px-4 py-4 text-center align-middle">
                         <div className="flex items-center justify-center gap-1.5">
                           <span
-                            className="cursor-grab active:cursor-grabbing p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
+                            className="cursor-grab active:cursor-grabbing p-1.5 rounded-lg text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                             title="Drag to reorder"
                           >
                             <GripVertical className="w-4 h-4" />
@@ -478,7 +478,7 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
                               type="button"
                               disabled={idx === 0 || isSavingOrder}
                               onClick={() => handleMoveUp(idx)}
-                              className="p-0.5 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-20 disabled:hover:bg-transparent transition-colors"
+                              className="p-0.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-900 dark:hover:text-white disabled:opacity-20 disabled:hover:bg-transparent transition-colors cursor-pointer"
                               title="Move category up"
                             >
                               <ChevronUp className="w-3 h-3" />
@@ -487,7 +487,7 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
                               type="button"
                               disabled={idx === categories.length - 1 || isSavingOrder}
                               onClick={() => handleMoveDown(idx)}
-                              className="p-0.5 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white disabled:opacity-20 disabled:hover:bg-transparent transition-colors"
+                              className="p-0.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-400 hover:text-neutral-900 dark:hover:text-white disabled:opacity-20 disabled:hover:bg-transparent transition-colors cursor-pointer"
                               title="Move category down"
                             >
                               <ChevronDown className="w-3 h-3" />
@@ -497,30 +497,30 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
                       </td>
 
                       <td className="px-6 py-4">
-                        <div className="font-bold text-sm text-white">{cat.name}</div>
+                        <div className="font-bold text-sm text-neutral-900 dark:text-white">{cat.name}</div>
                         {cat.description && (
-                          <div className="text-[11px] text-neutral-400 line-clamp-1 font-normal mt-0.5">
+                          <div className="text-[11px] text-neutral-500 dark:text-neutral-400 line-clamp-1 font-normal mt-0.5">
                             {cat.description}
                           </div>
                         )}
                       </td>
-                      <td className="px-4 py-4 font-mono text-neutral-400 text-[11px]">
+                      <td className="px-4 py-4 font-mono text-neutral-600 dark:text-neutral-400 text-[11px]">
                         /{cat.slug}
                       </td>
                       <td className="px-4 py-4 font-mono">
-                        <span className="px-2.5 py-1 rounded-lg bg-neutral-950 border border-neutral-800 text-[11px] font-bold text-indigo-400">
+                        <span className="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-[11px] font-bold text-indigo-600 dark:text-indigo-400">
                           #{cat.sort_order}
                         </span>
                       </td>
                       <td className="px-4 py-4">
                         {cat.is_active ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
                             ACTIVE
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-neutral-800 text-neutral-400 border border-neutral-700">
-                            <span className="w-1.5 h-1.5 rounded-full bg-neutral-500" />
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700">
+                            <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 dark:bg-neutral-500" />
                             DISABLED
                           </span>
                         )}
@@ -530,7 +530,7 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
                           <button
                             type="button"
                             onClick={() => openEditModal(cat)}
-                            className="p-2 rounded-xl border border-neutral-700/80 bg-neutral-800/60 hover:bg-indigo-500/15 text-neutral-300 hover:text-indigo-400 hover:border-indigo-500/30 transition-all shadow-xs"
+                            className="p-2 rounded-xl border border-neutral-200 dark:border-neutral-700/80 bg-white dark:bg-neutral-800/60 hover:bg-indigo-50 dark:hover:bg-indigo-500/15 text-neutral-700 dark:text-neutral-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-300 dark:hover:border-indigo-500/30 transition-all shadow-xs cursor-pointer"
                             title="Edit category"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
@@ -539,7 +539,7 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
                             type="button"
                             onClick={() => handleDelete(cat.id, cat.name)}
                             disabled={deletingId === cat.id}
-                            className="p-2 rounded-xl border border-neutral-700/80 bg-neutral-800/60 hover:bg-red-500/15 text-neutral-400 hover:text-red-400 hover:border-red-500/30 transition-all shadow-xs cursor-pointer"
+                            className="p-2 rounded-xl border border-neutral-200 dark:border-neutral-700/80 bg-white dark:bg-neutral-800/60 hover:bg-red-50 dark:hover:bg-red-500/15 text-neutral-500 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-400 hover:border-red-300 dark:hover:border-red-500/30 transition-all shadow-xs cursor-pointer"
                             title="Delete category"
                           >
                             {deletingId === cat.id ? (
@@ -557,14 +557,14 @@ export function CategoriesClient({ initialCategories }: CategoriesClientProps) {
             </table>
           </div>
 
-          <div className="px-6 py-3.5 bg-neutral-950/80 border-t border-neutral-800 flex items-center justify-between text-[11px] text-neutral-400">
+          <div className="px-6 py-3.5 bg-neutral-50/90 dark:bg-neutral-950/80 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-[11px] text-neutral-600 dark:text-neutral-400">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-indigo-500 dark:bg-indigo-400 animate-pulse" />
               <span>
-                Total <strong className="text-white">{categories.length}</strong> taxonomy categories configured
+                Total <strong className="text-neutral-900 dark:text-white">{categories.length}</strong> taxonomy categories configured
               </span>
             </div>
-            <div className="font-mono text-[10px] text-neutral-400">
+            <div className="font-mono text-[10px] text-neutral-500 dark:text-neutral-400">
               SUPABASE TAXONOMY SCHEMA ACTIVE
             </div>
           </div>

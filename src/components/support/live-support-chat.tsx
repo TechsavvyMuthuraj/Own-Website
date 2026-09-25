@@ -74,7 +74,13 @@ export function LiveSupportChat({ compact = false, onActiveStateChange }: LiveSu
     );
   });
   const [isMaximized, setIsMaximized] = useState<boolean>(false);
-  const [showInspector, setShowInspector] = useState<boolean>(true);
+  const [showInspector, setShowInspector] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth >= 768 && !compact) {
+      setShowInspector(true);
+    }
+  }, [compact]);
 
   useEffect(() => {
     onActiveStateChange?.(hasJoined);
@@ -836,7 +842,7 @@ export function LiveSupportChat({ compact = false, onActiveStateChange }: LiveSu
               ? "fixed inset-0 z-50 rounded-none border-none flex flex-col text-left shadow-2xl overflow-hidden"
               : compact
               ? "rounded-2xl border border-neutral-800 shadow-xl overflow-hidden flex flex-col h-[500px] relative text-left"
-              : "rounded-2xl sm:rounded-3xl border border-neutral-800 shadow-2xl overflow-hidden flex flex-col h-[calc(100vh-140px)] min-h-[580px] max-h-[820px] relative text-left"
+              : "rounded-2xl sm:rounded-3xl border border-neutral-800 shadow-2xl overflow-hidden flex flex-col h-[calc(100dvh-150px)] sm:h-[calc(100vh-140px)] min-h-[480px] sm:min-h-[580px] max-h-[820px] relative text-left"
           }
         >
           {/* 1. Windows OS Application Titlebar */}
@@ -865,10 +871,11 @@ export function LiveSupportChat({ compact = false, onActiveStateChange }: LiveSu
               <button
                 type="button"
                 onClick={() => setShowInspector((prev) => !prev)}
-                className="px-2 py-1 rounded hover:bg-neutral-800 text-[11px] text-neutral-400 hover:text-white transition-colors cursor-pointer hidden sm:inline-block"
-                title="Toggle Technical Inspector Sidebar"
+                className="px-2 py-1 rounded hover:bg-neutral-800 text-[11px] text-neutral-400 hover:text-white transition-colors cursor-pointer inline-flex items-center gap-1"
+                title="Toggle Technical Inspector & Specs"
               >
-                {showInspector ? "Hide Inspector" : "Show Inspector"}
+                <span className="hidden sm:inline">{showInspector ? "Hide Inspector" : "Show Inspector"}</span>
+                <span className="sm:hidden font-semibold">{showInspector ? "Chat" : "Info"}</span>
               </button>
               <button
                 type="button"
@@ -913,14 +920,26 @@ export function LiveSupportChat({ compact = false, onActiveStateChange }: LiveSu
           </div>
 
           {/* 3. Split 2-Pane Technical Support Workspace */}
-          <div className="flex-1 flex overflow-hidden min-h-0">
-            {/* LEFT PANE: Technical Support Inspector (Width 280px on desktop) */}
+          <div className="flex-1 flex overflow-hidden min-h-0 relative">
+            {/* LEFT PANE: Technical Support Inspector (Overlay on Mobile, Sidebar on Desktop) */}
             {showInspector && (
               <aside
                 style={{ backgroundColor: "#0d0f17" }}
-                className="w-64 sm:w-72 border-r border-neutral-800 flex flex-col justify-between overflow-y-auto p-4 text-xs select-none flex-shrink-0"
+                className="absolute inset-0 z-30 md:static md:z-auto w-full md:w-64 lg:w-72 border-r border-neutral-800 flex flex-col justify-between overflow-y-auto p-4 text-xs select-none flex-shrink-0 animate-in fade-in duration-150"
               >
                 <div className="space-y-4">
+                  {/* Mobile Back-to-chat header */}
+                  <div className="md:hidden flex items-center justify-between pb-3 border-b border-neutral-800 mb-2">
+                    <span className="font-bold text-white text-xs">Technical Specs &amp; Diagnostics</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowInspector(false)}
+                      className="px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-semibold cursor-pointer"
+                    >
+                      ← Back to Chat
+                    </button>
+                  </div>
+
                   <div>
                     <div className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1.5">
                       Active Client Session

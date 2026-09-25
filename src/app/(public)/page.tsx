@@ -2,32 +2,22 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Compass,
   ArrowRight,
   Sparkles,
-  Layers,
-  Search,
-  ShieldCheck,
-  CheckCircle2,
-  Lock,
   Cpu,
-  Smartphone,
-  Monitor,
-  Code,
-  FileText,
-  Shapes,
 } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { Resource, Category, Wallpaper } from "@/types/database";
+import type { Resource, Article } from "@/types/database";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 import { AdSlot } from "@/components/ads/ad-slot";
 import { getActiveAd } from "@/lib/ads";
 import { FounderProfile } from "@/components/home/founder-profile";
-import { HomepageWallpapers } from "@/components/wallpapers/homepage-wallpapers";
 import { FeaturesGrid } from "@/components/home/features-grid";
 import { YouTubeShowcase } from "@/components/home/youtube-showcase";
 import { HeroInteractiveBanner } from "@/components/home/hero-interactive-banner";
-import { MetricCountUp } from "@/components/ui/metric-count-up";
+import { CinemaShowcase } from "@/components/home/cinema-showcase";
+import { ArticlesShowcase } from "@/components/home/articles-showcase";
+import { CommunityBanner } from "@/components/home/community-banner";
 
 import type { Metadata } from "next";
 
@@ -64,15 +54,11 @@ export default async function HomePage() {
 
   let featuredResources: Resource[] = [];
   let latestResources: Resource[] = [];
-  let categories: Category[] = [];
+  let movieResources: Resource[] = [];
+  let articleItems: Article[] = [];
   let homepageAd: any = null;
   let inFeedAd: any = null;
   let hpSettings: Record<string, any> = {};
-  let wallpapers: Wallpaper[] = [];
-  let totalResourcesCount = 0;
-  let totalCategoriesCount = 0;
-  let totalWallpapersCount = 0;
-  let totalMoviesCount = 0;
 
   try {
     const CARD_FIELDS =
@@ -84,12 +70,9 @@ export default async function HomePage() {
       inFeedAdResult,
       featuredResult,
       latestResult,
-      categoriesResult,
+      movieCatResult,
+      articlesResult,
       hpSettingsResult,
-      wallpapersResult,
-      resCountResult,
-      catCountResult,
-      wpCountResult,
     ] = await Promise.all([
       getActiveAd("HOMEPAGE"),
       getActiveAd("IN_FEED"),
@@ -105,42 +88,24 @@ export default async function HomePage() {
         .select(CARD_FIELDS)
         .eq("status", "PUBLISHED")
         .order("published_at", { ascending: false })
-        .limit(8),
+        .limit(16),
       supabase
         .from("categories")
-        .select("id, name, slug, icon, description, sort_order, is_active")
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true })
-        .limit(8),
+        .select("id")
+        .eq("slug", "movies")
+        .maybeSingle(),
+      supabase
+        .from("articles")
+        .select("id, title, slug, excerpt, thumbnail_url, published_at, author_id")
+        .eq("status", "PUBLISHED")
+        .order("published_at", { ascending: false })
+        .limit(3),
       supabase
         .from("site_settings")
         .select("value")
         .eq("key", "homepage_settings")
         .maybeSingle(),
-      supabase
-        .from("wallpapers")
-        .select("*")
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true })
-        .order("created_at", { ascending: false })
-        .limit(9),
-      supabase
-        .from("resources")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "PUBLISHED"),
-      supabase
-        .from("categories")
-        .select("*", { count: "exact", head: true })
-        .eq("is_active", true),
-      supabase
-        .from("wallpapers")
-        .select("*", { count: "exact", head: true })
-        .eq("is_active", true),
     ]);
-
-    totalResourcesCount = resCountResult?.count ?? 0;
-    totalCategoriesCount = catCountResult?.count ?? 0;
-    totalWallpapersCount = wpCountResult?.count ?? 0;
 
     if (hpSettingsResult?.data?.value) {
       try {
@@ -156,7 +121,10 @@ export default async function HomePage() {
     homepageAd = hpSettings.show_homepage_ad !== false ? adResult : null;
     inFeedAd = hpSettings.show_in_feed_ad !== false ? inFeedAdResult : null;
 
+    const movieCatId = movieCatResult?.data?.id;
+
     const isMovie = (item: any) => {
+      if (movieCatId && item.category_id === movieCatId) return true;
       if (item.category?.slug === "movies") return true;
       const tags = Array.isArray(item.tags) ? item.tags.map((t: string) => String(t).toLowerCase()) : [];
       return tags.includes("movie") || tags.includes("movies") || tags.includes("cinema");
@@ -172,48 +140,31 @@ export default async function HomePage() {
     }
 
     if (latestResult.data) {
-      latestResources = (latestResult.data as unknown[])
-        .map((item: any) => ({
-          ...item,
-          category: Array.isArray(item.category) ? item.category[0] : item.category,
-        }))
-        .filter((item: any) => !isMovie(item)) as Resource[];
+      const allItems = (latestResult.data as unknown[]).map((item: any) => ({
+        ...item,
+        category: Array.isArray(item.category) ? item.category[0] : item.category,
+      })) as Resource[];
+
+      movieResources = allItems.filter((item: any) => isMovie(item)).slice(0, 4);
+      latestResources = allItems.filter((item: any) => !isMovie(item)).slice(0, 8);
     }
 
-    if (categoriesResult.data) {
-      categories = (categoriesResult.data as Category[]).filter(
-        (cat) => cat.slug !== "movies"
-      );
-    }
-
-    if (wallpapersResult.data) {
-      wallpapers = wallpapersResult.data as Wallpaper[];
+    if (articlesResult?.data) {
+      articleItems = articlesResult.data as unknown as Article[];
     }
   } catch (error) {
     console.error("Failed to load homepage resources from database:", error);
   }
 
-  const categoryIcons: Record<string, React.ReactNode> = {
-    apk: <Smartphone className="w-5 h-5 text-emerald-500" />,
-    "pc-software": <Monitor className="w-5 h-5 text-blue-500" />,
-    "developer-tools": <Code className="w-5 h-5 text-purple-500" />,
-    "ai-tools": <Cpu className="w-5 h-5 text-cyan-500" />,
-    templates: <FileText className="w-5 h-5 text-amber-500" />,
-    icons: <Shapes className="w-5 h-5 text-rose-500" />,
-  };
 
-  const heroImageUrl = hpSettings.hero_image_url || "/images/hero-clean.png";
+  const heroImageUrl = hpSettings.hero_image_url || "/images/hero-clean.webp";
   const showSearchBar = hpSettings.show_search_bar !== false;
   const searchPlaceholder =
     hpSettings.search_placeholder ||
     "Search software, movies, tools, APKs, templates...";
   const showTrending = hpSettings.show_trending !== false;
   const trendingLabel = hpSettings.trending_label || "Trending:";
-  const showCategories = hpSettings.show_categories !== false;
-  const categoriesTitle = hpSettings.categories_title || "Browse by Category";
-  const categoriesSubtitle =
-    hpSettings.categories_subtitle ||
-    "Find exactly what you need across organized classifications.";
+
   const showFeatured = hpSettings.show_featured !== false;
   const featuredTitle = hpSettings.featured_title || "Featured Resources";
   const featuredSubtitle =
@@ -325,141 +276,6 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* 2. REAL-TIME PLATFORM DETAILS & ECOSYSTEM */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 py-3.5 px-5 rounded-2xl border border-[var(--border)] bg-[var(--card)]/80 backdrop-blur-xl shadow-xs">
-          {/* Key Metrics in Minimal Text Style with CountUp Animation */}
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-[var(--muted-foreground)]">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
-              <span className="font-bold text-[var(--foreground)] font-mono text-sm">
-                <MetricCountUp end={totalResourcesCount} suffix="+" />
-              </span>
-              <span>Verified Resources</span>
-            </div>
-            <span className="hidden sm:inline text-[var(--border)]">|</span>
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-[var(--foreground)] font-mono text-sm">
-                <MetricCountUp end={totalCategoriesCount} />
-              </span>
-              <span>Active Categories</span>
-            </div>
-            <span className="hidden sm:inline text-[var(--border)]">|</span>
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-[var(--foreground)] font-mono text-sm">
-                <MetricCountUp end={totalWallpapersCount} suffix="+" />
-              </span>
-              <span>4K Wallpapers</span>
-            </div>
-            <span className="hidden md:inline text-[var(--border)]">|</span>
-            <div className="hidden md:flex items-center gap-1.5 text-emerald-500 dark:text-emerald-400 font-medium">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>100% Security Audited</span>
-            </div>
-          </div>
-
-          {/* Platform Environments in Clean Text Filter Style */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0 scrollbar-none text-xs font-medium text-[var(--muted-foreground)]">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)] flex-shrink-0">
-              Filter:
-            </span>
-            <Link
-              href="/explore?platform=windows"
-              className="hover:text-[var(--foreground)] hover:bg-[var(--secondary)] px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap"
-            >
-              Windows
-            </Link>
-            <span className="text-[var(--border)]">•</span>
-            <Link
-              href="/explore?platform=android"
-              className="hover:text-[var(--foreground)] hover:bg-[var(--secondary)] px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap"
-            >
-              Android
-            </Link>
-            <span className="text-[var(--border)]">•</span>
-            <Link
-              href="/explore?platform=mac"
-              className="hover:text-[var(--foreground)] hover:bg-[var(--secondary)] px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap"
-            >
-              macOS
-            </Link>
-            <span className="text-[var(--border)]">•</span>
-            <Link
-              href="/explore?platform=linux"
-              className="hover:text-[var(--foreground)] hover:bg-[var(--secondary)] px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap"
-            >
-              Linux
-            </Link>
-            <span className="text-[var(--border)]">•</span>
-            <Link
-              href="/explore?platform=web"
-              className="hover:text-[var(--foreground)] hover:bg-[var(--secondary)] px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap"
-            >
-              Web Tools
-            </Link>
-            <span className="text-[var(--border)]">•</span>
-            <Link
-              href="/movies"
-              className="text-amber-500 dark:text-amber-400 font-bold hover:underline px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap inline-flex items-center gap-1"
-            >
-              <span>4K Cinema</span>
-              <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. CATEGORIES PREVIEW */}
-      {showCategories && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-[var(--foreground)] tracking-tight">
-                {categoriesTitle}
-              </h2>
-              <p className="text-xs sm:text-sm text-[var(--muted-foreground)]">
-                {categoriesSubtitle}
-              </p>
-            </div>
-            <Link
-              href="/categories"
-              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[var(--primary)] hover:underline"
-            >
-              <span>View all</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          {categories.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {categories.map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/category/${cat.slug}`}
-                  className="group flex flex-col p-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] hover:border-[var(--ring)]/50 hover:bg-[var(--secondary)]/40 transition-all shadow-sm card-hover-lift"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-[var(--secondary)] border border-[var(--border)] flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
-                    {categoryIcons[cat.slug] || <Layers className="w-5 h-5 text-[var(--primary)]" />}
-                  </div>
-                  <h3 className="font-semibold text-sm text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors line-clamp-1">
-                    {cat.name}
-                  </h3>
-                  <p className="text-xs text-[var(--muted-foreground)] line-clamp-1 mt-0.5">
-                    {cat.description || "Verified resources"}
-                  </p>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="p-8 rounded-2xl border border-[var(--border)] bg-[var(--card)] text-center">
-              <p className="text-sm text-[var(--muted-foreground)]">
-                No categories published yet. Check back soon or visit the admin console.
-              </p>
-            </div>
-          )}
-        </section>
-      )}
-
       {/* HOMEPAGE FEATURE AD BANNER */}
       {homepageAd && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
@@ -467,20 +283,34 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* 2. THEATRICAL CINEMA & 4K MASTER PRINTS */}
+      {movieResources.length > 0 && (
+        <CinemaShowcase movies={movieResources} />
+      )}
+
+      {/* 3. NAMMATECH JOURNAL & TECH GUIDES */}
+      {articleItems.length > 0 && (
+        <ArticlesShowcase articles={articleItems} />
+      )}
+
+      {/* 4. REAL-TIME COMMUNITY & LIVE WEBRTC STAGE */}
+      <CommunityBanner />
+
       {/* 5. FEATURED RESOURCES (IF ANY PUBLISHED) */}
       {showFeatured && featuredResources.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-amber-400" />
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-[var(--foreground)] tracking-tight">
-                  {featuredTitle}
-                </h2>
-                <p className="text-xs sm:text-sm text-[var(--muted-foreground)]">
-                  {featuredSubtitle}
-                </p>
+          <div className="flex items-center justify-between mb-7">
+            <div>
+              <div className="eyebrow-pill bg-amber-500/10 text-amber-500 border-amber-500/30 mb-2">
+                <Sparkles className="w-3 h-3 text-amber-500" />
+                <span>Curated Selection</span>
               </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-[var(--foreground)] tracking-tight">
+                {featuredTitle}
+              </h2>
+              <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1 max-w-lg leading-relaxed">
+                {featuredSubtitle}
+              </p>
             </div>
           </div>
           <ResourceGrid resources={featuredResources} />
@@ -490,21 +320,27 @@ export default async function HomePage() {
       {/* 6. LATEST RELEASES */}
       {showLatest && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-7">
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-[var(--foreground)] tracking-tight">
+              <div className="eyebrow-pill bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/30 mb-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+                <span>Recent Releases</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-[var(--foreground)] tracking-tight">
                 {latestTitle}
               </h2>
-              <p className="text-xs sm:text-sm text-[var(--muted-foreground)]">
+              <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1 max-w-lg leading-relaxed">
                 {latestSubtitle}
               </p>
             </div>
             <Link
               href="/new-and-updated"
-              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[var(--primary)] hover:underline"
+              className="inline-flex items-center gap-2 pl-3.5 pr-1.5 py-1.5 rounded-full bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 text-xs font-bold text-[var(--foreground)] transition-all group self-start sm:self-auto shadow-xs active:scale-95"
             >
-              <span>See new & updated</span>
-              <ArrowRight className="w-4 h-4" />
+              <span>See All Updates</span>
+              <span className="w-6 h-6 rounded-full bg-[var(--primary)] text-neutral-950 flex items-center justify-center group-hover:translate-x-0.5 transition-transform">
+                <ArrowRight className="w-3.5 h-3.5" />
+              </span>
             </Link>
           </div>
 
@@ -528,10 +364,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 8. 4K & ULTRA HD WALLPAPERS SHOWCASE */}
-      <HomepageWallpapers wallpapers={wallpapers} />
-
-      {/* 9. YOUTUBE CHANNEL SHOWCASE */}
+      {/* 8. YOUTUBE CHANNEL SHOWCASE */}
       <YouTubeShowcase settings={hpSettings} />
 
       {/* 10. FOUNDER & LEAD DEVELOPER PROFILE */}

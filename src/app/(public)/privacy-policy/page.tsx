@@ -42,7 +42,7 @@ export default function PrivacyPolicyPage() {
             <a href="https://www.techsavvymuthuraj.dev" className="text-amber-500 hover:underline">
               https://www.techsavvymuthuraj.dev
             </a>
-            , founded by <strong>Muthuraj C</strong>). We are dedicated to providing safe, verified digital resources, tutorials, articles, 4K wallpapers, and tools while strictly safeguarding your personal privacy.
+            , founded by <strong>Muthuraj C</strong>). We are dedicated to providing safe, verified digital resources, tutorials, articles, and tools while strictly safeguarding your personal privacy.
           </p>
           <p>
             This Privacy Policy document details the types of personal information collected, how it is processed and stored, and our adherence to digital advertising policies including <strong>Google AdSense</strong>, the <strong>General Data Protection Regulation (GDPR)</strong>, and the <strong>California Consumer Privacy Act (CCPA)</strong>.

@@ -203,20 +203,20 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
       </div>
 
       {showAddForm && (
-        <form onSubmit={handleCreate} className="p-6 rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm space-y-4 max-w-2xl">
-          <h3 className="text-sm font-bold text-[var(--foreground)] uppercase tracking-wider">
+        <form onSubmit={handleCreate} className="p-6 rounded-3xl border border-neutral-200/90 dark:border-neutral-800 bg-white dark:bg-neutral-900/60 shadow-xs space-y-4 max-w-2xl">
+          <h3 className="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
             Broadcast Announcement
           </h3>
 
           {errorMsg && (
-            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs flex items-center gap-2">
+            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
               <span>{errorMsg}</span>
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
               Headline Title *
             </label>
             <input
@@ -225,12 +225,12 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. 🚀 Summer Release: 50+ new open-source templates added!"
-              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
+              className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
               Details / Content (optional)
             </label>
             <textarea
@@ -238,13 +238,13 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
               onChange={(e) => setContent(e.target.value)}
               rows={2}
               placeholder="Further context or instructions..."
-              className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
+              className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                 CTA Button Text
               </label>
               <input
@@ -252,11 +252,11 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
                 value={ctaText}
                 onChange={(e) => setCtaText(e.target.value)}
                 placeholder="e.g. Explore Now"
-                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
+                className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                 CTA URL
               </label>
               <input
@@ -264,43 +264,43 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
                 value={ctaUrl}
                 onChange={(e) => setCtaUrl(e.target.value)}
                 placeholder="https://... or /resources"
-                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
+                className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                 Priority
               </label>
               <input
                 type="number"
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-mono"
+                className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs font-mono text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                 Start Date
               </label>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
+                className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                 End / Expiry Date
               </label>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
+                className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
               />
             </div>
           </div>
@@ -308,7 +308,7 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
           <button
             type="submit"
             disabled={loading}
-            className="px-5 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] transition-all disabled:opacity-50"
+            className="px-5 py-2.5 rounded-xl bg-sky-500 text-white text-xs font-bold hover:bg-sky-400 transition-all disabled:opacity-50 shadow-xs cursor-pointer"
           >
             {loading ? "Saving..." : "Publish Announcement"}
           </button>
@@ -316,10 +316,10 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
       )}
 
       {initialAnnouncements.length > 0 ? (
-        <div className="rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl overflow-hidden shadow-xl">
+        <div className="rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 backdrop-blur-xl overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs min-w-[650px]">
-              <thead className="bg-neutral-950/80 text-neutral-400 uppercase font-semibold border-b border-neutral-800 tracking-wider text-[10px]">
+              <thead className="bg-neutral-50/90 dark:bg-neutral-950/80 text-neutral-600 dark:text-neutral-400 uppercase font-semibold border-b border-neutral-200 dark:border-neutral-800 tracking-wider text-[10px]">
                 <tr>
                   <th className="px-6 py-4">Headline</th>
                   <th className="px-4 py-4">CTA Link</th>
@@ -328,40 +328,40 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-800/60">
+              <tbody className="divide-y divide-neutral-200/80 dark:divide-neutral-800/60">
                 {initialAnnouncements.map((a) => (
-                  <tr key={a.id} className="hover:bg-neutral-800/30 transition-colors">
-                    <td className="px-6 py-4 font-semibold text-white">
-                      <div className="text-sm font-bold text-white flex items-center gap-2">
-                        <Megaphone className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                  <tr key={a.id} className="hover:bg-neutral-50/70 dark:hover:bg-neutral-800/30 transition-colors">
+                    <td className="px-6 py-4 font-semibold text-neutral-900 dark:text-white">
+                      <div className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                        <Megaphone className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 flex-shrink-0" />
                         <span>{a.title}</span>
                       </div>
                       {a.content && (
-                        <div className="text-[11px] text-neutral-400 line-clamp-1 mt-0.5">
+                        <div className="text-[11px] text-neutral-500 dark:text-neutral-400 line-clamp-1 mt-0.5">
                           {a.content}
                         </div>
                       )}
                     </td>
-                    <td className="px-4 py-4 font-mono text-neutral-400">
+                    <td className="px-4 py-4 font-mono text-neutral-600 dark:text-neutral-400">
                       {a.cta_url ? (
-                        <span className="truncate max-w-[150px] inline-block text-sky-400">{a.cta_url}</span>
+                        <span className="truncate max-w-[150px] inline-block text-sky-600 dark:text-sky-400">{a.cta_url}</span>
                       ) : (
-                        <span className="text-neutral-600">—</span>
+                        <span className="text-neutral-400 dark:text-neutral-600">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-4 font-mono font-bold text-neutral-300">
-                      <span className="px-2 py-0.5 rounded-lg bg-neutral-800 text-neutral-300">
+                    <td className="px-4 py-4 font-mono font-bold text-neutral-800 dark:text-neutral-300">
+                      <span className="px-2 py-0.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">
                         P-{a.priority}
                       </span>
                     </td>
                     <td className="px-4 py-4">
                       {a.is_active ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                           ACTIVE
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-neutral-800 text-neutral-500">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-neutral-100 dark:bg-neutral-800 text-neutral-500 border border-neutral-200 dark:border-neutral-700">
                           INACTIVE
                         </span>
                       )}
@@ -371,7 +371,7 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
                         <button
                           type="button"
                           onClick={() => openEditModal(a)}
-                          className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-xl transition-colors border border-neutral-800"
+                          className="p-2 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-xl transition-colors border border-neutral-200 dark:border-neutral-800 cursor-pointer shadow-xs"
                           title="Edit announcement"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
@@ -380,7 +380,7 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
                           type="button"
                           onClick={() => handleDelete(a.id)}
                           disabled={deletingId === a.id}
-                          className="p-2 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition-colors border border-rose-500/20"
+                          className="p-2 text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-colors border border-rose-200 dark:border-rose-500/20 cursor-pointer shadow-xs"
                           title="Delete announcement"
                         >
                           {deletingId === a.id ? (
@@ -410,23 +410,23 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
       {/* Edit Announcement Modal */}
       {editingAnnouncement && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-lg rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
+          <div className="w-full max-w-lg rounded-3xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Edit2 className="w-4 h-4 text-[var(--primary)]" />
-                <h3 className="font-bold text-sm text-[var(--foreground)]">Edit Announcement</h3>
+                <Edit2 className="w-4 h-4 text-sky-500" />
+                <h3 className="font-bold text-sm text-neutral-900 dark:text-white">Edit Announcement</h3>
               </div>
               <button
                 type="button"
                 onClick={closeEditModal}
-                className="p-1.5 rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--secondary)] transition-colors"
+                className="p-1.5 rounded-xl text-neutral-500 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {editErrorMsg && (
-              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs flex items-center gap-2">
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4" />
                 <span>{editErrorMsg}</span>
               </div>
@@ -434,7 +434,7 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
 
             <form onSubmit={handleUpdate} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                   Headline Title *
                 </label>
                 <input
@@ -442,25 +442,25 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
                   required
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
+                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+                <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                   Details / Content (optional)
                 </label>
                 <textarea
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value)}
                   rows={2}
-                  className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
+                  className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+                  <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                     CTA Button Text
                   </label>
                   <input
@@ -468,11 +468,11 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
                     value={editCtaText}
                     onChange={(e) => setEditCtaText(e.target.value)}
                     placeholder="e.g. Explore Now"
-                    className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
+                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+                  <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                     CTA URL
                   </label>
                   <input
@@ -480,71 +480,71 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
                     value={editCtaUrl}
                     onChange={(e) => setEditCtaUrl(e.target.value)}
                     placeholder="https://... or /resources"
-                    className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
+                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+                  <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                     Priority
                   </label>
                   <input
                     type="number"
                     value={editPriority}
                     onChange={(e) => setEditPriority(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-mono"
+                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-xs font-mono text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+                  <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                     Start Date
                   </label>
                   <input
                     type="date"
                     value={editStartDate}
                     onChange={(e) => setEditStartDate(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
+                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+                  <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                     End / Expiry Date
                   </label>
                   <input
                     type="date"
                     value={editEndDate}
                     onChange={(e) => setEditEndDate(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
+                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
                   />
                 </div>
               </div>
 
               <div className="flex items-center pt-2">
-                <label className="flex items-center gap-2 cursor-pointer text-xs">
+                <label className="flex items-center gap-2 cursor-pointer text-xs text-neutral-700 dark:text-neutral-300">
                   <input
                     type="checkbox"
                     checked={editIsActive}
                     onChange={(e) => setEditIsActive(e.target.checked)}
-                    className="rounded text-[var(--primary)]"
+                    className="rounded text-sky-500"
                   />
                   <span>Active (Broadcasting)</span>
                 </label>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--border)]">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-200 dark:border-neutral-800">
                 <button
                   type="button"
                   onClick={closeEditModal}
-                  className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-medium hover:bg-[var(--secondary)] transition-all"
+                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={editLoading}
-                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] transition-all disabled:opacity-50 shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-sky-500 text-white text-xs font-semibold hover:bg-sky-400 transition-all disabled:opacity-50 shadow-xs cursor-pointer"
                 >
                   {editLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
                   <span>{editLoading ? "Updating..." : "Save Changes"}</span>

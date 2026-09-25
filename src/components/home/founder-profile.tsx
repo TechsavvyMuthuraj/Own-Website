@@ -63,13 +63,13 @@ export function FounderProfile({ settings }: { settings?: Record<string, any> })
           {/* Right Column: Founder Details & Social Handles */}
           <div className="lg:col-span-7 space-y-6">
             <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider">
-                <Crown className="w-3.5 h-3.5" />
+              <div className="eyebrow-pill bg-amber-500/10 text-amber-400 border-amber-500/30 mb-2">
+                <Crown className="w-3.5 h-3.5 text-amber-400" />
                 <span>{title}</span>
               </div>
 
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight">
-                {name}
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight">
+                <span className="text-gradient-silver">{name}</span>
               </h2>
 
               <p className="text-sm sm:text-base font-semibold text-amber-400">

@@ -168,10 +168,10 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl shadow-xl space-y-6">
+      <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 backdrop-blur-xl shadow-xs space-y-6">
       <div className="space-y-5">
         <div>
-          <label className="block text-xs font-semibold text-neutral-300 mb-1.5">
+          <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
             Platform Name
           </label>
           <input
@@ -179,25 +179,25 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
             required
             value={siteName}
             onChange={(e) => setSiteName(e.target.value)}
-            className="w-full px-4 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950/80 text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-violet-500 font-medium"
+            className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-violet-500 font-medium shadow-xs"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-neutral-300 mb-1.5">
+          <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
             Platform Meta Description
           </label>
           <textarea
             rows={2}
             value={siteDescription}
             onChange={(e) => setSiteDescription(e.target.value)}
-            className="w-full px-4 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950/80 text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-violet-500 font-medium"
+            className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-violet-500 font-medium shadow-xs"
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-medium text-[var(--foreground)] mb-1.5">
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
               General Contact Email
             </label>
             <input
@@ -205,36 +205,36 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
               required
               value={contactEmail}
               onChange={(e) => setContactEmail(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-violet-500 shadow-xs"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[var(--foreground)] mb-1.5">
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
               Default Currency
             </label>
             <input
               type="text"
               value={defaultCurrency}
               onChange={(e) => setDefaultCurrency(e.target.value.toUpperCase())}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-mono"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs font-mono text-neutral-900 dark:text-white shadow-xs"
             />
           </div>
         </div>
 
         {/* ── Technical Support Team & Help Desk Configuration ── */}
-        <div className="p-5 rounded-2xl border border-sky-500/20 bg-sky-500/5 space-y-4">
-          <div className="flex items-center gap-2 text-sky-400 font-bold text-xs uppercase tracking-wider">
+        <div className="p-5 rounded-2xl border border-sky-500/20 bg-sky-50/50 dark:bg-sky-500/5 space-y-4">
+          <div className="flex items-center gap-2 text-sky-600 dark:text-sky-400 font-bold text-xs uppercase tracking-wider">
             <Headphones className="w-4 h-4" />
             <span>Technical Support Team &amp; Helpline Configuration</span>
           </div>
-          <p className="text-xs text-neutral-400 leading-relaxed">
+          <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
             Configure the official technical support email, direct phone/helpline, WhatsApp channel, and availability hours shown to users across the technical support dashboard and contact pages.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-neutral-300 mb-1.5">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
                 Technical Support Team Email
               </label>
               <input
@@ -243,12 +243,12 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
                 value={techSupportEmail}
                 onChange={(e) => setTechSupportEmail(e.target.value)}
                 placeholder="techsavvy.muthuraj.dev@gmail.com"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950/80 text-xs text-white focus:outline-none focus:ring-1 focus:ring-sky-500 font-mono"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500 font-mono shadow-xs"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-neutral-300 mb-1.5">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
                 Technical Helpline / Support Phone
               </label>
               <input
@@ -256,12 +256,12 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
                 value={techSupportPhone}
                 onChange={(e) => setTechSupportPhone(e.target.value)}
                 placeholder="+91 91764 43726"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950/80 text-xs text-white focus:outline-none focus:ring-1 focus:ring-sky-500 font-mono"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500 font-mono shadow-xs"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-neutral-300 mb-1.5">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
                 WhatsApp Direct Number / Link
               </label>
               <input
@@ -269,12 +269,12 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
                 value={techSupportWhatsApp}
                 onChange={(e) => setTechSupportWhatsApp(e.target.value)}
                 placeholder="919944875726"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950/80 text-xs text-white focus:outline-none focus:ring-1 focus:ring-sky-500 font-mono"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500 font-mono shadow-xs"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-neutral-300 mb-1.5">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
                 Support Team Working Hours
               </label>
               <input
@@ -282,7 +282,7 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
                 value={techSupportHours}
                 onChange={(e) => setTechSupportHours(e.target.value)}
                 placeholder="Mon–Sat, 9AM–6PM IST"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950/80 text-xs text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-xs"
               />
             </div>
           </div>
@@ -290,26 +290,26 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-medium text-[var(--foreground)] mb-1.5">
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
               &quot;NEW&quot; Badge Threshold (Days)
             </label>
             <input
               type="number"
               value={newDays}
               onChange={(e) => setNewDays(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-mono"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs font-mono text-neutral-900 dark:text-white shadow-xs"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[var(--foreground)] mb-1.5">
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1.5">
               &quot;UPDATED&quot; Badge Threshold (Days)
             </label>
             <input
               type="number"
               value={updatedDays}
               onChange={(e) => setUpdatedDays(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-mono"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs font-mono text-neutral-900 dark:text-white shadow-xs"
             />
           </div>
         </div>
@@ -318,14 +318,14 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
         <div
           className={`p-5 rounded-2xl border transition-all duration-300 ${
             maintenanceMode
-              ? "bg-amber-500/10 border-amber-500/40 text-amber-950 dark:text-amber-100 shadow-sm"
-              : "bg-[var(--secondary)]/60 border-[var(--border)]"
+              ? "bg-amber-500/10 border-amber-500/40 text-amber-950 dark:text-amber-100 shadow-xs"
+              : "bg-neutral-50 dark:bg-neutral-900/60 border-neutral-200 dark:border-neutral-800 shadow-xs"
           }`}
         >
           <div className="flex items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <h4 className="text-sm font-bold text-[var(--foreground)] flex items-center gap-1.5">
+                <h4 className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
                   <Wrench className="w-4 h-4 text-amber-500" />
                   Platform Maintenance Mode
                 </h4>
@@ -334,12 +334,12 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
                     ACTIVE (VISITORS REDIRECTED)
                   </span>
                 ) : (
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
                     PLATFORM ONLINE
                   </span>
                 )}
               </div>
-              <p className="text-xs text-[var(--muted-foreground)] mt-1 max-w-lg leading-relaxed">
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1 max-w-lg leading-relaxed">
                 When activated, all public visitors are immediately redirected to the maintenance page. Admin routes remain accessible. Auto-saves instantly upon toggle.
               </p>
             </div>
@@ -354,27 +354,27 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
                   onChange={(e) => handleToggleMaintenance(e.target.checked)}
                   className="sr-only peer"
                 />
-                <div className="w-12 h-6.5 bg-[var(--border)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                <div className="w-12 h-6.5 bg-neutral-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
               </label>
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-[var(--border)]/60 flex flex-wrap items-center gap-4 text-xs">
+          <div className="mt-4 pt-3 border-t border-neutral-200 dark:border-neutral-800 flex flex-wrap items-center gap-4 text-xs">
             <a
               href="/maintenance"
               target="_blank"
               rel="noreferrer"
-              className="text-[var(--primary)] hover:underline font-semibold inline-flex items-center gap-1"
+              className="text-sky-600 dark:text-sky-400 hover:underline font-semibold inline-flex items-center gap-1"
             >
               <span>View Maintenance Screen</span>
               <span>↗</span>
             </a>
-            <span className="text-[var(--muted-foreground)]">•</span>
+            <span className="text-neutral-400 dark:text-neutral-600">•</span>
             <a
               href="/?admin_preview=true"
               target="_blank"
               rel="noreferrer"
-              className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] font-medium inline-flex items-center gap-1"
+              className="text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white font-medium inline-flex items-center gap-1"
             >
               <span>Preview Live Site as Admin</span>
               <span>↗</span>
@@ -384,16 +384,16 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
       </div>
 
       {/* ── UPI Payment Gateway & Receiver Configuration ── */}
-      <div className="p-6 rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl shadow-xl space-y-4">
+      <div className="p-6 rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 backdrop-blur-xl shadow-xs space-y-4">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500">
             <QrCode className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-white">
+            <h2 className="text-base font-bold text-neutral-900 dark:text-white">
               Active UPI Gateway &amp; Settlement Routing
             </h2>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-neutral-600 dark:text-neutral-400">
               Configure default UPI ID, payee name, and merchant receiver phone number across the platform.
             </p>
           </div>
@@ -401,8 +401,8 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-neutral-200">
-              Active UPI ID <span className="text-rose-400">*</span>
+            <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+              Active UPI ID <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
@@ -410,12 +410,12 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
               value={upiId}
               onChange={(e) => setUpiId(e.target.value)}
               placeholder="e.g. muthurajc@slc"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950 text-xs font-mono text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 text-xs font-mono text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-xs"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-neutral-200">
+            <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
               Merchant / Business Name
             </label>
             <input
@@ -423,13 +423,13 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
               value={merchantName}
               onChange={(e) => setMerchantName(e.target.value)}
               placeholder="e.g. NammaTech Digital / Muthuraj C"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950 text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-xs"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-neutral-200 flex items-center gap-1.5">
-              <Phone className="w-3.5 h-3.5 text-emerald-400" />
+            <label className="text-xs font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-1.5">
+              <Phone className="w-3.5 h-3.5 text-emerald-500" />
               <span>Receiver Phone Number</span>
             </label>
             <input
@@ -437,7 +437,7 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
               value={receiverPhone}
               onChange={(e) => setReceiverPhone(e.target.value)}
               placeholder="e.g. +91 91764 43726"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950 text-xs font-mono text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 text-xs font-mono text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-xs"
             />
           </div>
         </div>
@@ -446,7 +446,7 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
       <button
         type="submit"
         disabled={loading}
-        className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] transition-all shadow-sm disabled:opacity-70"
+        className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-sky-500 text-white text-xs font-bold hover:bg-sky-400 transition-all shadow-xs disabled:opacity-70 cursor-pointer"
       >
         {loading ? (
           <>
@@ -464,7 +464,7 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
 
     {/* ── Danger Zone: Factory Reset & Wipe Platform Data ── */}
     <div className="mt-12 pt-8 border-t-2 border-red-500/20">
-      <div className="p-6 rounded-2xl border border-red-500/30 bg-red-500/5 dark:bg-red-950/20 backdrop-blur-sm">
+      <div className="p-6 rounded-2xl border border-red-500/30 bg-red-50 dark:bg-red-950/20 backdrop-blur-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
@@ -473,7 +473,7 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
                 Danger Zone: Factory Reset & Wipe Platform Data
               </h3>
             </div>
-            <p className="text-xs text-[var(--muted-foreground)] max-w-2xl leading-relaxed">
+            <p className="text-xs text-neutral-600 dark:text-neutral-400 max-w-2xl leading-relaxed">
               Permanently erase all catalog resources, downloads, order history, payment records, messages, and coupon logs in one click to start completely fresh. Admin accounts and critical system configurations will be safely preserved.
             </p>
           </div>
@@ -496,31 +496,31 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
     {/* ── Reset Confirmation Modal ── */}
     {showResetModal && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-        <div className="bg-[var(--card)] border border-red-500/40 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+        <div className="bg-white dark:bg-neutral-950 border border-red-500/40 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
           <div className="flex items-start gap-3">
             <div className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 flex-shrink-0">
               <AlertTriangle className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="text-base font-bold text-[var(--foreground)]">
+              <h4 className="text-base font-bold text-neutral-900 dark:text-white">
                 Confirm Platform Data Wipe
               </h4>
-              <p className="text-xs text-[var(--muted-foreground)] mt-1 leading-relaxed">
+              <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1 leading-relaxed">
                 This action is <strong className="text-red-500">irreversible</strong>. All resources, orders, payment history, customer requests, and logs will be permanently deleted from the database.
               </p>
             </div>
           </div>
 
-          <div className="bg-red-500/5 dark:bg-red-950/20 border border-red-500/20 p-3.5 rounded-xl space-y-2">
-            <p className="text-xs font-medium text-[var(--foreground)]">
-              To confirm this factory reset, type <span className="font-mono font-bold text-red-500 bg-red-500/10 px-1.5 py-0.5 rounded">RESET</span> below:
+          <div className="bg-red-50 dark:bg-red-950/20 border border-red-500/20 p-3.5 rounded-xl space-y-2">
+            <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+              To confirm this factory reset, type <span className="font-mono font-bold text-red-600 bg-red-500/10 px-1.5 py-0.5 rounded">RESET</span> below:
             </p>
             <input
               type="text"
               value={resetConfirmText}
               onChange={(e) => setResetConfirmText(e.target.value)}
               placeholder="Type RESET to confirm"
-              className="w-full px-3.5 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-xs font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-500"
+              className="w-full px-3.5 py-2 rounded-lg border border-neutral-300 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-xs font-mono tracking-wider text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-red-500"
               autoFocus
             />
           </div>
@@ -533,7 +533,7 @@ export function SettingsClient({ initialSettings }: { initialSettings: Record<st
                 setShowResetModal(false);
                 setResetConfirmText("");
               }}
-              className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-medium text-[var(--foreground)] hover:bg-[var(--secondary)] transition-all cursor-pointer"
+              className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-all cursor-pointer"
             >
               Cancel
             </button>

@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/toast";
+import { useAuth } from "@/lib/auth/auth-context";
 import { chatAudio } from "@/lib/support/chat-audio";
 import type { SupportSession, SupportMessage } from "@/lib/support/support-chat-store";
 import type { SupportTeamMember } from "@/app/api/admin/support-team/route";
@@ -58,10 +59,12 @@ const QUICK_RESPONSES = [
 ];
 
 const SPECIALIST_STORAGE_KEY = "nammatech_active_specialist_session";
-const SPECIALIST_LIVENESS_KEY = "nammatech_specialist_session_alive";
+const SPECIALIST_LAST_ACTIVE_KEY = "nammatech_specialist_last_active_time";
+const SPECIALIST_INACTIVITY_MS = 30 * 60 * 1000; // 30 minutes
 
 export function TechnicalSupportClient() {
   const { showToast, confirm } = useToast();
+  const { user, profile, isAdmin } = useAuth();
   const supabase = createClient();
 
   // Specialist Authentication State
@@ -129,70 +132,84 @@ export function TechnicalSupportClient() {
     } catch {}
   }, []);
 
-  // Restore existing specialist session on mount (auto-logout if browser was closed)
+  // Restore existing specialist session on mount (with 30-minute idle inactivity auto-logout)
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
       const saved = localStorage.getItem(SPECIALIST_STORAGE_KEY);
-      const isAlive = sessionStorage.getItem(SPECIALIST_LIVENESS_KEY);
+      const storedLastActive = localStorage.getItem(SPECIALIST_LAST_ACTIVE_KEY);
       if (saved) {
-        if (!isAlive) {
-          // Browser was closed previously: auto-terminate session for security
-          console.warn("Website was previously closed: auto-logging out specialist session.");
-          localStorage.removeItem(SPECIALIST_STORAGE_KEY);
-          setSpecialist(null);
-        } else {
-          const parsed = JSON.parse(saved);
-          if (parsed?.email) {
-            setSpecialist(parsed);
+        if (storedLastActive) {
+          const parsed = parseInt(storedLastActive, 10);
+          if (!isNaN(parsed) && Date.now() - parsed >= SPECIALIST_INACTIVITY_MS) {
+            console.warn("Specialist session expired after 30 minutes of inactivity: auto-logging out.");
+            localStorage.removeItem(SPECIALIST_STORAGE_KEY);
+            localStorage.removeItem(SPECIALIST_LAST_ACTIVE_KEY);
+            setSpecialist(null);
+            return;
           }
+        }
+        const parsed = JSON.parse(saved);
+        if (parsed?.email) {
+          setSpecialist(parsed);
+          localStorage.setItem(SPECIALIST_LAST_ACTIVE_KEY, String(Date.now()));
         }
       }
     } catch {}
   }, []);
 
-  // Auto-logout specialist on website minimize or close
+  // 30-Minute Inactivity Auto-Logout for Specialist Console
   useEffect(() => {
     if (!specialist) return;
 
-    let minTimer: NodeJS.Timeout | null = null;
-    const handleVis = () => {
-      if (document.visibilityState === "hidden") {
-        minTimer = setTimeout(() => {
-          console.warn("Specialist portal minimized: auto-logging out for security.");
-          if (typeof window !== "undefined") {
-            sessionStorage.removeItem(SPECIALIST_LIVENESS_KEY);
-            localStorage.removeItem(SPECIALIST_STORAGE_KEY);
-          }
-          setSpecialist(null);
-          setSelectedSessionId(null);
-          setActiveSession(null);
-        }, 1500);
-      } else {
-        if (minTimer) {
-          clearTimeout(minTimer);
-          minTimer = null;
-        }
-      }
-    };
-
-    const handleHide = () => {
+    let lastActive = Date.now();
+    const updateActivity = () => {
+      const now = Date.now();
+      lastActive = now;
       if (typeof window !== "undefined") {
-        sessionStorage.removeItem(SPECIALIST_LIVENESS_KEY);
+        localStorage.setItem(SPECIALIST_LAST_ACTIVE_KEY, String(now));
       }
     };
 
+    const checkInactivity = () => {
+      const stored = localStorage.getItem(SPECIALIST_LAST_ACTIVE_KEY);
+      const effectiveTime = stored ? Math.max(lastActive, parseInt(stored, 10) || 0) : lastActive;
+      if (Date.now() - effectiveTime >= SPECIALIST_INACTIVITY_MS) {
+        console.warn("Specialist idle for 30 minutes: auto-logging out.");
+        if (typeof window !== "undefined") {
+          localStorage.removeItem(SPECIALIST_STORAGE_KEY);
+          localStorage.removeItem(SPECIALIST_LAST_ACTIVE_KEY);
+        }
+        setSpecialist(null);
+        setSelectedSessionId(null);
+        setActiveSession(null);
+        showToast({
+          type: "info",
+          title: "Session Expired",
+          message: "Technical Support Console logged out after 30 minutes of inactivity.",
+        });
+      }
+    };
+
+    const intervalId = setInterval(checkInactivity, 15000);
+    const handleVis = () => {
+      if (document.visibilityState === "visible") {
+        checkInactivity();
+      }
+    };
+
+    const events = ["mousemove", "mousedown", "keydown", "touchstart", "scroll", "click"];
+    events.forEach((evt) => window.addEventListener(evt, updateActivity, { passive: true }));
     document.addEventListener("visibilitychange", handleVis);
-    window.addEventListener("pagehide", handleHide);
-    window.addEventListener("beforeunload", handleHide);
+    window.addEventListener("focus", checkInactivity);
 
     return () => {
-      if (minTimer) clearTimeout(minTimer);
+      clearInterval(intervalId);
+      events.forEach((evt) => window.removeEventListener(evt, updateActivity));
       document.removeEventListener("visibilitychange", handleVis);
-      window.removeEventListener("pagehide", handleHide);
-      window.removeEventListener("beforeunload", handleHide);
+      window.removeEventListener("focus", checkInactivity);
     };
-  }, [specialist]);
+  }, [specialist, showToast]);
 
   // Fetch team roster
   const fetchTeamRoster = useCallback(async () => {
@@ -309,7 +326,7 @@ export function TechnicalSupportClient() {
       if (matchedMember) {
         setSpecialist(matchedMember);
         if (typeof window !== "undefined") {
-          sessionStorage.setItem(SPECIALIST_LIVENESS_KEY, "true");
+          localStorage.setItem(SPECIALIST_LAST_ACTIVE_KEY, String(Date.now()));
           localStorage.setItem(SPECIALIST_STORAGE_KEY, JSON.stringify(matchedMember));
         }
 
@@ -341,7 +358,7 @@ export function TechnicalSupportClient() {
 
         setSpecialist(adminMember);
         if (typeof window !== "undefined") {
-          sessionStorage.setItem(SPECIALIST_LIVENESS_KEY, "true");
+          localStorage.setItem(SPECIALIST_LAST_ACTIVE_KEY, String(Date.now()));
           localStorage.setItem(SPECIALIST_STORAGE_KEY, JSON.stringify(adminMember));
         }
 
@@ -372,7 +389,7 @@ export function TechnicalSupportClient() {
       variant: "warning",
       onConfirm: () => {
         if (typeof window !== "undefined") {
-          sessionStorage.removeItem(SPECIALIST_LIVENESS_KEY);
+          localStorage.removeItem(SPECIALIST_LAST_ACTIVE_KEY);
           localStorage.removeItem(SPECIALIST_STORAGE_KEY);
         }
         setSpecialist(null);
@@ -1067,6 +1084,22 @@ export function TechnicalSupportClient() {
               <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/25 text-rose-300 text-xs mb-5 animate-in fade-in duration-200">
                 <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
                 <span>{loginError}</span>
+              </div>
+            )}
+
+            {user?.email && (
+              <div className="mb-4 p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-xs text-neutral-300 flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-bold text-cyan-400">Authenticated Session Detected</p>
+                  <p className="text-[10px] text-neutral-400 truncate">{user.email}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setLoginEmail(user.email || "")}
+                  className="px-2.5 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 text-[10px] font-bold transition-all cursor-pointer shrink-0"
+                >
+                  Use My Email
+                </button>
               </div>
             )}
 

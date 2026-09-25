@@ -144,36 +144,46 @@ export function MoviesClient({ movies }: MoviesClientProps) {
   return (
     <div className="space-y-8 pb-16">
       {/* ── Movies Hero Banner ── */}
-      <div className="relative overflow-hidden rounded-3xl border border-amber-500/20 bg-gradient-to-b from-neutral-950 via-neutral-900 to-neutral-950 p-6 sm:p-10 text-white shadow-2xl">
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-neutral-950 via-neutral-900 to-neutral-950 p-6 sm:p-10 text-white shadow-2xl">
+        <div className="absolute -top-32 -right-32 w-96 h-96 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-red-600/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-wider mb-4">
-            <Film className="w-3.5 h-3.5" />
-            <span>NammaTech Cinema Zone</span>
+        <div className="relative z-10 max-w-3xl space-y-4">
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30">
+              <Film className="w-3.5 h-3.5" />
+              <span>NammaTech Cinema Zone</span>
+            </div>
+            {movies.length > 0 && (
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-neutral-800 text-neutral-300 border border-neutral-700">
+                {movies.length} Verified Master{movies.length === 1 ? "" : "s"}
+              </span>
+            )}
+            <span className="px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-sm uppercase tracking-wide">
+              4K UHD &amp; 1080p
+            </span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white mb-3">
-            Blockbuster Movies & Cinema Downloads
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
+            Blockbuster Cinema &amp; <span className="bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent">4K Masters</span>
           </h1>
 
-          <p className="text-sm sm:text-base text-neutral-400 leading-relaxed max-w-2xl mb-6">
-            Download your favorite regional & global blockbusters in pristine clarity. Choose between <strong className="text-emerald-400">Normal Free Download</strong> (standard speed) or upgrade to <strong className="text-amber-400">👑 VIP Premium 4K</strong> for blazing 1000 Mbps ultra-speed and Dolby Atmos audio.
+          <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed max-w-2xl font-normal">
+            Download your favorite regional &amp; international blockbusters in pristine clarity. Enjoy <strong className="text-emerald-400 font-semibold">Standard Free Downloads</strong> (high-speed mirrors) or experience <strong className="text-amber-400 font-semibold">👑 VIP 4K UHD Master Prints</strong> with uncompressed Dolby Atmos multi-language audio.
           </p>
 
-          <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-neutral-300">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-800/80 border border-neutral-700/60">
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 text-xs font-semibold text-neutral-300 pt-2">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-900/90 border border-neutral-800">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>4K Ultra HD & 1080p</span>
+              <span>Lossless Color Grading</span>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-800/80 border border-neutral-700/60">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-900/90 border border-neutral-800">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Verified Direct Links</span>
+              <span>Verified Direct Mirrors</span>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-800/80 border border-neutral-700/60">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-900/90 border border-neutral-800">
               <Zap className="w-3.5 h-3.5 text-blue-400" />
-              <span>Multi-Audio Dolby 5.1</span>
+              <span>Dolby Digital 5.1</span>
             </div>
           </div>
         </div>

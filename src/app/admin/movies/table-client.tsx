@@ -97,7 +97,7 @@ export function MovieTableClient({ initialMovies }: MovieTableClientProps) {
   return (
     <div className="space-y-6">
       {/* ── SaaS Search & Filter Controls ── */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-4 rounded-3xl border border-neutral-800/80 bg-neutral-900/50 backdrop-blur-xl shadow-xl">
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-4 rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white/95 dark:bg-neutral-900/50 backdrop-blur-xl shadow-xs">
         {/* Search Bar */}
         <div className="relative w-full md:max-w-md">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
@@ -106,17 +106,17 @@ export function MovieTableClient({ initialMovies }: MovieTableClientProps) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search movie title, star cast, audio..."
-            className="w-full pl-10 pr-16 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950/80 text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 transition-all shadow-inner"
+            className="w-full pl-10 pr-16 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 transition-all shadow-inner"
           />
           {searchQuery ? (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] px-2 py-0.5 rounded bg-neutral-800 text-neutral-400 hover:text-white"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
             >
               Clear
             </button>
           ) : (
-            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded bg-neutral-800 border border-neutral-700 text-[10px] text-neutral-400 font-mono">
+            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-[10px] text-neutral-500 dark:text-neutral-400 font-mono">
               /
             </kbd>
           )}
@@ -124,15 +124,15 @@ export function MovieTableClient({ initialMovies }: MovieTableClientProps) {
 
         {/* Quality & Status Filter Pills */}
         <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-neutral-950 border border-neutral-800">
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-neutral-100 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800">
             {["ALL", "4K UHD", "1080p FHD"].map((q) => (
               <button
                 key={q}
                 onClick={() => setSelectedQuality(q)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
                   selectedQuality === q
-                    ? "bg-amber-500 text-neutral-950 shadow-sm font-bold"
-                    : "text-neutral-400 hover:text-white"
+                    ? "bg-amber-500 text-neutral-950 shadow-xs font-bold"
+                    : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
                 }`}
               >
                 {q === "ALL" ? "All Quality" : q}
@@ -140,15 +140,15 @@ export function MovieTableClient({ initialMovies }: MovieTableClientProps) {
             ))}
           </div>
 
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-neutral-950 border border-neutral-800">
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-neutral-100 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800">
             {["ALL", "PUBLISHED", "DRAFT"].map((s) => (
               <button
                 key={s}
                 onClick={() => setSelectedStatus(s)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
                   selectedStatus === s
-                    ? "bg-white text-neutral-950 shadow-sm font-bold"
-                    : "text-neutral-400 hover:text-white"
+                    ? "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs font-bold"
+                    : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
                 }`}
               >
                 {s === "ALL" ? "All Status" : s}
@@ -192,7 +192,7 @@ export function MovieTableClient({ initialMovies }: MovieTableClientProps) {
             return (
               <div
                 key={movie.id}
-                className="group flex flex-col rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl overflow-hidden shadow-xl hover:shadow-2xl hover:border-amber-500/40 hover:-translate-y-1 transition-all duration-300"
+                className="group flex flex-col rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 backdrop-blur-xl overflow-hidden shadow-xs hover:shadow-md hover:border-amber-500/40 hover:-translate-y-1 transition-all duration-300"
               >
                 {/* Poster Artwork Header */}
                 <div className="relative aspect-[16/9] w-full overflow-hidden bg-neutral-950">
@@ -246,11 +246,11 @@ export function MovieTableClient({ initialMovies }: MovieTableClientProps) {
                 {/* Movie Information Details */}
                 <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                   <div>
-                    <h3 className="text-sm font-bold text-white line-clamp-1 group-hover:text-amber-400 transition-colors">
+                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white line-clamp-1 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
                       {movie.title}
                     </h3>
                     {movie.developer && (
-                      <p className="text-[11px] text-neutral-400 mt-0.5 line-clamp-1 font-medium">
+                      <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5 line-clamp-1 font-medium">
                         {movie.developer}
                       </p>
                     )}
@@ -264,7 +264,7 @@ export function MovieTableClient({ initialMovies }: MovieTableClientProps) {
                           .map((g) => (
                             <span
                               key={g}
-                              className="px-2 py-0.5 rounded-md text-[9px] font-medium bg-neutral-800/80 text-neutral-300 border border-neutral-700/60"
+                              className="px-2 py-0.5 rounded-md text-[9px] font-medium bg-neutral-100 dark:bg-neutral-800/80 text-neutral-700 dark:text-neutral-300 border border-neutral-200/70 dark:border-neutral-700/60"
                             >
                               {g}
                             </span>
@@ -274,44 +274,44 @@ export function MovieTableClient({ initialMovies }: MovieTableClientProps) {
                   </div>
 
                   {/* Sizes & Pricing Breakdown */}
-                  <div className="p-3 rounded-2xl bg-neutral-950/80 border border-neutral-800/80 grid grid-cols-2 gap-2 text-[11px]">
-                    <div className="flex items-center gap-1.5 text-neutral-400">
-                      <Download className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-                      <span>Free: <strong className="text-white font-mono">{sizeNormalStr}</strong></span>
+                  <div className="p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-950/80 border border-neutral-200/80 dark:border-neutral-800/80 grid grid-cols-2 gap-2 text-[11px]">
+                    <div className="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400">
+                      <Download className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                      <span>Free: <strong className="text-neutral-900 dark:text-white font-mono">{sizeNormalStr}</strong></span>
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-neutral-400">
-                      <Crown className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                      <span>VIP: <strong className="text-amber-400 font-mono">₹{movie.price || 49}</strong></span>
+                    <div className="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400">
+                      <Crown className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                      <span>VIP: <strong className="text-amber-600 dark:text-amber-400 font-mono">₹{movie.price || 49}</strong></span>
                     </div>
                   </div>
 
                   {/* Actions Bar */}
-                  <div className="pt-3 border-t border-neutral-800 flex items-center justify-between gap-2">
+                  <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between gap-2">
                     <a
                       href="/movies"
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-neutral-700/80 bg-neutral-800/60 hover:bg-neutral-800 text-xs font-semibold text-neutral-300 hover:text-white transition-all shadow-xs"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700/80 bg-white dark:bg-neutral-800/60 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white transition-all shadow-xs"
                       title="View live on website"
                     >
-                      <Eye className="w-3.5 h-3.5 text-neutral-400" />
+                      <Eye className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
                       <span>Live Hub</span>
                     </a>
 
                     <div className="flex items-center gap-1.5">
                       <Link
                         href={`/admin/movies/${movie.id}/edit`}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all shadow-xs"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-xs font-bold transition-all shadow-xs"
                       >
-                        <Edit className="w-3.5 h-3.5 text-amber-400" />
+                        <Edit className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                         <span>Edit</span>
                       </Link>
 
                       <button
                         type="button"
                         onClick={() => setMovieToDelete(movie)}
-                        className="p-1.5 rounded-xl text-neutral-400 hover:text-red-400 hover:bg-red-500/15 border border-transparent hover:border-red-500/30 transition-all cursor-pointer"
+                        className="p-1.5 rounded-xl text-neutral-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/15 border border-transparent hover:border-red-200 dark:hover:border-red-500/30 transition-all cursor-pointer"
                         title="Delete movie"
                       >
                         <Trash2 className="w-3.5 h-3.5" />

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
@@ -25,8 +25,8 @@ import {
   Film,
   Newspaper,
   Home,
-  Image as ImageIcon,
   Headphones,
+  Video,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -42,9 +42,39 @@ export default function AdminLayout({
   const { user, profile, isAdmin, loading, signOut } = useAuth();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
+  useEffect(() => {
+    if (!loading && (!user || !isAdmin)) {
+      if (pathname !== "/admin/login") {
+        router.push(`/admin/login?redirect=${encodeURIComponent(pathname)}`);
+      }
+    }
+  }, [loading, user, isAdmin, pathname, router]);
+
   // If on admin login page, don't show admin sidebar/header chrome
   if (pathname === "/admin/login") {
     return <>{children}</>;
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-4">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs font-mono text-[var(--muted-foreground)]">Verifying Administrator Session...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user || !isAdmin) {
+    return (
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center p-4">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs font-mono text-[var(--muted-foreground)]">Redirecting to Admin Gateway...</p>
+        </div>
+      </div>
+    );
   }
 
   const navSections = [
@@ -61,7 +91,6 @@ export default function AdminLayout({
         { href: "/admin/resources", label: "Resources", icon: Package },
         { href: "/admin/movies", label: "Movies & Cinema", icon: Film },
         { href: "/admin/articles", label: "Articles & News", icon: Newspaper },
-        { href: "/admin/wallpapers", label: "4K Wallpapers", icon: ImageIcon },
         { href: "/admin/categories", label: "Categories", icon: Layers },
       ],
     },
@@ -73,6 +102,7 @@ export default function AdminLayout({
         { href: "/admin/payments", label: "Payments", icon: CreditCard },
         { href: "/admin/coupons", label: "Coupons", icon: Tag },
         { href: "/admin/support-team", label: "Support Team & Roster", icon: Headphones },
+        { href: "/admin/meetings", label: "Zoom & Video Calls 📹", icon: Video },
         { href: "/technicalsupport", label: "Specialist Terminal ⚡", icon: Headphones },
         { href: "/admin/messages", label: "Contact Inbox", icon: Mail },
         { href: "/admin/requests", label: "Resource Requests", icon: Compass },
@@ -206,8 +236,11 @@ export default function AdminLayout({
             <ThemeToggle />
           </div>
 
-          <div className="p-2.5 rounded-xl bg-[var(--secondary)]/60 border border-[var(--border)] flex items-center justify-between">
-            <div className="min-w-0">
+          <div className="p-2.5 rounded-xl bg-[var(--secondary)]/60 border border-[var(--border)] flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[var(--primary)]/15 border border-[var(--primary)]/20 text-[var(--primary)] flex items-center justify-center font-bold text-xs shrink-0">
+              {(profile?.full_name || user?.email || "A").charAt(0).toUpperCase()}
+            </div>
+            <div className="min-w-0 flex-1">
               <p className="text-xs font-semibold text-[var(--foreground)] truncate">
                 {profile?.full_name || "Admin"}
               </p>
@@ -219,7 +252,7 @@ export default function AdminLayout({
               type="button"
               onClick={() => signOut()}
               title="Sign Out"
-              className="p-1.5 text-[var(--muted-foreground)] hover:text-red-500 rounded-lg hover:bg-[var(--card)] transition-colors"
+              className="p-1.5 text-[var(--muted-foreground)] hover:text-red-500 rounded-lg hover:bg-[var(--card)] transition-colors shrink-0"
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -237,7 +270,16 @@ export default function AdminLayout({
       )}
 
       {/* Main Admin Content Canvas */}
-      <main className="flex-1 w-full max-w-full overflow-x-hidden p-3.5 sm:p-6 md:p-10">{children}</main>
+      <main
+        className={`flex-1 w-full max-w-full overflow-x-hidden ${
+          pathname === "/admin/articles/new" ||
+          (pathname.startsWith("/admin/articles/") && pathname.endsWith("/edit"))
+            ? "p-2 sm:p-4 md:p-6"
+            : "p-3.5 sm:p-6 md:p-10"
+        }`}
+      >
+        {children}
+      </main>
     </div>
   );
 }

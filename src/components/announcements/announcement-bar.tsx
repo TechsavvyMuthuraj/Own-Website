@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 
 export function AnnouncementBar() {
   const [isDismissed, setIsDismissed] = useState(false);
+  const [isDismissing, setIsDismissing] = useState(false);
   const supabase = createClient();
 
   const { data: announcement } = useQuery<Announcement | null>({
@@ -39,8 +40,6 @@ export function AnnouncementBar() {
     },
     staleTime: 5 * 60 * 1000, // Retain announcement cache for 5 minutes across page navigations
   });
-
-  const [isDismissing, setIsDismissing] = useState(false);
 
   if (!announcement || isDismissed) {
     return null;

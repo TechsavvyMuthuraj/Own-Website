@@ -81,8 +81,6 @@ const DEFAULT_VIDEOS: YouTubeVideo[] = [
 ];
 
 export function YouTubeShowcase({ settings = {} }: YouTubeShowcaseProps) {
-  if (settings.show_youtube_showcase === false) return null;
-
   const channelId = settings.youtube_channel_id || "UCavl9VKjbVWJBsqlVaCiIsw";
   const channelUrl =
     settings.youtube_channel_url ||
@@ -137,6 +135,8 @@ export function YouTubeShowcase({ settings = {} }: YouTubeShowcaseProps) {
       isMounted = false;
     };
   }, [channelId, channelUrl]);
+
+  if (settings.show_youtube_showcase === false) return null;
 
   return (
     <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">

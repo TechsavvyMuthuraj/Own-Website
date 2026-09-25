@@ -20,6 +20,7 @@ import {
   Check,
 } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient as createServerClient } from "@/lib/supabase/server";
 import type { Resource, ResourceImage, DownloadLink } from "@/types/database";
 import {
   formatBytes,
@@ -181,8 +182,68 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
 
   const isNew = isNewResource(resource.published_at || resource.created_at);
   const isUpdated = isUpdatedResource(resource.updated_at, resource.created_at);
-  const isPaid = resource.access_type === "PAID";
+  const isPaid = resource.access_type === "PAID" && Number(resource.price || 0) > 0;
   const isExternal = resource.access_type === "EXTERNAL" || resource.resource_type === "EXTERNAL_LINK";
+
+  // Check auth and ownership for Paid resources
+  let hasAccess = !isPaid;
+  if (isPaid) {
+    try {
+      const serverClient = await createServerClient();
+      const {
+        data: { user: currentUser },
+      } = await serverClient.auth.getUser();
+
+      if (currentUser) {
+        // 1. Check active entitlement
+        const { data: entitlement } = await supabase
+          .from("entitlements")
+          .select("id")
+          .eq("user_id", currentUser.id)
+          .eq("resource_id", resource.id)
+          .eq("status", "ACTIVE")
+          .maybeSingle();
+
+        if (entitlement) {
+          hasAccess = true;
+        } else {
+          // 2. Check paid order in order_items
+          const { data: orderItem } = await supabase
+            .from("order_items")
+            .select("id, orders!inner(id, status, user_id)")
+            .eq("resource_id", resource.id)
+            .eq("orders.user_id", currentUser.id)
+            .eq("orders.status", "PAID")
+            .maybeSingle();
+
+          if (orderItem) {
+            hasAccess = true;
+          }
+        }
+      }
+    } catch (e: any) {
+      if (e?.digest === "DYNAMIC_SERVER_USAGE") {
+        throw e;
+      }
+      console.error("Error verifying resource access:", e);
+    }
+  }
+
+  // Sanitize links: Never leak direct URLs to unpaid guests or unpurchased accounts
+  const secureDownloadLinks = (resource.download_links || []).map((link: DownloadLink) => {
+    if (isPaid && !hasAccess) {
+      return {
+        ...link,
+        url: null, // Sanitized: completely removed from server response
+      };
+    }
+    return link;
+  });
+
+  const safeResource: Resource = {
+    ...resource,
+    download_links: secureDownloadLinks,
+  };
 
   const schemaOrgProduct = {
     "@context": "https://schema.org",
@@ -392,9 +453,14 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
             </div>
           )}
 
-          {/* Download Links — copy/paste with multiple mirrors */}
-          {resource.download_links && resource.download_links.length > 0 && (
-            <DownloadLinksClient links={resource.download_links} />
+          {/* Download Links — copy/paste with multiple mirrors (guarded for paid content) */}
+          {secureDownloadLinks && secureDownloadLinks.length > 0 && (
+            <DownloadLinksClient
+              links={secureDownloadLinks}
+              isPaid={isPaid}
+              hasAccess={hasAccess}
+              resource={safeResource}
+            />
           )}
 
           {/* Changelog / Version History (if available) */}
@@ -468,7 +534,7 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
             </div>
 
             {/* Client Interactive Action Buttons (Download, Cart, Buy Now) */}
-            <ResourceDetailActions resource={resource} />
+            <ResourceDetailActions resource={safeResource} />
 
             {/* Trust Indicators */}
             <div className="pt-4 border-t border-[var(--border)] space-y-3 text-xs">

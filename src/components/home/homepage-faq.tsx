@@ -18,7 +18,7 @@ const FAQ_ITEMS: FaqItem[] = [
   {
     question: "Do I need to create an account to download resources?",
     answer:
-      "No account is required for 95% of our catalog! All open-source software, freeware utilities, Android APKs, developer tools, and public 4K wallpapers are immediately accessible via direct, unthrottled links. An account is only needed if you wish to track your order history, access 4K VIP cinema, or manage submitted requests.",
+      "No account is required for 95% of our catalog! All open-source software, freeware utilities, Android APKs, developer tools, and public utilities are immediately accessible via direct, unthrottled links. An account is only needed if you wish to track your order history, access 4K VIP cinema, or manage submitted requests.",
   },
   {
     question: "What is the difference between Free downloads and 4K VIP Cinema releases?",

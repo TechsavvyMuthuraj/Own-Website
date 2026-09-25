@@ -38,8 +38,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // 1. Dynamic categories
     const { data: categories } = await supabase
       .from("categories")
-      .select("slug, updated_at")
+      .select("id, slug, updated_at")
       .eq("is_active", true);
+
+    const movieCategory = (categories || []).find(
+      (c) => c.slug?.toLowerCase() === "movies" || c.slug?.toLowerCase() === "cinema"
+    );
+    const movieCategoryId = movieCategory?.id;
 
     const categoryRoutes: MetadataRoute.Sitemap = (categories || []).map((cat) => ({
       url: `${siteUrl}/category/${cat.slug}`,
@@ -51,36 +56,46 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // 2. Dynamic resources (PUBLISHED only)
     const { data: resources } = await supabase
       .from("resources")
-      .select("slug, updated_at, published_at, tags")
+      .select("id, slug, category_id, updated_at, published_at, tags, thumbnail_url, title")
       .eq("status", "PUBLISHED");
 
     const resourceRoutes: MetadataRoute.Sitemap = [];
     const movieRoutes: MetadataRoute.Sitemap = [];
+    const seenMovieSlugs = new Set<string>();
 
     (resources || []).forEach((res) => {
       if (!res.slug) return;
       const modDate = new Date(res.updated_at || res.published_at || now);
+      const images = res.thumbnail_url ? [res.thumbnail_url] : undefined;
 
       resourceRoutes.push({
         url: `${siteUrl}/resource/${res.slug}`,
         lastModified: modDate,
         changeFrequency: "weekly",
         priority: 0.9,
+        images,
       });
 
       // Check if item is also listed in cinema / movies
-      const isMovie =
-        Array.isArray(res.tags) &&
-        res.tags.some((t: string) =>
-          ["movie", "movies", "cinema"].includes(t.toLowerCase())
-        );
+      const tags = Array.isArray(res.tags)
+        ? res.tags.map((t: string) => String(t).toLowerCase())
+        : [];
 
-      if (isMovie) {
+      const isMovie =
+        (movieCategoryId && res.category_id === movieCategoryId) ||
+        tags.some((t: string) =>
+          ["movie", "movies", "cinema", "film", "hollywood", "kollywood", "bollywood"].includes(t)
+        ) ||
+        (res.title && /movie|cinema|film/i.test(res.title));
+
+      if (isMovie && !seenMovieSlugs.has(res.slug)) {
+        seenMovieSlugs.add(res.slug);
         movieRoutes.push({
           url: `${siteUrl}/movies/${res.slug}`,
           lastModified: modDate,
           changeFrequency: "weekly",
-          priority: 0.9,
+          priority: 0.95,
+          images,
         });
       }
     });
@@ -88,7 +103,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // 3. Dynamic articles (PUBLISHED only)
     const { data: articles } = await supabase
       .from("articles")
-      .select("slug, updated_at, published_at")
+      .select("slug, updated_at, published_at, cover_image, title")
       .eq("status", "PUBLISHED");
 
     const articleRoutes: MetadataRoute.Sitemap = (articles || []).map((art) => ({
@@ -96,6 +111,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(art.updated_at || art.published_at || now),
       changeFrequency: "weekly",
       priority: 0.85,
+      images: art.cover_image ? [art.cover_image] : undefined,
     }));
 
     return [

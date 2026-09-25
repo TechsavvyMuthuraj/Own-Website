@@ -384,8 +384,8 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-8 pb-12">
       {/* Top Bar with Quick Actions */}
-      <div className="flex items-center justify-between p-4 rounded-2xl bg-[var(--card)] border border-[var(--border)] shadow-xs">
-        <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
+      <div className="flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-neutral-900/40 border border-neutral-200/90 dark:border-neutral-800/80 shadow-xs">
+        <div className="flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-400 font-medium">
           <Sliders className="w-4 h-4 text-amber-500" />
           <span>Real-time homepage section toggles and customizations</span>
         </div>
@@ -394,16 +394,16 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[var(--border)] hover:bg-[var(--secondary)] text-xs font-semibold text-[var(--foreground)] transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/60 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-200 transition-colors shadow-xs"
           >
             <Eye className="w-3.5 h-3.5 text-amber-500" />
             <span>Preview Site</span>
-            <ExternalLink className="w-3 h-3 text-[var(--muted-foreground)]" />
+            <ExternalLink className="w-3 h-3 text-neutral-400 dark:text-neutral-500" />
           </a>
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] text-xs font-bold transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-bold transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer"
           >
             {saving ? (
               <>
@@ -421,16 +421,16 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
       </div>
 
       {/* 1. HERO & SEARCH SECTION */}
-      <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8 space-y-6 shadow-sm">
-        <div className="flex items-center gap-3 border-b border-[var(--border)] pb-4">
+      <div className="rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="flex items-center gap-3 border-b border-neutral-200/80 dark:border-neutral-800/80 pb-4">
           <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500">
             <ImageIcon className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-[var(--foreground)]">
+            <h2 className="text-base font-bold text-neutral-900 dark:text-white">
               1. Hero Banner & Search Bar
             </h2>
-            <p className="text-xs text-[var(--muted-foreground)]">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
               Configure the top full-bleed graphic and search bar overlay.
             </p>
           </div>
@@ -438,7 +438,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--foreground)]">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
               Hero Graphic Image Path / URL
             </label>
             <input
@@ -446,15 +446,15 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
               value={heroImageUrl}
               onChange={(e) => setHeroImageUrl(e.target.value)}
               placeholder="/images/hero-clean.png"
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
             />
-            <p className="text-[11px] text-[var(--muted-foreground)]">
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
               Default is `/images/hero-clean.png`. Supports local paths or external image URLs.
             </p>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--foreground)]">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
               Search Input Placeholder
             </label>
             <input
@@ -462,17 +462,17 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
               value={searchPlaceholder}
               onChange={(e) => setSearchPlaceholder(e.target.value)}
               placeholder="Search software, movies, tools, APKs, templates..."
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
             />
           </div>
         </div>
 
-        <div className="flex items-center justify-between p-3.5 rounded-xl bg-[var(--secondary)]/40 border border-[var(--border)]">
+        <div className="flex items-center justify-between p-3.5 rounded-xl bg-neutral-50/80 dark:bg-neutral-950/60 border border-neutral-200/90 dark:border-neutral-800/80">
           <div>
-            <p className="text-xs font-semibold text-[var(--foreground)]">
+            <p className="text-xs font-semibold text-neutral-900 dark:text-white">
               Display Search Bar on Hero Banner
             </p>
-            <p className="text-[11px] text-[var(--muted-foreground)]">
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
               Enables the interactive floating search input overlay on desktop and mobile.
             </p>
           </div>
@@ -486,17 +486,17 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
       </div>
 
       {/* 2. HEADER NAVBAR / MENUBAR SECTION (ADJUST ORDER & EDIT LINKS) */}
-      <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8 space-y-6 shadow-sm">
-        <div className="flex items-center justify-between border-b border-[var(--border)] pb-4 flex-wrap gap-4">
+      <div className="rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="flex items-center justify-between border-b border-neutral-200/80 dark:border-neutral-800/80 pb-4 flex-wrap gap-4">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500">
               <Compass className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-[var(--foreground)]">
+              <h2 className="text-base font-bold text-neutral-900 dark:text-white">
                 2. Header Navbar / Menubar (Adjust Priority Order & Links)
               </h2>
-              <p className="text-xs text-[var(--muted-foreground)]">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 Rearrange priority order, change menu names, edit destination links, set badges (HOT, VIP, FREE), and toggle visibility.
               </p>
             </div>
@@ -506,7 +506,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
             <button
               type="button"
               onClick={resetNavbarItems}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/50 hover:bg-[var(--secondary)] text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-800/80 hover:bg-neutral-200/70 dark:hover:bg-neutral-800 text-xs font-medium text-neutral-600 dark:text-neutral-300 transition-colors cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Reset Defaults</span>
@@ -514,7 +514,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
             <button
               type="button"
               onClick={addNavbarItem}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-bold transition-all shadow-sm cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs font-bold transition-all shadow-xs cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Menu Item</span>
@@ -523,10 +523,10 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
         </div>
 
         {/* Live Preview of Header Navbar */}
-        <div className="p-4 rounded-2xl bg-[var(--secondary)]/30 border border-[var(--border)] space-y-2">
-          <div className="flex items-center justify-between text-[11px] font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
+        <div className="p-4 rounded-2xl bg-neutral-50/80 dark:bg-neutral-950/60 border border-neutral-200/90 dark:border-neutral-800/80 space-y-2">
+          <div className="flex items-center justify-between text-[11px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
             <span>Live Header Navbar Preview</span>
-            <span className="text-[10px] text-amber-500 lowercase">updates in real-time</span>
+            <span className="text-[10px] text-amber-500 lowercase font-medium">updates in real-time</span>
           </div>
           <div className="flex items-center gap-1.5 overflow-x-auto py-2 px-1">
             {navbarItems
@@ -534,15 +534,15 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
               .map((item, i) => (
                 <div
                   key={item.id}
-                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium border ${
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border ${
                     i === 0
-                      ? "bg-[var(--secondary)] text-[var(--primary)] border-[var(--primary)]/30 font-semibold"
-                      : "bg-[var(--card)] text-[var(--foreground)] border-[var(--border)]"
+                      ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 font-semibold"
+                      : "bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 border-neutral-200 dark:border-neutral-800"
                   } whitespace-nowrap shadow-xs`}
                 >
                   <span>{item.label}</span>
                   {item.badge && (
-                    <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black uppercase bg-amber-500/20 text-amber-500 border border-amber-500/30">
+                    <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30">
                       {item.badge}
                     </span>
                   )}
@@ -558,13 +558,13 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
               key={item.id}
               className={`p-4 rounded-2xl border transition-all ${
                 item.active
-                  ? "border-[var(--border)] bg-[var(--secondary)]/20"
-                  : "border-dashed border-[var(--border)]/70 bg-[var(--secondary)]/10 opacity-65"
+                  ? "border-neutral-200/90 dark:border-neutral-800/80 bg-neutral-50/60 dark:bg-neutral-950/40"
+                  : "border-dashed border-neutral-300 dark:border-neutral-800 bg-neutral-100/40 dark:bg-neutral-950/20 opacity-65"
               } flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3`}
             >
               {/* Order & Priority Controls */}
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-[var(--secondary)] border border-[var(--border)] flex items-center justify-center font-mono text-xs font-bold text-[var(--muted-foreground)]">
+                <div className="w-7 h-7 rounded-lg bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center font-mono text-xs font-bold text-neutral-700 dark:text-neutral-300">
                   {index + 1}
                 </div>
                 <div className="flex flex-col gap-0.5">
@@ -573,7 +573,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
                     disabled={index === 0}
                     onClick={() => moveNavbarItemUp(index)}
                     title="Move higher in priority"
-                    className="p-1 rounded bg-[var(--card)] hover:bg-[var(--secondary)] border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                    className="p-1 rounded bg-white dark:bg-neutral-900 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
                   >
                     <ArrowUp className="w-3 h-3" />
                   </button>
@@ -582,7 +582,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
                     disabled={index === navbarItems.length - 1}
                     onClick={() => moveNavbarItemDown(index)}
                     title="Move lower in priority"
-                    className="p-1 rounded bg-[var(--card)] hover:bg-[var(--secondary)] border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                    className="p-1 rounded bg-white dark:bg-neutral-900 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
                   >
                     <ArrowDown className="w-3 h-3" />
                   </button>
@@ -592,7 +592,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
               {/* Editable Fields: Label, Link, Badge */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 flex-1 w-full sm:w-auto">
                 <div>
-                  <label className="text-[10px] font-semibold text-[var(--muted-foreground)] uppercase block mb-1">
+                  <label className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase block mb-1">
                     Menu Label
                   </label>
                   <input
@@ -600,12 +600,12 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
                     value={item.label}
                     onChange={(e) => updateNavbarItem(index, "label", e.target.value)}
                     placeholder="Label (e.g. Movies)"
-                    className="w-full px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--card)] text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+                    className="w-full px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-semibold text-[var(--muted-foreground)] uppercase block mb-1">
+                  <label className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase block mb-1">
                     Destination URL / Route
                   </label>
                   <input
@@ -613,12 +613,12 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
                     value={item.href}
                     onChange={(e) => updateNavbarItem(index, "href", e.target.value)}
                     placeholder="/movies or https://..."
-                    className="w-full px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--card)] text-xs text-[var(--foreground)] font-mono focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+                    className="w-full px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white font-mono placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-semibold text-[var(--muted-foreground)] uppercase block mb-1">
+                  <label className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase block mb-1">
                     Highlight Badge (Optional)
                   </label>
                   <input
@@ -626,7 +626,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
                     value={item.badge || ""}
                     onChange={(e) => updateNavbarItem(index, "badge", e.target.value)}
                     placeholder="e.g. HOT, VIP, NEW, FREE"
-                    className="w-full px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--card)] text-xs text-[var(--foreground)] uppercase focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+                    className="w-full px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white uppercase placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                   />
                 </div>
               </div>
@@ -640,7 +640,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
                     onChange={() => toggleNavbarItem(index)}
                     className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
                   />
-                  <span className="text-xs font-semibold text-[var(--foreground)]">
+                  <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
                     {item.active ? "Active" : "Hidden"}
                   </span>
                 </label>
@@ -660,16 +660,16 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
       </div>
 
       {/* 3. TRENDING PILLS BAR */}
-      <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8 space-y-6 shadow-sm">
-        <div className="flex items-center gap-3 border-b border-[var(--border)] pb-4">
+      <div className="rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="flex items-center gap-3 border-b border-neutral-200/80 dark:border-neutral-800/80 pb-4">
           <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500">
             <TrendingUp className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-[var(--foreground)]">
+            <h2 className="text-base font-bold text-neutral-900 dark:text-white">
               3. Trending Quick-Access Bar
             </h2>
-            <p className="text-xs text-[var(--muted-foreground)]">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
               Quick access shortcut pills below the hero banner (Movies, Free Downloads, VIP, APKs).
             </p>
           </div>
@@ -677,7 +677,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--foreground)]">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
               Trending Bar Prefix Label
             </label>
             <input
@@ -685,16 +685,16 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
               value={trendingLabel}
               onChange={(e) => setTrendingLabel(e.target.value)}
               placeholder="Trending:"
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
             />
           </div>
 
-          <div className="flex items-center justify-between p-3.5 rounded-xl bg-[var(--secondary)]/40 border border-[var(--border)] mt-auto">
+          <div className="flex items-center justify-between p-3.5 rounded-xl bg-neutral-50/80 dark:bg-neutral-950/60 border border-neutral-200/90 dark:border-neutral-800/80 mt-auto">
             <div>
-              <p className="text-xs font-semibold text-[var(--foreground)]">
+              <p className="text-xs font-semibold text-neutral-900 dark:text-white">
                 Enable Trending Quick Bar
               </p>
-              <p className="text-[11px] text-[var(--muted-foreground)]">
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
                 Shows quick shortcuts to Movies, Free, and Premium.
               </p>
             </div>
@@ -709,23 +709,23 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
       </div>
 
       {/* 4. CATEGORIES SECTION */}
-      <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8 space-y-6 shadow-sm">
-        <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
+      <div className="rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="flex items-center justify-between border-b border-neutral-200/80 dark:border-neutral-800/80 pb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-purple-500/10 text-purple-500">
               <Layers className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-[var(--foreground)]">
+              <h2 className="text-base font-bold text-neutral-900 dark:text-white">
                 4. Categories Grid Section
               </h2>
-              <p className="text-xs text-[var(--muted-foreground)]">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 Classification tiles showing software, cinema, AI tools, APKs, etc.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-[var(--muted-foreground)] font-medium">Visible</span>
+            <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">Visible</span>
             <input
               type="checkbox"
               checked={showCategories}
@@ -737,31 +737,31 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--foreground)]">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
               Section Title
             </label>
             <input
               type="text"
               value={categoriesTitle}
               onChange={(e) => setCategoriesTitle(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--foreground)]">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
               Section Subtitle
             </label>
             <input
               type="text"
               value={categoriesSubtitle}
               onChange={(e) => setCategoriesSubtitle(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--foreground)]">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
               Categories Limit
             </label>
             <input
@@ -770,30 +770,30 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
               onChange={(e) => setCategoriesLimit(Number(e.target.value))}
               min={2}
               max={24}
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
             />
           </div>
         </div>
       </div>
 
       {/* 5. FEATURED RESOURCES SECTION */}
-      <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8 space-y-6 shadow-sm">
-        <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
+      <div className="rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="flex items-center justify-between border-b border-neutral-200/80 dark:border-neutral-800/80 pb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-[var(--foreground)]">
+              <h2 className="text-base font-bold text-neutral-900 dark:text-white">
                 5. Featured Resources Section
               </h2>
-              <p className="text-xs text-[var(--muted-foreground)]">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 Hand-picked resources marked as featured in the Resources catalog.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-[var(--muted-foreground)] font-medium">Visible</span>
+            <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">Visible</span>
             <input
               type="checkbox"
               checked={showFeatured}
@@ -805,49 +805,49 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--foreground)]">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
               Section Title
             </label>
             <input
               type="text"
               value={featuredTitle}
               onChange={(e) => setFeaturedTitle(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--foreground)]">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
               Section Subtitle
             </label>
             <input
               type="text"
               value={featuredSubtitle}
               onChange={(e) => setFeaturedSubtitle(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
             />
           </div>
         </div>
       </div>
 
       {/* 6. LATEST RELEASES SECTION */}
-      <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8 space-y-6 shadow-sm">
-        <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
+      <div className="rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="flex items-center justify-between border-b border-neutral-200/80 dark:border-neutral-800/80 pb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500">
               <CheckCircle2 className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-[var(--foreground)]">
+              <h2 className="text-base font-bold text-neutral-900 dark:text-white">
                 6. Latest Additions Section
               </h2>
-              <p className="text-xs text-[var(--muted-foreground)]">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 Displays the newest published verified downloads.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-[var(--muted-foreground)] font-medium">Visible</span>
+            <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">Visible</span>
             <input
               type="checkbox"
               checked={showLatest}
@@ -859,31 +859,31 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--foreground)]">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
               Section Title
             </label>
             <input
               type="text"
               value={latestTitle}
               onChange={(e) => setLatestTitle(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--foreground)]">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
               Section Subtitle
             </label>
             <input
               type="text"
               value={latestSubtitle}
               onChange={(e) => setLatestSubtitle(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--foreground)]">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
               Items Limit
             </label>
             <input
@@ -892,30 +892,30 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
               onChange={(e) => setLatestLimit(Number(e.target.value))}
               min={2}
               max={30}
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
             />
           </div>
         </div>
       </div>
 
       {/* 7. FOUNDER PROFILE SECTION */}
-      <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8 space-y-6 shadow-sm">
-        <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
+      <div className="rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="flex items-center justify-between border-b border-neutral-200/80 dark:border-neutral-800/80 pb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500">
               <User className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-[var(--foreground)]">
+              <h2 className="text-base font-bold text-neutral-900 dark:text-white">
                 7. Founder & CEO Profile Section
               </h2>
-              <p className="text-xs text-[var(--muted-foreground)]">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 Customize Muthuraj C&apos;s verified founder card at the bottom of the homepage.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-[var(--muted-foreground)] font-medium">Visible</span>
+            <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">Visible</span>
             <input
               type="checkbox"
               checked={showFounder}
@@ -927,141 +927,141 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--foreground)]">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
               Founder Full Name
             </label>
             <input
               type="text"
               value={founderName}
               onChange={(e) => setFounderName(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--foreground)]">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
               Founder Title / Role
             </label>
             <input
               type="text"
               value={founderTitle}
               onChange={(e) => setFounderTitle(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
             />
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-[var(--foreground)]">
+          <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
             Founder Tagline / Subtitle
           </label>
           <input
             type="text"
             value={founderRole}
             onChange={(e) => setFounderRole(e.target.value)}
-            className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+            className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-[var(--foreground)]">
+          <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
             Biography / Mission Statement
           </label>
           <textarea
             rows={4}
             value={founderBio}
             onChange={(e) => setFounderBio(e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] leading-relaxed"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 leading-relaxed"
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--foreground)]">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
               Portrait Image URL
             </label>
             <input
               type="text"
               value={founderImageUrl}
               onChange={(e) => setFounderImageUrl(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--foreground)]">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
               Instagram Link
             </label>
             <input
               type="text"
               value={founderInstagram}
               onChange={(e) => setFounderInstagram(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--foreground)]">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
               YouTube Channel Link
             </label>
             <input
               type="text"
               value={founderYoutube}
               onChange={(e) => setFounderYoutube(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--foreground)]">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
               GitHub Profile Link
             </label>
             <input
               type="text"
               value={founderGithub}
               onChange={(e) => setFounderGithub(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--foreground)]">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
               LinkedIn Link
             </label>
             <input
               type="text"
               value={founderLinkedin}
               onChange={(e) => setFounderLinkedin(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--foreground)]">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
               Telegram Community Link
             </label>
             <input
               type="text"
               value={founderTelegram}
               onChange={(e) => setFounderTelegram(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
             />
           </div>
         </div>
       </div>
 
       {/* 8. YOUTUBE CHANNEL SHOWCASE */}
-      <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8 space-y-6 shadow-sm">
-        <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
+      <div className="rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="flex items-center justify-between border-b border-neutral-200/80 dark:border-neutral-800/80 pb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-red-500/10 text-red-500">
               <Tv className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-[var(--foreground)]">
+              <h2 className="text-base font-bold text-neutral-900 dark:text-white">
                 8. YouTube Channel Showcase
               </h2>
-              <p className="text-xs text-[var(--muted-foreground)]">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 Manage your YouTube channel showcase, handle, channel ID, and title displayed on the homepage.
               </p>
             </div>
@@ -1069,16 +1069,16 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
         </div>
 
         {/* YouTube Showcase Settings */}
-        <div className="p-5 rounded-2xl bg-[var(--secondary)]/30 border border-[var(--border)] space-y-4">
-          <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
+        <div className="p-5 rounded-2xl bg-neutral-50/80 dark:bg-neutral-950/60 border border-neutral-200/90 dark:border-neutral-800/80 space-y-4">
+          <div className="flex items-center justify-between border-b border-neutral-200/80 dark:border-neutral-800/80 pb-3">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-red-600" />
-              <h3 className="text-sm font-bold text-[var(--foreground)]">
+              <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
                 YouTube Channel Showcase
               </h3>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-[var(--muted-foreground)] font-medium">Visible</span>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">Visible</span>
               <input
                 type="checkbox"
                 checked={showYoutubeShowcase}
@@ -1090,7 +1090,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[var(--foreground)]">
+              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
                 Channel Name
               </label>
               <input
@@ -1098,12 +1098,12 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
                 value={youtubeChannelName}
                 onChange={(e) => setYoutubeChannelName(e.target.value)}
                 placeholder="Techie Muthuraj"
-                className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+                className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[var(--foreground)]">
+              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
                 Channel Handle
               </label>
               <input
@@ -1111,12 +1111,12 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
                 value={youtubeHandle}
                 onChange={(e) => setYoutubeHandle(e.target.value)}
                 placeholder="@techiemuthuraj"
-                className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+                className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[var(--foreground)]">
+              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
                 Channel ID
               </label>
               <input
@@ -1124,13 +1124,13 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
                 value={youtubeChannelId}
                 onChange={(e) => setYoutubeChannelId(e.target.value)}
                 placeholder="UCavl9VKjbVWJBsqlVaCiIsw"
-                className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] font-mono"
+                className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 font-mono"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[var(--foreground)]">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
               Full YouTube URL
             </label>
             <input
@@ -1138,13 +1138,13 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
               value={youtubeChannelUrl}
               onChange={(e) => setYoutubeChannelUrl(e.target.value)}
               placeholder="https://www.youtube.com/channel/UCavl9VKjbVWJBsqlVaCiIsw"
-              className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+              className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[var(--foreground)]">
+              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
                 Channel Subtitle / Bio
               </label>
               <input
@@ -1152,12 +1152,12 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
                 value={youtubeSubtitle}
                 onChange={(e) => setYoutubeSubtitle(e.target.value)}
                 placeholder="Muthuraj C • Tech Creator, Software Architect & YouTuber"
-                className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+                className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[var(--foreground)]">
+              <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
                 Topic Tags / Badges
               </label>
               <input
@@ -1165,7 +1165,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
                 value={youtubeTags}
                 onChange={(e) => setYoutubeTags(e.target.value)}
                 placeholder="OBS Studio • PC Optimization • Open-Source Utilities • Coding"
-                className="w-full px-3.5 py-2 rounded-xl border border-[var(--border)] bg-[var(--secondary)]/40 text-xs text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+                className="w-full px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
               />
             </div>
           </div>
@@ -1173,28 +1173,28 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
       </div>
 
       {/* 9. AD PLACEMENTS TOGGLES */}
-      <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8 space-y-4 shadow-sm">
-        <div className="flex items-center gap-3 border-b border-[var(--border)] pb-4">
+      <div className="rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 p-6 sm:p-8 space-y-4 shadow-xs">
+        <div className="flex items-center gap-3 border-b border-neutral-200/80 dark:border-neutral-800/80 pb-4">
           <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-500">
             <Sliders className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-[var(--foreground)]">
+            <h2 className="text-base font-bold text-neutral-900 dark:text-white">
               9. Homepage Ad Placements
             </h2>
-            <p className="text-xs text-[var(--muted-foreground)]">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
               Control where Google AdSense and custom banner ads appear on the homepage.
             </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="flex items-center justify-between p-3.5 rounded-xl bg-[var(--secondary)]/40 border border-[var(--border)]">
+          <div className="flex items-center justify-between p-3.5 rounded-xl bg-neutral-50/80 dark:bg-neutral-950/60 border border-neutral-200/90 dark:border-neutral-800/80">
             <div>
-              <p className="text-xs font-semibold text-[var(--foreground)]">
+              <p className="text-xs font-semibold text-neutral-900 dark:text-white">
                 Top Homepage Feature Ad
               </p>
-              <p className="text-[11px] text-[var(--muted-foreground)]">
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
                 Shows banner below categories preview.
               </p>
             </div>
@@ -1206,12 +1206,12 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
             />
           </div>
 
-          <div className="flex items-center justify-between p-3.5 rounded-xl bg-[var(--secondary)]/40 border border-[var(--border)]">
+          <div className="flex items-center justify-between p-3.5 rounded-xl bg-neutral-50/80 dark:bg-neutral-950/60 border border-neutral-200/90 dark:border-neutral-800/80">
             <div>
-              <p className="text-xs font-semibold text-[var(--foreground)]">
+              <p className="text-xs font-semibold text-neutral-900 dark:text-white">
                 In-Feed Ad Placement
               </p>
-              <p className="text-[11px] text-[var(--muted-foreground)]">
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
                 Shows in-feed banner above the founder section.
               </p>
             </div>
@@ -1230,7 +1230,7 @@ export function HomepageClient({ initialSettings }: HomepageClientProps) {
         <button
           type="submit"
           disabled={saving}
-          className="inline-flex items-center gap-2 px-8 py-3 rounded-2xl bg-[var(--primary)] text-white hover:bg-[var(--primary-hover)] text-sm font-bold transition-all shadow-xl shadow-amber-500/20 active:scale-95 disabled:opacity-50 cursor-pointer"
+          className="inline-flex items-center gap-2 px-8 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-neutral-950 text-sm font-bold transition-all shadow-xl shadow-amber-500/20 active:scale-95 disabled:opacity-50 cursor-pointer"
         >
           {saving ? (
             <>

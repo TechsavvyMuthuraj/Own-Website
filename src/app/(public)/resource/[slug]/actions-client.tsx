@@ -126,6 +126,18 @@ export function ResourceDetailActions({ resource }: ResourceDetailActionsProps) 
 
           if (data) {
             setHasPurchased(true);
+          } else {
+            const { data: orderItem } = await supabase
+              .from("order_items")
+              .select("id, orders!inner(id, status, user_id)")
+              .eq("resource_id", resource.id)
+              .eq("orders.user_id", user?.id)
+              .eq("orders.status", "PAID")
+              .maybeSingle();
+
+            if (orderItem) {
+              setHasPurchased(true);
+            }
           }
         } catch (e) {
           console.error("Error checking entitlement:", e);

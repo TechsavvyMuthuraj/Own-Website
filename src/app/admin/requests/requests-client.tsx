@@ -551,19 +551,19 @@ export function RequestsClient() {
   return (
     <div className="space-y-6">
       {/* ── Section Header ── */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl shadow-xl relative overflow-hidden">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-gradient-to-br from-white via-slate-50/80 to-white dark:from-neutral-950 dark:via-neutral-900/90 dark:to-neutral-950 shadow-xs relative overflow-hidden">
         <div className="absolute -top-16 -right-16 w-56 h-56 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[11px] font-semibold tracking-wide uppercase mb-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-[11px] font-semibold tracking-wide uppercase mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 dark:bg-cyan-400 animate-pulse" />
             Resource Requests Engine • Realtime Feedback
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2.5">
-            <Package className="w-7 h-7 text-cyan-400" />
+          <h1 className="text-2xl sm:text-3xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
+            <Package className="w-7 h-7 text-cyan-500 dark:text-cyan-400" />
             <span>Resource Requests</span>
           </h1>
-          <p className="text-xs sm:text-sm text-neutral-400 mt-1 max-w-xl">
+          <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mt-1 max-w-xl">
             Review user-requested tools, verify legal distribution, and communicate directly through WhatsApp with one-click message templates.
           </p>
         </div>
@@ -573,9 +573,9 @@ export function RequestsClient() {
             type="button"
             onClick={() => fetchRequests(true)}
             disabled={refreshing}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-700/80 bg-neutral-800/60 hover:bg-neutral-800 text-xs font-semibold text-neutral-200 hover:text-white transition-all shadow-sm active:scale-95 cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700/80 bg-white dark:bg-neutral-800/60 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:text-neutral-900 dark:hover:text-white transition-all shadow-xs active:scale-95 cursor-pointer"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-cyan-400" : ""}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-cyan-500 dark:text-cyan-400" : ""}`} />
             <span>{refreshing ? "Syncing..." : "Sync Requests"}</span>
           </button>
         </div>
@@ -586,8 +586,8 @@ export function RequestsClient() {
         <div
           className={`p-4 rounded-2xl border text-xs flex items-center gap-2 animate-in fade-in duration-200 ${
             toastMessage.type === "success"
-              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-              : "bg-red-500/10 border-red-500/20 text-red-400"
+              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400"
+              : "bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-400"
           }`}
         >
           {toastMessage.type === "success" ? (
@@ -602,20 +602,20 @@ export function RequestsClient() {
       {/* KPI Stats Ribbon */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: "Total Requests", value: stats.total, color: "text-white", bg: "bg-blue-500/10 text-blue-400" },
-          { label: "Pending", value: stats.pending, color: "text-amber-400", bg: "bg-amber-500/10 text-amber-400" },
-          { label: "Reviewing", value: stats.reviewing, color: "text-blue-400", bg: "bg-blue-500/10 text-blue-400" },
-          { label: "Completed", value: stats.completed, color: "text-emerald-400", bg: "bg-emerald-500/10 text-emerald-400" },
+          { label: "Total Requests", value: stats.total, color: "text-neutral-900 dark:text-white", bg: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
+          { label: "Pending", value: stats.pending, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/10 text-amber-600 dark:text-amber-400" },
+          { label: "Reviewing", value: stats.reviewing, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
+          { label: "Completed", value: stats.completed, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
         ].map((stat) => (
           <div
             key={stat.label}
-            className="p-4 rounded-2xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-md shadow-sm flex items-center gap-3.5"
+            className="p-4 rounded-2xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 backdrop-blur-md shadow-xs flex items-center gap-3.5"
           >
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold ${stat.bg}`}>
               <Package className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">{stat.label}</p>
+              <p className="text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{stat.label}</p>
               <p className={`text-xl font-black mt-0.5 ${stat.color}`}>{stat.value}</p>
             </div>
           </div>
@@ -623,7 +623,7 @@ export function RequestsClient() {
       </div>
 
       {/* Filters Toolbar */}
-      <div className="p-4 rounded-3xl border border-neutral-800/80 bg-neutral-900/50 backdrop-blur-xl shadow-xl flex flex-col sm:flex-row gap-3">
+      <div className="p-4 rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white/95 dark:bg-neutral-900/50 backdrop-blur-xl shadow-xs flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
           <input
@@ -631,7 +631,7 @@ export function RequestsClient() {
             placeholder="Search by resource name, user, WhatsApp, or category..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950/80 text-xs text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 transition-all shadow-inner"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 transition-all"
           />
         </div>
 
@@ -642,7 +642,7 @@ export function RequestsClient() {
             setStatusFilter(e.target.value);
             setPage(1);
           }}
-          className="px-3.5 py-2 rounded-xl border border-neutral-800 bg-neutral-950 text-xs text-neutral-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/40 cursor-pointer"
+          className="px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 text-xs text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/40 cursor-pointer shadow-xs"
         >
           <option value="all">All Statuses</option>
           <option value="pending">Pending</option>
@@ -659,7 +659,7 @@ export function RequestsClient() {
             setSortOrder(e.target.value);
             setPage(1);
           }}
-          className="px-3.5 py-2 rounded-xl border border-neutral-800 bg-neutral-950 text-xs text-neutral-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/40 cursor-pointer"
+          className="px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 text-xs text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/40 cursor-pointer shadow-xs"
         >
           <option value="newest">Newest First</option>
           <option value="oldest">Oldest First</option>
@@ -670,18 +670,18 @@ export function RequestsClient() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Table / List View */}
         <div
-          className={`rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl shadow-2xl overflow-hidden ${
+          className={`rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 backdrop-blur-xl shadow-xs overflow-hidden ${
             selectedRequest ? "lg:col-span-7" : "lg:col-span-12"
           }`}
         >
           {loading ? (
             <div className="flex items-center justify-center py-20">
-              <Loader2 className="w-7 h-7 animate-spin text-cyan-400" />
+              <Loader2 className="w-7 h-7 animate-spin text-cyan-500 dark:text-cyan-400" />
             </div>
           ) : requests.length === 0 ? (
             <div className="text-center py-20 px-4">
-              <Package className="w-12 h-12 text-neutral-600 mx-auto mb-3" />
-              <p className="text-sm font-semibold text-neutral-300">No resource requests yet.</p>
+              <Package className="w-12 h-12 text-neutral-400 dark:text-neutral-600 mx-auto mb-3" />
+              <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-300">No resource requests yet.</p>
               <p className="text-xs text-neutral-500 mt-1">
                 When users submit requests from the /request page, they will appear here in realtime.
               </p>
@@ -690,7 +690,7 @@ export function RequestsClient() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[700px]">
                 <thead>
-                  <tr className="border-b border-neutral-800 bg-neutral-950/60 text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
+                  <tr className="border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/90 dark:bg-neutral-950/60 text-[11px] font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider">
                     <th className="px-5 py-3.5">Request / Tool</th>
                     <th className="px-4 py-3.5">User Details</th>
                     <th className="px-4 py-3.5">WhatsApp (Masked)</th>
@@ -700,7 +700,7 @@ export function RequestsClient() {
                     <th className="px-4 py-3.5 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-800/70 text-xs">
+                <tbody className="divide-y divide-neutral-200/80 dark:divide-neutral-800/70 text-xs">
                   {requests.map((req) => {
                     const statusConf = STATUS_CONFIG[req.status] || STATUS_CONFIG.pending;
                     const StatusIcon = statusConf.icon;
@@ -709,18 +709,18 @@ export function RequestsClient() {
                     return (
                       <tr
                         key={req.id}
-                        className={`transition-colors hover:bg-neutral-800/40 cursor-pointer ${
-                          isSelected ? "bg-neutral-800/70" : ""
+                        className={`transition-colors hover:bg-neutral-50/80 dark:hover:bg-neutral-800/40 cursor-pointer ${
+                          isSelected ? "bg-cyan-50/60 dark:bg-neutral-800/70" : ""
                         }`}
                         onClick={() => handleOpenDetail(req)}
                       >
                         {/* Request Name */}
                         <td className="px-5 py-4">
-                          <div className="font-bold text-white max-w-[200px] truncate">
+                          <div className="font-bold text-neutral-900 dark:text-white max-w-[200px] truncate">
                             {req.resource_name}
                           </div>
                           {req.description && (
-                            <div className="text-[11px] text-neutral-400 max-w-[200px] truncate mt-0.5">
+                            <div className="text-[11px] text-neutral-500 dark:text-neutral-400 max-w-[200px] truncate mt-0.5">
                               {req.description}
                             </div>
                           )}
@@ -728,26 +728,26 @@ export function RequestsClient() {
 
                         {/* User Name */}
                         <td className="px-4 py-4">
-                          <div className="font-semibold text-neutral-200">{req.name}</div>
+                          <div className="font-semibold text-neutral-800 dark:text-neutral-200">{req.name}</div>
                           {req.user_id ? (
-                            <span className="text-[10px] text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">
+                            <span className="text-[10px] text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded font-medium">
                               Registered
                             </span>
                           ) : (
-                            <span className="text-[10px] text-neutral-400 bg-neutral-800 px-1.5 py-0.5 rounded">
+                            <span className="text-[10px] text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded">
                               Guest
                             </span>
                           )}
                         </td>
 
                         {/* WhatsApp (Masked) */}
-                        <td className="px-4 py-4 font-mono text-neutral-300">
+                        <td className="px-4 py-4 font-mono text-neutral-700 dark:text-neutral-300">
                           {req.masked_whatsapp || req.whatsapp_number}
                         </td>
 
                         {/* Category */}
                         <td className="px-4 py-4">
-                          <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-neutral-800 text-neutral-300">
+                          <span className="px-2.5 py-1 rounded-full text-[11px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200/60 dark:border-transparent">
                             {req.category}
                           </span>
                         </td>
@@ -763,7 +763,7 @@ export function RequestsClient() {
                         </td>
 
                         {/* Created Date */}
-                        <td className="px-4 py-4 text-neutral-400 text-[11px] whitespace-nowrap">
+                        <td className="px-4 py-4 text-neutral-500 dark:text-neutral-400 text-[11px] whitespace-nowrap">
                           {formatDate(req.created_at)}
                         </td>
 
@@ -776,7 +776,7 @@ export function RequestsClient() {
                                 e.stopPropagation();
                                 handleOpenDetail(req);
                               }}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-neutral-700 bg-neutral-800/80 hover:bg-neutral-700 text-xs font-semibold text-white transition-all cursor-pointer shadow-xs"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800/80 hover:bg-neutral-50 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-white transition-all cursor-pointer shadow-xs"
                             >
                               <Eye className="w-3.5 h-3.5" />
                               <span>View</span>
@@ -788,7 +788,7 @@ export function RequestsClient() {
                                 e.stopPropagation();
                                 handleDeleteRequest(req.id, req.resource_name);
                               }}
-                              className="inline-flex items-center justify-center p-1.5 rounded-xl border border-rose-900/50 bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 hover:text-rose-200 transition-all cursor-pointer disabled:opacity-50"
+                              className="inline-flex items-center justify-center p-1.5 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-200 transition-all cursor-pointer disabled:opacity-50"
                               title="Delete Request"
                             >
                               {deletingId === req.id ? (
@@ -810,20 +810,20 @@ export function RequestsClient() {
 
         {/* ── Request Detail View (Opens when admin clicks View Request) ── */}
         {selectedRequest && (
-          <div className="lg:col-span-5 rounded-3xl border border-neutral-800 bg-neutral-900/90 backdrop-blur-2xl p-6 shadow-2xl space-y-6 lg:sticky lg:top-6 animate-in fade-in zoom-in-95 duration-200">
+          <div className="lg:col-span-5 rounded-3xl border border-neutral-200/90 dark:border-neutral-800 bg-white/95 dark:bg-neutral-900/90 backdrop-blur-2xl p-6 shadow-xl space-y-6 lg:sticky lg:top-6 animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="flex items-start justify-between border-b border-neutral-800 pb-4">
+            <div className="flex items-start justify-between border-b border-neutral-200 dark:border-neutral-800 pb-4">
               <div>
-                <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider">
                   Request Dossier
                 </span>
-                <h2 className="text-lg font-black text-white tracking-tight mt-0.5">
+                <h2 className="text-lg font-black text-neutral-900 dark:text-white tracking-tight mt-0.5">
                   {selectedRequest.resource_name}
                 </h2>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-neutral-400">{selectedRequest.category}</span>
-                  <span className="text-neutral-600">•</span>
-                  <span className="text-xs text-neutral-400">
+                  <span className="text-xs text-neutral-600 dark:text-neutral-400">{selectedRequest.category}</span>
+                  <span className="text-neutral-400 dark:text-neutral-600">•</span>
+                  <span className="text-xs text-neutral-600 dark:text-neutral-400">
                     {formatDate(selectedRequest.created_at)}
                   </span>
                 </div>
@@ -832,21 +832,21 @@ export function RequestsClient() {
               <button
                 type="button"
                 onClick={() => setSelectedRequest(null)}
-                className="p-1.5 rounded-xl border border-neutral-800 hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                className="p-1.5 rounded-xl border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* 1. USER DETAILS FIRST (Explicit Requirement) */}
-            <div className="p-4 rounded-2xl bg-neutral-950/80 border border-neutral-800/90 space-y-3">
+            <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-950/80 border border-neutral-200/90 dark:border-neutral-800/90 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-cyan-600 dark:text-cyan-400 flex items-center gap-1.5">
                   <User className="w-3.5 h-3.5" />
                   <span>USER DETAILS</span>
                 </span>
                 {selectedRequest.contacted_at && (
-                  <span className="text-[10px] font-semibold text-emerald-400 flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                  <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
                     <Check className="w-3 h-3" />
                     <span>WhatsApp Contacted</span>
                   </span>
@@ -855,15 +855,15 @@ export function RequestsClient() {
 
               <div className="grid grid-cols-2 gap-3 text-xs pt-1">
                 <div>
-                  <span className="text-neutral-400 block text-[11px]">Name</span>
-                  <strong className="text-white text-sm block mt-0.5">
+                  <span className="text-neutral-500 dark:text-neutral-400 block text-[11px]">Name</span>
+                  <strong className="text-neutral-900 dark:text-white text-sm block mt-0.5">
                     {selectedRequest.name}
                   </strong>
                 </div>
 
                 <div>
-                  <span className="text-neutral-400 block text-[11px]">WhatsApp</span>
-                  <strong className="text-emerald-400 text-sm block mt-0.5 font-mono">
+                  <span className="text-neutral-500 dark:text-neutral-400 block text-[11px]">WhatsApp</span>
+                  <strong className="text-emerald-600 dark:text-emerald-400 text-sm block mt-0.5 font-mono">
                     {selectedRequest.whatsapp_number}
                   </strong>
                 </div>
@@ -872,51 +872,51 @@ export function RequestsClient() {
 
             {/* 2. REQUEST DETAILS */}
             <div className="space-y-3 text-xs">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-neutral-400">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                 REQUEST DETAILS
               </span>
 
               <div>
-                <span className="text-neutral-400 text-[11px] block">Resource</span>
-                <p className="text-white font-semibold text-sm mt-0.5">
+                <span className="text-neutral-500 dark:text-neutral-400 text-[11px] block">Resource</span>
+                <p className="text-neutral-900 dark:text-white font-semibold text-sm mt-0.5">
                   {selectedRequest.resource_name}
                 </p>
               </div>
 
               <div>
-                <span className="text-neutral-400 text-[11px] block">Description</span>
-                <p className="text-neutral-300 bg-neutral-950/60 p-3 rounded-xl border border-neutral-800/80 mt-1 leading-relaxed whitespace-pre-wrap">
+                <span className="text-neutral-500 dark:text-neutral-400 text-[11px] block">Description</span>
+                <p className="text-neutral-800 dark:text-neutral-300 bg-neutral-50 dark:bg-neutral-950/60 p-3 rounded-xl border border-neutral-200 dark:border-neutral-800/80 mt-1 leading-relaxed whitespace-pre-wrap">
                   {selectedRequest.description || "No description provided."}
                 </p>
               </div>
             </div>
 
             {/* 3. WHATSAPP DIRECT MESSAGE INTEGRATION & STUDIO */}
-            <div className="p-4 sm:p-5 rounded-3xl bg-emerald-950/20 border border-emerald-500/30 space-y-4 shadow-xl relative overflow-hidden">
+            <div className="p-4 sm:p-5 rounded-3xl bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/20 dark:border-emerald-500/30 space-y-4 shadow-sm relative overflow-hidden">
               {/* Studio Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shadow-sm">
+                  <div className="w-7 h-7 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/30 dark:border-emerald-500/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-xs">
                     <MessageCircle className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
+                    <h3 className="text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
                       <span>WhatsApp Communication Studio</span>
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     </h3>
-                    <p className="text-[10px] text-neutral-400">
+                    <p className="text-[10px] text-neutral-500 dark:text-neutral-400">
                       High-converting formatted templates with official channel links
                     </p>
                   </div>
                 </div>
                 {selectedRequest.contacted_at ? (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-semibold border border-emerald-500/30">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 text-[10px] font-semibold border border-emerald-500/30">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                     <span>Contacted</span>
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 text-[10px] font-semibold border border-amber-500/30">
-                    <Clock className="w-3 h-3 text-amber-400" />
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 text-[10px] font-semibold border border-amber-500/30">
+                    <Clock className="w-3 h-3 text-amber-600 dark:text-amber-400" />
                     <span>Ready</span>
                   </span>
                 )}
@@ -924,12 +924,12 @@ export function RequestsClient() {
 
               {/* Message Tone & Style Switcher */}
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
+                <div className="flex items-center justify-between text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
                   <span className="flex items-center gap-1">
-                    <Wand2 className="w-3 h-3 text-emerald-400" />
+                    <Wand2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                     <span>Message Tone & Style</span>
                   </span>
-                  <span className="text-emerald-400/80 font-mono lowercase">
+                  <span className="text-emerald-600 dark:text-emerald-400/80 font-mono lowercase">
                     {whatsappStyle} mode
                   </span>
                 </div>
@@ -947,8 +947,8 @@ export function RequestsClient() {
                       onClick={() => handleStyleChange(s.id)}
                       className={`py-1.5 px-1 rounded-xl border text-center transition-all truncate cursor-pointer ${
                         whatsappStyle === s.id
-                          ? "bg-gradient-to-r from-emerald-500/30 to-cyan-500/30 border-emerald-400 text-emerald-200 shadow-sm shadow-emerald-950"
-                          : "border-neutral-800/80 bg-neutral-950/60 text-neutral-400 hover:text-white hover:border-neutral-700"
+                          ? "bg-emerald-500/20 dark:bg-gradient-to-r dark:from-emerald-500/30 dark:to-cyan-500/30 border-emerald-500 text-emerald-800 dark:text-emerald-200 shadow-xs"
+                          : "border-neutral-200 dark:border-neutral-800/80 bg-white dark:bg-neutral-950/60 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:border-neutral-300 dark:hover:border-neutral-700"
                       }`}
                     >
                       {s.label}
@@ -959,7 +959,7 @@ export function RequestsClient() {
 
               {/* Action Presets Selector */}
               <div className="space-y-1.5">
-                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
+                <span className="text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider block">
                   Action Presets
                 </span>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[10px] font-semibold">
@@ -976,8 +976,8 @@ export function RequestsClient() {
                       onClick={() => handleTemplateChange(tpl.idx)}
                       className={`py-1.5 px-2 rounded-xl border transition-all text-left flex items-center gap-1.5 cursor-pointer truncate ${
                         activeTemplate === tpl.idx
-                          ? "bg-emerald-500/25 border-emerald-500 text-emerald-200 shadow-sm"
-                          : "border-neutral-800 bg-neutral-950/60 text-neutral-400 hover:text-white"
+                          ? "bg-emerald-500/15 border-emerald-500 text-emerald-800 dark:text-emerald-200 shadow-xs"
+                          : "border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950/60 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
                       }`}
                     >
                       <span className="text-xs">{tpl.icon}</span>
@@ -988,13 +988,13 @@ export function RequestsClient() {
               </div>
 
               {/* 1-Click Quick Insert Toolbar (Links, Formatting, Emojis) */}
-              <div className="p-2.5 rounded-2xl bg-neutral-950/80 border border-neutral-800/80 space-y-2">
+              <div className="p-2.5 rounded-2xl bg-white dark:bg-neutral-950/80 border border-neutral-200 dark:border-neutral-800/80 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1">
-                    <Zap className="w-3 h-3 text-amber-400" />
+                  <span className="text-[10px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider flex items-center gap-1">
+                    <Zap className="w-3 h-3 text-amber-500 dark:text-amber-400" />
                     <span>Quick Insert Links & Emojis</span>
                   </span>
-                  <span className="text-[10px] text-neutral-500">1-click inject</span>
+                  <span className="text-[10px] text-neutral-400 dark:text-neutral-500">1-click inject</span>
                 </div>
 
                 {/* Direct Channel Link Chips */}
@@ -1002,15 +1002,15 @@ export function RequestsClient() {
                   <button
                     type="button"
                     onClick={() => handleInsertSnippet(SITE_URL)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 border border-blue-500/30 transition-all cursor-pointer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30 transition-all cursor-pointer"
                   >
-                    <Globe className="w-3 h-3 text-blue-400" />
+                    <Globe className="w-3 h-3 text-blue-500 dark:text-blue-400" />
                     <span>+ Website</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleInsertSnippet(YT_URL)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-500/30 transition-all cursor-pointer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30 transition-all cursor-pointer"
                   >
                     <YouTubeIcon className="w-3 h-3 text-red-500" />
                     <span>+ YouTube</span>
@@ -1018,9 +1018,9 @@ export function RequestsClient() {
                   <button
                     type="button"
                     onClick={() => handleInsertSnippet(IG_URL)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-pink-500/10 hover:bg-pink-500/20 text-pink-300 border border-pink-500/30 transition-all cursor-pointer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-pink-500/10 hover:bg-pink-500/20 text-pink-700 dark:text-pink-300 border border-pink-500/30 transition-all cursor-pointer"
                   >
-                    <InstagramIcon className="w-3 h-3 text-pink-400" />
+                    <InstagramIcon className="w-3 h-3 text-pink-500 dark:text-pink-400" />
                     <span>+ Instagram</span>
                   </button>
                   {selectedRequest && (
@@ -1033,21 +1033,21 @@ export function RequestsClient() {
                           )}`
                         )
                       }
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition-all cursor-pointer"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 transition-all cursor-pointer"
                     >
-                      <Sparkles className="w-3 h-3 text-emerald-400" />
+                      <Sparkles className="w-3 h-3 text-emerald-500 dark:text-emerald-400" />
                       <span>+ Resource Link</span>
                     </button>
                   )}
                 </div>
 
                 {/* Formatting Chips & Quick Emojis */}
-                <div className="flex items-center justify-between pt-1 border-t border-neutral-900 gap-2 overflow-x-auto">
+                <div className="flex items-center justify-between pt-1 border-t border-neutral-100 dark:border-neutral-900 gap-2 overflow-x-auto">
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
                       onClick={() => handleFormatText("*")}
-                      className="px-2 py-0.5 rounded bg-neutral-900 hover:bg-neutral-800 text-neutral-300 font-bold text-[10px] border border-neutral-800 cursor-pointer"
+                      className="px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-bold text-[10px] border border-neutral-200 dark:border-neutral-800 cursor-pointer"
                       title="Bold: *text*"
                     >
                       *B*
@@ -1055,7 +1055,7 @@ export function RequestsClient() {
                     <button
                       type="button"
                       onClick={() => handleFormatText("_")}
-                      className="px-2 py-0.5 rounded bg-neutral-900 hover:bg-neutral-800 text-neutral-300 italic text-[10px] border border-neutral-800 cursor-pointer"
+                      className="px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 italic text-[10px] border border-neutral-200 dark:border-neutral-800 cursor-pointer"
                       title="Italic: _text_"
                     >
                       _I_
@@ -1063,7 +1063,7 @@ export function RequestsClient() {
                     <button
                       type="button"
                       onClick={() => handleFormatText("~")}
-                      className="px-2 py-0.5 rounded bg-neutral-900 hover:bg-neutral-800 text-neutral-300 line-through text-[10px] border border-neutral-800 cursor-pointer"
+                      className="px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 line-through text-[10px] border border-neutral-200 dark:border-neutral-800 cursor-pointer"
                       title="Strikethrough: ~text~"
                     >
                       ~S~
@@ -1071,7 +1071,7 @@ export function RequestsClient() {
                     <button
                       type="button"
                       onClick={() => handleInsertSnippet("• ")}
-                      className="px-2 py-0.5 rounded bg-neutral-900 hover:bg-neutral-800 text-neutral-300 text-[10px] border border-neutral-800 cursor-pointer"
+                      className="px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-[10px] border border-neutral-200 dark:border-neutral-800 cursor-pointer"
                       title="Bullet point"
                     >
                       •
@@ -1097,14 +1097,14 @@ export function RequestsClient() {
 
               {/* Editable Message Textarea */}
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-[10px] text-neutral-400">
+                <div className="flex items-center justify-between text-[10px] text-neutral-500 dark:text-neutral-400">
                   <span>Message text (WhatsApp Markdown supported):</span>
                   <div className="flex items-center gap-2">
                     <span>{whatsappMessage.length} chars</span>
                     <button
                       type="button"
                       onClick={() => setWhatsappMessage("")}
-                      className="hover:text-red-400 transition-colors cursor-pointer"
+                      className="hover:text-red-500 dark:hover:text-red-400 transition-colors cursor-pointer"
                     >
                       Clear
                     </button>
@@ -1115,7 +1115,7 @@ export function RequestsClient() {
                   value={whatsappMessage}
                   onChange={(e) => setWhatsappMessage(e.target.value)}
                   placeholder="Type your WhatsApp message..."
-                  className="w-full px-3.5 py-2.5 rounded-2xl border border-neutral-800 bg-neutral-950 font-mono text-xs text-neutral-200 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 resize-y min-h-[90px] leading-relaxed"
+                  className="w-full px-3.5 py-2.5 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 font-mono text-xs text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 resize-y min-h-[90px] leading-relaxed shadow-xs"
                 />
               </div>
 
@@ -1154,16 +1154,16 @@ export function RequestsClient() {
                 <button
                   type="button"
                   onClick={handleCopyMessage}
-                  className="px-3 py-2.5 rounded-xl border border-neutral-800 bg-neutral-900/80 hover:bg-neutral-800 text-neutral-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95"
+                  className="px-3 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900/80 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-95 shadow-xs"
                 >
                   {copiedMessage ? (
                     <>
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      <span className="text-emerald-400">Copied!</span>
+                      <Check className="w-3.5 h-3.5 text-emerald-500" />
+                      <span className="text-emerald-600 dark:text-emerald-400">Copied!</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="w-3.5 h-3.5 text-neutral-400" />
+                      <Copy className="w-3.5 h-3.5 text-neutral-500 dark:text-neutral-400" />
                       <span>Copy Text</span>
                     </>
                   )}
@@ -1172,7 +1172,7 @@ export function RequestsClient() {
                 <button
                   type="button"
                   onClick={handleOpenWhatsApp}
-                  className="sm:col-span-2 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs transition-all shadow-lg shadow-emerald-950/60 cursor-pointer active:scale-95"
+                  className="sm:col-span-2 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs transition-all shadow-md shadow-emerald-950/20 cursor-pointer active:scale-95"
                 >
                   <MessageCircle className="w-4 h-4 fill-white/20" />
                   <span>Message on WhatsApp</span>
@@ -1184,14 +1184,14 @@ export function RequestsClient() {
             {/* 4. ADMIN NOTE (Internal & Private) */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-neutral-400">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                   ADMIN NOTE (PRIVATE)
                 </span>
                 <button
                   type="button"
                   disabled={savingNote}
                   onClick={handleSaveNote}
-                  className="text-[11px] text-cyan-400 hover:underline font-semibold cursor-pointer"
+                  className="text-[11px] text-cyan-600 dark:text-cyan-400 hover:underline font-semibold cursor-pointer"
                 >
                   {savingNote ? "Saving..." : "Save Note"}
                 </button>
@@ -1201,13 +1201,13 @@ export function RequestsClient() {
                 value={adminNote}
                 onChange={(e) => setAdminNote(e.target.value)}
                 placeholder="Checking whether an official/legal download is available..."
-                className="w-full px-3 py-2 rounded-xl border border-neutral-800 bg-neutral-950 text-xs text-neutral-200 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 resize-none"
+                className="w-full px-3 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 text-xs text-neutral-900 dark:text-neutral-200 placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 resize-none shadow-xs"
               />
             </div>
 
             {/* 5. STATUS TRANSITION ACTIONS */}
-            <div className="space-y-2 pt-2 border-t border-neutral-800">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-neutral-400 block mb-1">
+            <div className="space-y-2 pt-2 border-t border-neutral-200 dark:border-neutral-800">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 block mb-1">
                 UPDATE STATUS
               </span>
               <div className="grid grid-cols-2 gap-2">
@@ -1215,27 +1215,27 @@ export function RequestsClient() {
                   {
                     status: "pending",
                     label: "Pending",
-                    className: "border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20",
+                    className: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20",
                   },
                   {
                     status: "reviewing",
                     label: "Reviewing",
-                    className: "border-blue-500/30 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20",
+                    className: "border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400 hover:bg-blue-500/20",
                   },
                   {
                     status: "approved",
                     label: "Approved",
-                    className: "border-cyan-500/30 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20",
+                    className: "border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 hover:bg-cyan-500/20",
                   },
                   {
                     status: "rejected",
                     label: "Rejected",
-                    className: "border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20",
+                    className: "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-400 hover:bg-rose-500/20",
                   },
                   {
                     status: "completed",
                     label: "Completed",
-                    className: "col-span-2 border-emerald-500/40 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25 py-2.5",
+                    className: "col-span-2 border-emerald-500/40 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/25 py-2.5",
                   },
                 ].map((action) => (
                   <button
@@ -1255,9 +1255,9 @@ export function RequestsClient() {
             </div>
 
             {/* 6. DANGER ZONE - DELETE REQUEST */}
-            <div className="pt-3 border-t border-neutral-800/80 flex items-center justify-between">
+            <div className="pt-3 border-t border-neutral-200 dark:border-neutral-800/80 flex items-center justify-between">
               <div>
-                <div className="text-[11px] font-bold text-rose-400">Permanently Remove</div>
+                <div className="text-[11px] font-bold text-rose-600 dark:text-rose-400">Permanently Remove</div>
                 <div className="text-[10px] text-neutral-500">Deletes request from database</div>
               </div>
               <button
@@ -1266,7 +1266,7 @@ export function RequestsClient() {
                 onClick={() =>
                   handleDeleteRequest(selectedRequest.id, selectedRequest.resource_name)
                 }
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold text-xs transition-all cursor-pointer disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-400 font-bold text-xs transition-all cursor-pointer disabled:opacity-50"
               >
                 {deletingId === selectedRequest.id ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />

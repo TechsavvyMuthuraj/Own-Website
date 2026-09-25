@@ -14,14 +14,12 @@ import {
 interface LiveStatsBarProps {
   totalResources: number;
   totalCategories: number;
-  totalWallpapers: number;
   totalMovies: number;
 }
 
 export function LiveStatsBar({
   totalResources,
   totalCategories,
-  totalWallpapers,
   totalMovies,
 }: LiveStatsBarProps) {
   const stats = [
@@ -38,10 +36,10 @@ export function LiveStatsBar({
       icon: <Cpu className="w-5 h-5 text-emerald-500" />,
     },
     {
-      label: "4K & UHD Wallpapers",
-      value: totalWallpapers > 0 ? `${totalWallpapers}+` : "24+",
-      subtext: "Watermark-Free Visuals",
-      icon: <Zap className="w-5 h-5 text-amber-400" />,
+      label: "Direct Downloads",
+      value: "100%",
+      subtext: "Unthrottled Cloud Speed",
+      icon: <HardDriveDownload className="w-5 h-5 text-amber-400" />,
     },
     {
       label: "Security Audit",

@@ -137,6 +137,7 @@ export function ResourceForm({
     setLoading(true);
     setErrorMsg("");
 
+    const isPaidAccess = accessType === "PAID";
     const payload = {
       title: title.trim(),
       slug: slug.trim(),
@@ -145,8 +146,8 @@ export function ResourceForm({
       description: description.trim() || null,
       resource_type: resourceType,
       access_type: accessType,
-      price: Number(price) || 0,
-      sale_price: salePrice ? Number(salePrice) : null,
+      price: isPaidAccess ? (Number(price) || 0) : 0,
+      sale_price: isPaidAccess && salePrice ? Number(salePrice) : null,
       platform: platform.trim() || null,
       version: version.trim() || null,
       version_code: versionCode ? Number(versionCode) : null,
@@ -309,7 +310,14 @@ export function ResourceForm({
             </label>
             <select
               value={accessType}
-              onChange={(e) => setAccessType(e.target.value as any)}
+              onChange={(e) => {
+                const nextType = e.target.value as any;
+                setAccessType(nextType);
+                if (nextType !== "PAID") {
+                  setPrice("0");
+                  setSalePrice("");
+                }
+              }}
               className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs text-[var(--foreground)] focus:outline-none"
             >
               <option value="FREE">Free Resource</option>

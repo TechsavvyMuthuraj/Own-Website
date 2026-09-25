@@ -69,7 +69,7 @@ export default function DisclaimerPage() {
             <span>3. Software Downloads &amp; Verification Protocol</span>
           </h2>
           <p>
-            We curate developer utilities, open-source binaries, and wallpapers with strict manual verification checks. However, computer architectures, dependencies, and operating systems vary widely.
+            We curate developer utilities, open-source binaries, and digital assets with strict manual verification checks. However, computer architectures, dependencies, and operating systems vary widely.
           </p>
           <p>
             Users are strongly advised to perform their own antivirus and malware scans prior to running any executable software on their local operating systems. NammaTech will not be held responsible for system crashes, data corruption, or incompatibilities resulting from software installation.

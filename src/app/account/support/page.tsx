@@ -176,28 +176,28 @@ export default function TechnicalSupportDashboardPage() {
   return (
     <div className="space-y-6">
       {/* ── Section Header ── */}
-      <div className="p-6 sm:p-8 rounded-3xl border border-[var(--border)] bg-[var(--card)] relative overflow-hidden shadow-sm">
+      <div className="p-4 sm:p-8 rounded-2xl sm:rounded-3xl border border-[var(--border)] bg-[var(--card)] relative overflow-hidden shadow-sm">
         <div className="absolute -top-20 -right-20 w-64 h-64 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 sm:gap-6 relative z-10">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              Specialist Desk Active • Average Response: &lt;2 min
+              Specialist Desk Active • Avg Response: &lt;2 min
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-[var(--foreground)] tracking-tight flex items-center gap-2.5">
-              <Headphones className="w-7 h-7 text-sky-500" />
+            <h1 className="text-xl sm:text-3xl font-black text-[var(--foreground)] tracking-tight flex items-center gap-2.5">
+              <Headphones className="w-6 h-6 sm:w-7 sm:h-7 text-sky-500 flex-shrink-0" />
               <span>Technical Support &amp; Engineering Desk</span>
             </h1>
-            <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1 max-w-xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-1.5 max-w-xl leading-relaxed">
               Real-time technical assistance for software setup, missing DLL errors, game crash logs, VIP mirror requests, and direct administrator support.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
             <a
               href="mailto:techsavvy.muthuraj.dev@gmail.com?subject=Technical%20Support%20Request"
-              className="px-4 py-2.5 rounded-2xl bg-[var(--secondary)] border border-[var(--border)] text-xs text-[var(--foreground)] hover:border-sky-500 transition-colors flex items-center gap-2 font-semibold shadow-xs"
+              className="px-4 py-2.5 rounded-xl sm:rounded-2xl bg-[var(--secondary)] border border-[var(--border)] text-xs text-[var(--foreground)] hover:border-sky-500 transition-colors flex items-center justify-center gap-2 font-semibold shadow-xs"
             >
               <span>Email Support Team</span>
               <ExternalLink className="w-3.5 h-3.5 opacity-60" />
@@ -207,7 +207,7 @@ export default function TechnicalSupportDashboardPage() {
               href="https://wa.me/919944875726?text=Hi%20NammaTech%20Technical%20Support,%20I%20need%20assistance:"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 transition-all flex items-center gap-2"
+              className="px-4 py-2.5 rounded-xl sm:rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 transition-all flex items-center justify-center gap-2"
             >
               <span>WhatsApp Helpline</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -216,11 +216,11 @@ export default function TechnicalSupportDashboardPage() {
         </div>
 
         {/* Support Sub-Tabs */}
-        <div className="flex items-center gap-2 mt-6 pt-5 border-t border-[var(--border)] overflow-x-auto">
+        <div className="flex items-center gap-2 mt-5 sm:mt-6 pt-4 sm:pt-5 border-t border-[var(--border)] overflow-x-auto scrollbar-none pb-1 -mx-1 px-1">
           <button
             type="button"
             onClick={() => setActiveSubTab("LIVE_CHAT")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+            className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap flex-shrink-0 ${
               activeSubTab === "LIVE_CHAT"
                 ? "bg-sky-500 text-neutral-950 font-black shadow-md shadow-sky-500/20"
                 : "bg-[var(--secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
@@ -233,7 +233,7 @@ export default function TechnicalSupportDashboardPage() {
           <button
             type="button"
             onClick={() => setActiveSubTab("DIAGNOSTICS")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+            className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap flex-shrink-0 ${
               activeSubTab === "DIAGNOSTICS"
                 ? "bg-sky-500 text-neutral-950 font-black shadow-md shadow-sky-500/20"
                 : "bg-[var(--secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
@@ -246,7 +246,7 @@ export default function TechnicalSupportDashboardPage() {
           <button
             type="button"
             onClick={() => setActiveSubTab("TOOLKITS")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap ${
+            className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap flex-shrink-0 ${
               activeSubTab === "TOOLKITS"
                 ? "bg-sky-500 text-neutral-950 font-black shadow-md shadow-sky-500/20"
                 : "bg-[var(--secondary)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
@@ -283,7 +283,7 @@ export default function TechnicalSupportDashboardPage() {
               <button
                 type="button"
                 onClick={handleCopyDiagnostics}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-neutral-950 text-xs font-bold transition-all shadow-sm cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-neutral-950 text-xs font-bold transition-all shadow-sm cursor-pointer w-full sm:w-auto"
               >
                 {copiedSpecs ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                 <span>{copiedSpecs ? "Specs Copied!" : "Copy Diagnostics Sheet"}</span>

@@ -38,9 +38,9 @@ export async function POST(request: Request) {
       icon_url: body.icon_url || null,
       resource_type: body.resource_type || "DOWNLOAD",
       access_type: body.access_type || "FREE",
-      price: body.price !== undefined ? Number(body.price) : 0,
+      price: body.access_type === "PAID" && body.price !== undefined ? Number(body.price) : 0,
       sale_price:
-        body.sale_price !== null && body.sale_price !== undefined
+        body.access_type === "PAID" && body.sale_price !== null && body.sale_price !== undefined
           ? Number(body.sale_price)
           : null,
       currency: "INR",

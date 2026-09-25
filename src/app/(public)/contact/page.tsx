@@ -9,6 +9,8 @@ import {
   Loader2,
   MessageSquare,
   MapPin,
+  Video,
+  ArrowRight,
 } from "lucide-react";
 
 
@@ -174,12 +176,12 @@ export default function ContactPage() {
           </p>
 
           {/* ── Mode Switcher: Live 1-on-1 Support vs Traditional Email Form ── */}
-          <div className="flex justify-center mt-4 sm:mt-6">
-            <div className="inline-flex p-1.5 rounded-2xl bg-[var(--card)] border border-[var(--border)] shadow-lg gap-2">
+          <div className="flex justify-center mt-4 sm:mt-6 px-2 w-full">
+            <div className="flex flex-col sm:flex-row w-full sm:w-auto p-1.5 rounded-2xl bg-[var(--card)] border border-[var(--border)] shadow-lg gap-2">
               <button
                 type="button"
                 onClick={() => setContactMode("live_chat")}
-                className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                className={`justify-center px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                   contactMode === "live_chat"
                     ? "bg-gradient-to-r from-[var(--primary)] to-rose-600 text-white shadow-md shadow-[var(--primary)]/20"
                     : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
@@ -192,7 +194,7 @@ export default function ContactPage() {
               <button
                 type="button"
                 onClick={() => setContactMode("email")}
-                className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                className={`justify-center px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                   contactMode === "email"
                     ? "bg-[var(--secondary)] text-[var(--foreground)] border border-[var(--border)] shadow-sm"
                     : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
@@ -249,6 +251,33 @@ export default function ContactPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* ── Info Cards ─────────────────────────────────────────────────── */}
         <div className="space-y-4" aria-label="Contact information">
+          {/* Live Zoom Call Card */}
+          <div className="p-5 rounded-2xl border border-rose-500/30 bg-gradient-to-br from-rose-500/10 via-neutral-900 to-transparent flex items-start gap-4 hover:border-rose-500/50 transition-all group shadow-md">
+            <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+              <Video className="w-5 h-5" aria-hidden="true" />
+            </div>
+            <div className="space-y-1.5 flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-bold text-[var(--foreground)]">
+                  Live Zoom Meeting
+                </h2>
+                <span className="px-1.5 py-0.2 rounded text-[8px] font-black uppercase bg-rose-500 text-white animate-pulse">
+                  HD
+                </span>
+              </div>
+              <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                Schedule a 1-on-1 private video consultation with Founder Muthuraj C.
+              </p>
+              <a
+                href="/meetings"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-500 hover:text-amber-400 pt-0.5"
+              >
+                <span>Book Zoom Call</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+
           {/* Email */}
           <div className="p-5 rounded-2xl border border-[var(--border)] bg-[var(--card)] flex items-start gap-4 hover:border-[var(--primary)]/30 transition-colors group">
             <div className="w-10 h-10 rounded-xl bg-[var(--primary)]/10 text-[var(--primary)] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
@@ -323,7 +352,7 @@ export default function ContactPage() {
 
         {/* ── Contact Form ───────────────────────────────────────────────── */}
         <div className="lg:col-span-2">
-          <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 sm:p-8 shadow-sm">
+          <div className="rounded-2xl sm:rounded-3xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-8 shadow-sm">
             <h2 className="text-lg font-bold text-[var(--foreground)] mb-6">
               Send a Message
             </h2>

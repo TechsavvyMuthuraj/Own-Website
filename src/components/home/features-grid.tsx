@@ -19,14 +19,14 @@ export function FeaturesGrid() {
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
       {/* Section Header */}
       <div className="flex flex-col items-center text-center mb-10 sm:mb-14">
-        <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30 text-xs font-bold uppercase tracking-wider mb-3 shadow-xs">
+        <span className="eyebrow-pill bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30 mb-3.5 shadow-xs">
           <BadgeCheck className="w-3.5 h-3.5" />
           <span>The NammaTech Engineering Standard</span>
         </span>
-        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[var(--foreground)] tracking-tight max-w-2xl">
-          Engineered for Extreme Speed, Zero Malware &amp; Verifiable Trust
+        <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-[var(--foreground)] tracking-tight max-w-3xl leading-tight">
+          Engineered for <span className="text-gradient-amber">Extreme Speed</span>, Zero Malware &amp; Verifiable Trust
         </h2>
-        <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-2.5 max-w-xl">
+        <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-3 max-w-xl leading-relaxed">
           Replacing bloated third-party download traps with direct cloud mirrors, SHA-256 integrity audits, and real-time technical assistance.
         </p>
       </div>

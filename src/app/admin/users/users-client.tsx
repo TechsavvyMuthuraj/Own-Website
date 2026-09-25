@@ -245,19 +245,19 @@ export function UsersClient() {
   return (
     <div className="space-y-6">
       {/* ── SaaS Section Header ── */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl shadow-xl relative overflow-hidden">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-6 sm:p-8 rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-gradient-to-br from-white via-slate-50/80 to-white dark:from-neutral-950 dark:via-neutral-900/90 dark:to-neutral-950 backdrop-blur-xl shadow-xs dark:shadow-xl relative overflow-hidden">
         <div className="absolute -top-16 -right-16 w-56 h-56 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[11px] font-semibold tracking-wide uppercase mb-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
-            Identity & Verification Engine • Supabase Auth
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-700 dark:text-indigo-400 text-[11px] font-semibold tracking-wide uppercase mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400 animate-pulse" />
+            Identity &amp; Verification Engine • Supabase Auth
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2.5">
-            <Users className="w-7 h-7 text-indigo-400" />
-            <span>Users & Access Control</span>
+          <h1 className="text-2xl sm:text-3xl font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2.5">
+            <Users className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
+            <span>Users &amp; Access Control</span>
           </h1>
-          <p className="text-xs sm:text-sm text-neutral-400 mt-1 max-w-xl">
+          <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mt-1 max-w-xl">
             Real-time directory of registered accounts, live activity presence, role elevations, and order histories.
           </p>
         </div>
@@ -267,9 +267,9 @@ export function UsersClient() {
             type="button"
             onClick={fetchUsers}
             disabled={refreshing}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-700/80 bg-neutral-800/60 hover:bg-neutral-800 text-xs font-semibold text-neutral-200 hover:text-white transition-all shadow-sm active:scale-95 cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700/80 bg-neutral-100 dark:bg-neutral-800/60 hover:bg-neutral-200 dark:hover:bg-neutral-800 text-xs font-semibold text-neutral-800 dark:text-neutral-200 hover:text-neutral-950 dark:hover:text-white transition-all shadow-xs active:scale-95 cursor-pointer"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-indigo-400" : ""}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-indigo-600 dark:text-indigo-400" : ""}`} />
             <span>{refreshing ? "Syncing..." : "Sync Presence"}</span>
           </button>
         </div>
@@ -280,8 +280,8 @@ export function UsersClient() {
         <div
           className={`p-4 rounded-2xl text-xs flex items-center justify-between gap-3 border ${
             message.type === "success"
-              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-              : "bg-red-500/10 border-red-500/20 text-red-400"
+              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400"
+              : "bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400"
           }`}
         >
           <div className="flex items-center gap-2">
@@ -301,61 +301,61 @@ export function UsersClient() {
       {/* Metrics Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Users */}
-        <div className="p-4 rounded-2xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-md shadow-sm flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform">
-          <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold">
+        <div className="p-4 rounded-2xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 backdrop-blur-md shadow-xs flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform">
+          <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
             <Users className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
+            <span className="text-[10px] font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider block">
               Total Accounts
             </span>
-            <span className="text-xl font-black text-white">
+            <span className="text-xl font-black text-neutral-900 dark:text-white font-mono">
               {stats.total_users}
             </span>
           </div>
         </div>
 
         {/* Online Now */}
-        <div className="p-4 rounded-2xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-md shadow-sm flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
+        <div className="p-4 rounded-2xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 backdrop-blur-md shadow-xs flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
             <Activity className="w-5 h-5 animate-pulse" />
           </div>
           <div>
-            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
+            <span className="text-[10px] font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider block">
               Online Presence
             </span>
             <div className="flex items-center gap-1.5">
-              <span className="text-xl font-black text-emerald-400">{stats.online_users}</span>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              <span className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono">{stats.online_users}</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-ping" />
             </div>
           </div>
         </div>
 
         {/* Admins */}
-        <div className="p-4 rounded-2xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-md shadow-sm flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform">
-          <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center font-bold">
+        <div className="p-4 rounded-2xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 backdrop-blur-md shadow-xs flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform">
+          <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
-              Staff & Admins
+            <span className="text-[10px] font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider block">
+              Staff &amp; Admins
             </span>
-            <span className="text-xl font-black text-purple-400">
+            <span className="text-xl font-black text-purple-600 dark:text-purple-400 font-mono">
               {stats.admin_users}
             </span>
           </div>
         </div>
 
         {/* Email Verified */}
-        <div className="p-4 rounded-2xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-md shadow-sm flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform">
-          <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center font-bold">
+        <div className="p-4 rounded-2xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 backdrop-blur-md shadow-xs flex items-center gap-3.5 hover:-translate-y-0.5 transition-transform">
+          <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center font-bold">
             <UserCheck className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
+            <span className="text-[10px] font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider block">
               Verified Accounts
             </span>
-            <span className="text-xl font-black text-cyan-400">
+            <span className="text-xl font-black text-cyan-600 dark:text-cyan-400 font-mono">
               {stats.verified_users}
             </span>
           </div>
@@ -363,15 +363,15 @@ export function UsersClient() {
       </div>
 
       {/* Filter & Search Toolbar */}
-      <div className="p-4 rounded-3xl border border-neutral-800/80 bg-neutral-900/50 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-3 shadow-xl">
+      <div className="p-4 rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white/95 dark:bg-neutral-900/50 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-3 shadow-xs dark:shadow-xl">
         <div className="relative flex-1 w-full max-w-md">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 dark:text-neutral-500 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by name, email, or user UUID..."
-            className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-neutral-800 bg-neutral-950/80 text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all shadow-inner"
+            className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950/80 text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all shadow-inner"
           />
         </div>
 
@@ -380,7 +380,7 @@ export function UsersClient() {
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="px-3.5 py-2 text-xs rounded-xl border border-neutral-800 bg-neutral-950 text-neutral-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all cursor-pointer"
+            className="px-3.5 py-2 text-xs rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 text-neutral-800 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all cursor-pointer"
           >
             <option value="ALL">All Roles</option>
             <option value="SUPER_ADMIN">Super Admin</option>
@@ -392,7 +392,7 @@ export function UsersClient() {
           <select
             value={presenceFilter}
             onChange={(e) => setPresenceFilter(e.target.value)}
-            className="px-3.5 py-2 text-xs rounded-xl border border-neutral-800 bg-neutral-950 text-neutral-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all cursor-pointer"
+            className="px-3.5 py-2 text-xs rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 text-neutral-800 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all cursor-pointer"
           >
             <option value="ALL">All Status</option>
             <option value="ONLINE">🟢 Online Now</option>
@@ -402,10 +402,10 @@ export function UsersClient() {
       </div>
 
       {/* Users Table */}
-      <div className="rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl shadow-2xl overflow-hidden">
+      <div className="rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 backdrop-blur-xl shadow-xs dark:shadow-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse min-w-[750px]">
-            <thead className="border-b border-neutral-800 bg-neutral-950/70 text-neutral-400 font-semibold uppercase tracking-wider text-[10px]">
+            <thead className="border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50/90 dark:bg-neutral-950/70 text-neutral-600 dark:text-neutral-400 font-semibold uppercase tracking-wider text-[10px]">
               <tr>
                 <th className="py-3.5 px-4">User</th>
                 <th className="py-3.5 px-4">Status</th>
@@ -627,15 +627,15 @@ export function UsersClient() {
         </div>
 
         {/* SaaS Table Footer */}
-        <div className="px-6 py-3.5 bg-neutral-950/80 border-t border-neutral-800 flex items-center justify-between text-[11px] text-neutral-400">
+        <div className="px-6 py-3.5 bg-neutral-50/90 dark:bg-neutral-950/80 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-[11px] text-neutral-500 dark:text-neutral-400">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>
-              Showing <strong className="text-white">{filteredUsers.length}</strong> registered user profiles
+              Showing <strong className="text-neutral-900 dark:text-white font-semibold">{filteredUsers.length}</strong> registered user profiles
             </span>
           </div>
-          <div className="font-mono text-[10px] text-neutral-400">
-            SUPABASE AUTH POSTGRESQL CLUSTER ACTIVE
+          <div className="font-mono text-[10px] text-neutral-500 dark:text-neutral-400">
+            SUPABASE AUTH ACTIVE
           </div>
         </div>
       </div>

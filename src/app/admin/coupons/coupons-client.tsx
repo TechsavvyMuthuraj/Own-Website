@@ -202,13 +202,13 @@ export function CouponsClient({ initialCoupons }: { initialCoupons: Coupon[] }) 
       </div>
 
       {showAddForm && (
-        <form onSubmit={handleCreate} className="p-6 rounded-3xl border border-neutral-800/80 bg-neutral-900/50 backdrop-blur-xl shadow-2xl space-y-4 max-w-2xl">
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+        <form onSubmit={handleCreate} className="p-6 rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white/95 dark:bg-neutral-900/50 backdrop-blur-xl shadow-xs space-y-4 max-w-2xl">
+          <h3 className="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider">
             Create Promotional Voucher
           </h3>
 
           {errorMsg && (
-            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center gap-2">
+            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
               <span>{errorMsg}</span>
             </div>
@@ -216,7 +216,7 @@ export function CouponsClient({ initialCoupons }: { initialCoupons: Coupon[] }) 
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                 Coupon Code *
               </label>
               <input
@@ -225,17 +225,17 @@ export function CouponsClient({ initialCoupons }: { initialCoupons: Coupon[] }) 
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                 placeholder="e.g. NAMMATECH50"
-                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-mono font-bold uppercase"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950 text-xs text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 font-mono font-bold uppercase focus:outline-none focus:ring-2 focus:ring-purple-500/40"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                 Discount Type
               </label>
               <select
                 value={discountType}
                 onChange={(e) => setDiscountType(e.target.value as "PERCENTAGE" | "FIXED")}
-                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 text-xs text-neutral-800 dark:text-neutral-200 focus:outline-none focus:ring-2 focus:ring-purple-500/40 shadow-xs cursor-pointer"
               >
                 <option value="PERCENTAGE">Percentage (%)</option>
                 <option value="FIXED">Flat Amount (₹)</option>
@@ -245,7 +245,7 @@ export function CouponsClient({ initialCoupons }: { initialCoupons: Coupon[] }) 
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                 Discount Value *
               </label>
               <input
@@ -254,25 +254,25 @@ export function CouponsClient({ initialCoupons }: { initialCoupons: Coupon[] }) 
                 value={discountValue}
                 onChange={(e) => setDiscountValue(e.target.value)}
                 placeholder={discountType === "PERCENTAGE" ? "e.g. 20 (for 20%)" : "e.g. 100 (for ₹100)"}
-                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-mono"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950 text-xs text-neutral-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-purple-500/40"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                 Minimum Order Amount (₹)
               </label>
               <input
                 type="number"
                 value={minOrder}
                 onChange={(e) => setMinOrder(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-mono"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950 text-xs text-neutral-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-purple-500/40"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                 Max Discount (₹, for %)
               </label>
               <input
@@ -280,11 +280,11 @@ export function CouponsClient({ initialCoupons }: { initialCoupons: Coupon[] }) 
                 value={maxDiscount}
                 onChange={(e) => setMaxDiscount(e.target.value)}
                 placeholder="Optional cap"
-                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-mono"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950 text-xs text-neutral-900 dark:text-white font-mono placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-purple-500/40"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                 Usage Limit
               </label>
               <input
@@ -292,18 +292,18 @@ export function CouponsClient({ initialCoupons }: { initialCoupons: Coupon[] }) 
                 value={usageLimit}
                 onChange={(e) => setUsageLimit(e.target.value)}
                 placeholder="Total redemptions"
-                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-mono"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-950 text-xs text-neutral-900 dark:text-white font-mono placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-purple-500/40"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[var(--foreground)] mb-1">
+              <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                 Expiration Date
               </label>
               <input
                 type="date"
                 value={expiresAt}
                 onChange={(e) => setExpiresAt(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 text-xs text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500/40"
               />
             </div>
           </div>
@@ -311,7 +311,7 @@ export function CouponsClient({ initialCoupons }: { initialCoupons: Coupon[] }) 
           <button
             type="submit"
             disabled={loading}
-            className="px-5 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold hover:bg-[var(--primary-hover)] transition-all disabled:opacity-50"
+            className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold transition-all disabled:opacity-50 shadow-xs cursor-pointer"
           >
             {loading ? "Saving..." : "Save Coupon"}
           </button>
@@ -319,10 +319,10 @@ export function CouponsClient({ initialCoupons }: { initialCoupons: Coupon[] }) 
       )}
 
       {initialCoupons.length > 0 ? (
-        <div className="rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl overflow-hidden shadow-2xl">
+        <div className="rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 backdrop-blur-xl overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
-              <thead className="bg-neutral-950/70 text-neutral-400 uppercase font-semibold border-b border-neutral-800 text-[10px]">
+              <thead className="bg-neutral-50/90 dark:bg-neutral-950/70 text-neutral-600 dark:text-neutral-400 uppercase font-semibold border-b border-neutral-200 dark:border-neutral-800 text-[10px]">
                 <tr>
                   <th className="px-6 py-4">Voucher Code</th>
                   <th className="px-4 py-4">Discount Value</th>
@@ -333,35 +333,35 @@ export function CouponsClient({ initialCoupons }: { initialCoupons: Coupon[] }) 
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-800/60">
+              <tbody className="divide-y divide-neutral-200/80 dark:divide-neutral-800/60">
                 {initialCoupons.map((c) => (
-                  <tr key={c.id} className="hover:bg-neutral-800/30 transition-colors group">
-                    <td className="px-6 py-4 font-mono font-black text-white text-sm">
-                      <span className="px-2.5 py-1 rounded-lg bg-neutral-950 border border-neutral-800 text-purple-300">
+                  <tr key={c.id} className="hover:bg-neutral-50/70 dark:hover:bg-neutral-800/30 transition-colors group">
+                    <td className="px-6 py-4 font-mono font-black text-sm">
+                      <span className="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-purple-700 dark:text-purple-300">
                         {c.code}
                       </span>
                     </td>
-                    <td className="px-4 py-4 font-bold text-emerald-400 font-mono">
+                    <td className="px-4 py-4 font-bold text-emerald-600 dark:text-emerald-400 font-mono">
                       {c.discount_type === "PERCENTAGE"
                         ? `${c.discount_value}% OFF`
                         : `₹${c.discount_value} FLAT`}
                     </td>
-                    <td className="px-4 py-4 font-mono text-neutral-300">₹{c.min_order}</td>
-                    <td className="px-4 py-4 font-mono text-neutral-400">
-                      <span className="text-white font-bold">{c.times_used}</span> / {c.usage_limit ?? "∞"}
+                    <td className="px-4 py-4 font-mono text-neutral-700 dark:text-neutral-300">₹{c.min_order}</td>
+                    <td className="px-4 py-4 font-mono text-neutral-500 dark:text-neutral-400">
+                      <span className="text-neutral-900 dark:text-white font-bold">{c.times_used}</span> / {c.usage_limit ?? "∞"}
                     </td>
-                    <td className="px-4 py-4 text-neutral-400 text-[11px] font-mono">
+                    <td className="px-4 py-4 text-neutral-500 dark:text-neutral-400 text-[11px] font-mono">
                       {c.expires_at ? formatDate(c.expires_at) : "Never Expires"}
                     </td>
                     <td className="px-4 py-4">
                       {c.is_active ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
                           ACTIVE
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-neutral-800 text-neutral-400 border border-neutral-700">
-                          <span className="w-1.5 h-1.5 rounded-full bg-neutral-500" />
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700">
+                          <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 dark:bg-neutral-500" />
                           DISABLED
                         </span>
                       )}
@@ -371,7 +371,7 @@ export function CouponsClient({ initialCoupons }: { initialCoupons: Coupon[] }) 
                         <button
                           type="button"
                           onClick={() => openEditModal(c)}
-                          className="p-2 rounded-xl border border-neutral-700/80 bg-neutral-800/60 hover:bg-purple-500/15 text-neutral-300 hover:text-purple-400 hover:border-purple-500/30 transition-all shadow-xs"
+                          className="p-2 rounded-xl border border-neutral-200 dark:border-neutral-700/80 bg-white dark:bg-neutral-800/60 hover:bg-purple-50 dark:hover:bg-purple-500/15 text-neutral-700 dark:text-neutral-300 hover:text-purple-600 dark:hover:text-purple-400 hover:border-purple-300 dark:hover:border-purple-500/30 transition-all shadow-xs cursor-pointer"
                           title="Edit coupon"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
@@ -380,7 +380,7 @@ export function CouponsClient({ initialCoupons }: { initialCoupons: Coupon[] }) 
                           type="button"
                           onClick={() => handleDelete(c.id, c.code)}
                           disabled={deletingId === c.id}
-                          className="p-2 rounded-xl border border-neutral-700/80 bg-neutral-800/60 hover:bg-red-500/15 text-neutral-400 hover:text-red-400 hover:border-red-500/30 transition-all shadow-xs cursor-pointer"
+                          className="p-2 rounded-xl border border-neutral-200 dark:border-neutral-700/80 bg-white dark:bg-neutral-800/60 hover:bg-red-50 dark:hover:bg-red-500/15 text-neutral-500 dark:text-neutral-400 hover:text-red-600 dark:hover:text-red-400 hover:border-red-300 dark:hover:border-red-500/30 transition-all shadow-xs cursor-pointer"
                           title="Delete coupon"
                         >
                           {deletingId === c.id ? (
@@ -397,12 +397,12 @@ export function CouponsClient({ initialCoupons }: { initialCoupons: Coupon[] }) 
             </table>
           </div>
 
-          <div className="px-6 py-3.5 bg-neutral-950/80 border-t border-neutral-800 flex items-center justify-between text-[11px] text-neutral-400">
+          <div className="px-6 py-3.5 bg-neutral-50/90 dark:bg-neutral-950/80 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-[11px] text-neutral-600 dark:text-neutral-400">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
-              <span>Total <strong className="text-white">{initialCoupons.length}</strong> promotion vouchers logged</span>
+              <span className="w-2 h-2 rounded-full bg-purple-500 dark:bg-purple-400 animate-pulse" />
+              <span>Total <strong className="text-neutral-900 dark:text-white">{initialCoupons.length}</strong> promotion vouchers logged</span>
             </div>
-            <div className="font-mono text-[10px] text-neutral-400">
+            <div className="font-mono text-[10px] text-neutral-500 dark:text-neutral-400">
               COMMERCE ENGINE ACTIVE
             </div>
           </div>

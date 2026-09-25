@@ -143,14 +143,12 @@ function getVisualConfig(
     };
   }
 
-  // 5. Templates / Design / UI / Wallpapers
+  // 5. Templates / Design / UI / Creative Assets
   if (
     c.includes("template") ||
-    c.includes("wallpaper") ||
     c.includes("design") ||
     c.includes("ui") ||
-    titleLow.includes("template") ||
-    titleLow.includes("wallpaper")
+    titleLow.includes("template")
   ) {
     return {
       icon: <Palette className="w-full h-full" />,

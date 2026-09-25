@@ -13,7 +13,7 @@ import {
   ShieldCheck,
   Megaphone,
   Home,
-  Image as ImageIcon,
+  Compass,
   Newspaper,
   LayoutGrid,
   Edit3,
@@ -351,26 +351,26 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* 3B. RESOURCE REQUESTS COMMUNITY PIPELINE (Real Database Metrics) */}
-      <div className="rounded-3xl border border-neutral-800/80 bg-neutral-900/50 backdrop-blur-xl p-5 shadow-xs">
+      <div className="rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white/95 dark:bg-neutral-900/50 backdrop-blur-xl p-5 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
               <Package className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider">
                 Community Resource Requests
               </span>
               <div className="flex items-center gap-3 text-xs mt-0.5">
-                <span className="text-amber-400 font-bold">
+                <span className="text-amber-600 dark:text-amber-400 font-bold">
                   Pending: {pendingRequests}
                 </span>
-                <span className="text-neutral-600">•</span>
-                <span className="text-blue-400 font-bold">
+                <span className="text-neutral-300 dark:text-neutral-600">•</span>
+                <span className="text-blue-600 dark:text-blue-400 font-bold">
                   Reviewing: {reviewingRequests}
                 </span>
-                <span className="text-neutral-600">•</span>
-                <span className="text-emerald-400 font-bold">
+                <span className="text-neutral-300 dark:text-neutral-600">•</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold">
                   Completed: {completedRequests}
                 </span>
               </div>
@@ -638,20 +638,20 @@ export default async function AdminDashboardPage() {
             </div>
           </Link>
 
-          {/* 4. 4K Wallpapers */}
+          {/* 4. Resource Requests */}
           <Link
-            href="/admin/wallpapers"
+            href="/admin/requests"
             className="group flex items-center gap-3.5 p-4 rounded-2xl border border-[var(--border)] bg-[var(--card)]/90 hover:bg-[var(--secondary)] hover:border-cyan-500/40 transition-all duration-200"
           >
             <div className="w-10 h-10 rounded-2xl bg-cyan-500/15 text-cyan-400 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-              <ImageIcon className="w-5 h-5" />
+              <Compass className="w-5 h-5" />
             </div>
             <div className="min-w-0">
               <p className="text-xs font-bold text-[var(--foreground)] group-hover:text-cyan-400 transition-colors">
-                4K Wallpapers Studio
+                Resource Requests
               </p>
               <p className="text-[11px] text-[var(--muted-foreground)] truncate">
-                Upload 4K desktop &amp; mobile artwork
+                Review &amp; approve user software requests
               </p>
             </div>
           </Link>

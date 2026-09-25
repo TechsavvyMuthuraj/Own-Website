@@ -16,6 +16,22 @@ export async function GET() {
     if (data?.value) {
       const parsed = typeof data.value === "string" ? JSON.parse(data.value) : data.value;
       if (parsed?.navbar_items && Array.isArray(parsed.navbar_items)) {
+        const hasCommunity = parsed.navbar_items.some((item: any) => item.href === "/community");
+        if (!hasCommunity) {
+          const homeIdx = parsed.navbar_items.findIndex((item: any) => item.href === "/");
+          const communityItem = {
+            id: "nav-community",
+            href: "/community",
+            label: "Community",
+            active: true,
+            badge: "LIVE",
+          };
+          if (homeIdx !== -1) {
+            parsed.navbar_items.splice(homeIdx + 1, 0, communityItem);
+          } else {
+            parsed.navbar_items.unshift(communityItem);
+          }
+        }
         return NextResponse.json(
           { navLinks: parsed.navbar_items },
           {

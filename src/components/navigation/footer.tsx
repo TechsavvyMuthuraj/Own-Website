@@ -62,6 +62,22 @@ export function Footer() {
             </h4>
             <ul className="space-y-2 text-xs text-[var(--muted-foreground)]">
               <li>
+                <Link href="/community" className="hover:text-amber-500 dark:hover:text-amber-400 transition-colors flex items-center gap-1.5 font-medium text-[var(--foreground)]">
+                  <span>Community & Live Lounge</span>
+                  <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black uppercase tracking-wider bg-rose-500/20 text-rose-500 border border-rose-500/30">
+                    LIVE
+                  </span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/movies" className="hover:text-amber-500 dark:hover:text-amber-400 transition-colors flex items-center gap-1.5">
+                  <span>Movies & 4K Cinema</span>
+                  <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-500 border border-amber-500/30">
+                    HOT
+                  </span>
+                </Link>
+              </li>
+              <li>
                 <Link href="/articles" className="hover:text-[var(--primary)] transition-colors">
                   Articles & News
                 </Link>

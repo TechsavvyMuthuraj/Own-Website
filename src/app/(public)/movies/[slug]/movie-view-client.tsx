@@ -209,61 +209,227 @@ export function MovieViewClient({
         </div>
       </nav>
 
-      {/* ── Cinematic Hero & Trailer Showcase ── */}
-      <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-b from-neutral-950 via-neutral-900 to-neutral-950 p-4 sm:p-8 text-white shadow-2xl space-y-6">
-        <div className="absolute -top-32 -right-32 w-96 h-96 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
+      {/* ── Theatrical Cinema Hero Presentation ── */}
+      <div className="relative overflow-hidden rounded-3xl border border-amber-500/25 bg-gradient-to-br from-neutral-950 via-neutral-900/90 to-neutral-950 p-6 sm:p-8 lg:p-10 text-white shadow-2xl">
+        {/* Ambient Backlight Aura */}
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-red-600/10 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Top Badges & Title */}
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 flex-wrap mb-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500 text-neutral-950 shadow-md">
-                {movie.quality}
+        <div className="relative z-10 flex flex-col lg:flex-row gap-8 lg:gap-10 items-start">
+          {/* Left Column: 3D Glossy Movie Poster Card */}
+          <div className="w-full sm:w-72 lg:w-80 flex-shrink-0 mx-auto lg:mx-0">
+            <div className="group relative rounded-2xl overflow-hidden border-2 border-amber-500/30 bg-neutral-900 shadow-[0_20px_50px_rgba(0,0,0,0.8)] ring-1 ring-amber-500/20 transition-all duration-300 hover:border-amber-400 hover:shadow-amber-500/10">
+              <div className="relative aspect-[2/3] w-full overflow-hidden bg-neutral-950">
+                {movie.posterUrl ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={movie.posterUrl}
+                    alt={movie.title}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Film className="w-16 h-16 text-neutral-700" />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+
+                {/* Floating Poster Badges */}
+                <div className="absolute top-3 left-3 flex flex-col gap-1.5 pointer-events-none">
+                  <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider bg-amber-500 text-neutral-950 shadow-md">
+                    {movie.quality}
+                  </span>
+                  {movie.audio && (
+                    <span className="px-2 py-0.5 rounded-lg text-[9px] font-bold bg-neutral-950/80 text-blue-300 border border-blue-500/30 backdrop-blur-md">
+                      {movie.audio}
+                    </span>
+                  )}
+                </div>
+
+                {movie.hasDiscount && movie.discountPct && movie.discountPct > 0 && (
+                  <div className="absolute top-3 right-3 pointer-events-none">
+                    <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wide bg-red-600 text-white shadow-lg animate-pulse">
+                      {movie.discountPct}% OFF
+                    </span>
+                  </div>
+                )}
+
+                {/* Bottom Poster Tag */}
+                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[11px] text-neutral-300 font-semibold pointer-events-none">
+                  <span className="flex items-center gap-1 text-emerald-400">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>Verified Print</span>
+                  </span>
+                  <span className="font-mono text-amber-400">{movie.year}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Actions underneath poster */}
+            <div className="mt-3.5 grid grid-cols-2 gap-2 text-xs">
+              <button
+                type="button"
+                onClick={handleShare}
+                className="py-2 px-3 rounded-xl bg-neutral-900/80 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 hover:text-white font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+              >
+                <Share2 className="w-3.5 h-3.5 text-amber-400" />
+                <span>Share</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleCopyLink(window.location.href, "poster-copy", "Movie page")}
+                className="py-2 px-3 rounded-xl bg-neutral-900/80 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 hover:text-white font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+              >
+                {copiedItemKey === "poster-copy" ? (
+                  <>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className="text-emerald-400">Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Copy Link</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Right Column: Theatrical Cinema Information & Actions */}
+          <div className="flex-1 min-w-0 space-y-5">
+            {/* Top Badges Strip */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                <span>9.6 / 10 Master Release</span>
               </span>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-neutral-800 text-neutral-200 border border-neutral-700">
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-neutral-800/90 text-neutral-200 border border-neutral-700">
                 {movie.year}
               </span>
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-neutral-800/90 text-neutral-200 border border-neutral-700">
+                {movie.quality}
+              </span>
               {movie.audio && (
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30 flex items-center gap-1">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/15 text-blue-300 border border-blue-500/30">
                   <Zap className="w-3 h-3 text-blue-400" />
                   <span>{movie.audio}</span>
                 </span>
               )}
-              {movie.hasDiscount && movie.discountPct && movie.discountPct > 0 && (
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-red-600 text-white shadow-sm uppercase tracking-wide animate-pulse">
-                  {movie.discountPct}% OFF VIP DEAL
-                </span>
+            </div>
+
+            {/* Movie Title */}
+            <div>
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight">
+                {movie.title}
+              </h1>
+              {movie.cast && (
+                <p className="text-xs sm:text-sm text-neutral-400 mt-2 font-medium flex items-center gap-1.5 flex-wrap">
+                  <span className="text-amber-400 font-bold">Starring:</span>
+                  <span>{movie.cast}</span>
+                </p>
               )}
             </div>
 
-            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
-              {movie.title}
-            </h1>
-            {movie.cast && (
-              <p className="text-xs sm:text-sm text-neutral-300 mt-1 font-medium">
-                {movie.cast}
-              </p>
-            )}
-          </div>
+            {/* Synopsis / Storyline */}
+            <p className="text-sm text-neutral-300 leading-relaxed max-w-3xl font-normal">
+              {movie.description ||
+                "Pristine verified cinema release featuring full cast multi-language dubs, master color grade, and ultra high definition audio channels."}
+            </p>
 
-          {/* Quick CTA to Download Section */}
-          <div className="flex items-center gap-2.5 self-start md:self-auto flex-shrink-0">
-            <a
-              href="#downloads-section"
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-neutral-950 text-xs font-black hover:brightness-110 shadow-lg shadow-amber-500/20 transition-all flex items-center gap-2"
-            >
-              <Download className="w-4 h-4" />
-              <span>Download Options</span>
-            </a>
+            {/* Genre Chips */}
+            {movie.genres && movie.genres.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {movie.genres.map((genre) => (
+                  <span
+                    key={genre}
+                    className="px-3 py-1 rounded-xl text-xs font-semibold bg-neutral-800/70 text-neutral-200 border border-neutral-700/60"
+                  >
+                    {genre}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* CTA Action Buttons */}
+            <div className="pt-3 flex flex-wrap items-center gap-3">
+              {trailerEmbedUrl && (
+                <a
+                  href="#trailer-stage"
+                  className="px-5 py-3 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-xs sm:text-sm font-bold shadow-lg shadow-red-600/25 transition-all flex items-center gap-2 group cursor-pointer"
+                >
+                  <div className="w-6 h-6 rounded-full bg-white text-red-600 flex items-center justify-center shadow-xs group-hover:scale-110 transition-transform">
+                    <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                  </div>
+                  <span>Watch Trailer</span>
+                </a>
+              )}
+
+              <a
+                href="#downloads-section"
+                className="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 hover:brightness-110 text-neutral-950 text-xs sm:text-sm font-black shadow-lg shadow-amber-500/20 transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <Download className="w-4 h-4 stroke-[2.5]" />
+                <span>Download Options</span>
+              </a>
+
+              <button
+                type="button"
+                onClick={handleCopyDetails}
+                className="px-4 py-3 rounded-2xl bg-neutral-800/80 hover:bg-neutral-700 text-neutral-200 text-xs font-semibold border border-neutral-700 transition-all flex items-center gap-1.5 cursor-pointer"
+                title="Copy movie specifications"
+              >
+                {copiedItemKey === "details" ? (
+                  <>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className="text-emerald-400">Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Copy Info</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* ── 16:9 YouTube Video Trailer Player or Artwork ── */}
-        <div className="relative z-10">
-          {trailerEmbedUrl ? (
-            <div className="space-y-2">
-              <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-black border border-amber-500/40 shadow-2xl">
+      {/* ── Dedicated Theatrical Trailer Stage ── */}
+      {trailerEmbedUrl && (
+        <div id="trailer-stage" className="scroll-mt-24 space-y-4">
+          <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-b from-neutral-950 via-neutral-900 to-neutral-950 p-4 sm:p-7 shadow-2xl">
+            {/* Ambient Lighting behind screen */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 space-y-4">
+              <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-neutral-800">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+                  <h2 className="text-sm sm:text-base font-black tracking-tight text-white flex items-center gap-2">
+                    <span>Theatrical Trailer Master</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">
+                      4K / 1080p
+                    </span>
+                  </h2>
+                </div>
+
+                {movie.trailerUrl && (
+                  <a
+                    href={movie.trailerUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-amber-400 hover:text-yellow-300 transition-colors flex items-center gap-1 font-semibold"
+                  >
+                    <span>Watch on YouTube</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+              </div>
+
+              {/* 16:9 Cinema Screen Player */}
+              <div className="relative aspect-video max-w-4xl mx-auto rounded-2xl overflow-hidden bg-black border border-amber-500/40 shadow-[0_20px_50px_rgba(0,0,0,0.9)]">
                 <iframe
                   src={trailerEmbedUrl}
                   title={`${movie.title} Official Trailer`}
@@ -272,47 +438,10 @@ export function MovieViewClient({
                   className="w-full h-full"
                 />
               </div>
-              <div className="flex items-center justify-between text-xs text-neutral-400 px-1">
-                <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Official Cinema Trailer (4K/1080p Master)</span>
-                </span>
-                {movie.trailerUrl && (
-                  <a
-                    href={movie.trailerUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-amber-400 hover:text-yellow-300 transition-colors flex items-center gap-1 font-medium"
-                  >
-                    <span>Watch directly on YouTube</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                )}
-              </div>
             </div>
-          ) : (
-            <div className="relative aspect-[21/9] w-full rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-800 shadow-xl flex items-center justify-center">
-              {movie.posterUrl ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img
-                  src={movie.posterUrl}
-                  alt={movie.title}
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <Film className="w-16 h-16 text-neutral-700" />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex items-end p-6">
-                <span className="px-4 py-1.5 rounded-full bg-black/80 backdrop-blur-md border border-white/10 text-neutral-300 text-xs font-semibold flex items-center gap-2">
-                  <Film className="w-4 h-4 text-amber-500" />
-                  <span>Official Movie Artwork • Trailer Coming Soon</span>
-                </span>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ── Movie Metadata Grid & Storyline ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

@@ -489,14 +489,14 @@ export function OrdersTableClient({ initialOrders }: { initialOrders: any[] }) {
   return (
     <div className="space-y-4">
       {pendingCount > 0 && (
-        <div className="flex items-start gap-3 p-4 rounded-3xl bg-amber-500/10 border border-amber-500/25 backdrop-blur-md shadow-sm">
-          <Clock className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 p-4 rounded-3xl bg-amber-500/10 border border-amber-500/25 backdrop-blur-md shadow-xs">
+          <Clock className="w-4 h-4 text-amber-500 dark:text-amber-400 flex-shrink-0 mt-0.5" />
           <div className="space-y-0.5">
-            <p className="text-xs font-bold text-amber-300">
+            <p className="text-xs font-bold text-amber-800 dark:text-amber-300">
               {pendingCount} order{pendingCount > 1 ? "s" : ""} awaiting cross-verification
             </p>
             {noUtrCount > 0 && (
-              <p className="text-[11px] text-neutral-400">
+              <p className="text-[11px] text-neutral-600 dark:text-neutral-400">
                 {noUtrCount} of them have no UTR yet — customer needs to submit their 12-digit transaction ID from their Order History.
               </p>
             )}
@@ -504,9 +504,9 @@ export function OrdersTableClient({ initialOrders }: { initialOrders: any[] }) {
         </div>
       )}
 
-      <div className="rounded-3xl border border-neutral-800/80 bg-neutral-900/40 backdrop-blur-xl overflow-hidden shadow-2xl">
+      <div className="rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 backdrop-blur-xl overflow-hidden shadow-xs dark:shadow-2xl">
         {/* Header */}
-        <div className="grid grid-cols-[1fr_1.4fr_auto_auto_auto_auto] gap-3 px-6 py-4 bg-neutral-950/70 border-b border-neutral-800 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+        <div className="grid grid-cols-[1fr_1.4fr_auto_auto_auto_auto] gap-3 px-6 py-4 bg-neutral-50/90 dark:bg-neutral-950/70 border-b border-neutral-200 dark:border-neutral-800 text-[10px] font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
           <span>Order Number</span>
           <span>Customer Profile</span>
           <span>Settled Amount</span>
@@ -515,21 +515,21 @@ export function OrdersTableClient({ initialOrders }: { initialOrders: any[] }) {
           <span />
         </div>
 
-        <div className="divide-y divide-neutral-800/60">
+        <div className="divide-y divide-neutral-200/80 dark:divide-neutral-800/60">
           {initialOrders.map((order) => (
             <OrderRow key={order.id} order={order} />
           ))}
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3.5 bg-neutral-950/80 border-t border-neutral-800 flex items-center justify-between text-[11px] text-neutral-400">
+        <div className="px-6 py-3.5 bg-neutral-50/90 dark:bg-neutral-950/80 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-[11px] text-neutral-600 dark:text-neutral-400">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
             <span>
-              Total <strong className="text-white">{initialOrders.length}</strong> orders logged in PostgreSQL
+              Total <strong className="text-neutral-900 dark:text-white">{initialOrders.length}</strong> orders logged in PostgreSQL
             </span>
           </div>
-          <div className="font-mono text-[10px] text-neutral-400">
+          <div className="font-mono text-[10px] text-neutral-500 dark:text-neutral-400">
             UPI / RAZORPAY / CASHFREE PIPELINE
           </div>
         </div>

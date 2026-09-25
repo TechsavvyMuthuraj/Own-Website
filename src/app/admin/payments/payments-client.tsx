@@ -397,77 +397,77 @@ export function PaymentsClient({
       {/* ── SaaS Financial KPI Metrics Grid ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Gross Revenue */}
-        <div className="p-5 rounded-3xl border border-emerald-500/20 bg-neutral-900/40 backdrop-blur-xl space-y-2.5 shadow-lg relative overflow-hidden hover:-translate-y-0.5 transition-transform">
+        <div className="p-5 rounded-3xl border border-emerald-500/20 bg-white dark:bg-neutral-900/40 backdrop-blur-xl space-y-2.5 shadow-xs hover:-translate-y-0.5 transition-transform relative overflow-hidden">
           <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
           <div className="flex items-center justify-between relative z-10">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
               Total Net Revenue
             </span>
-            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
               <IndianRupee className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-white font-mono relative z-10">
+          <div className="text-2xl sm:text-3xl font-black text-neutral-900 dark:text-white font-mono relative z-10">
             ₹{kpis.totalRevenue.toLocaleString("en-IN")}
           </div>
-          <p className="text-[11px] text-neutral-400 relative z-10">
+          <p className="text-[11px] text-neutral-600 dark:text-neutral-400 relative z-10">
             Lifetime collections from {kpis.paidCount} successful orders
           </p>
         </div>
 
         {/* Today's Collections */}
-        <div className="p-5 rounded-3xl border border-blue-500/20 bg-neutral-900/40 backdrop-blur-xl space-y-2.5 shadow-lg relative overflow-hidden hover:-translate-y-0.5 transition-transform">
+        <div className="p-5 rounded-3xl border border-blue-500/20 bg-white dark:bg-neutral-900/40 backdrop-blur-xl space-y-2.5 shadow-xs hover:-translate-y-0.5 transition-transform relative overflow-hidden">
           <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
           <div className="flex items-center justify-between relative z-10">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-blue-400">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
               Today&apos;s Collections
             </span>
-            <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
+            <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-white font-mono relative z-10">
+          <div className="text-2xl sm:text-3xl font-black text-neutral-900 dark:text-white font-mono relative z-10">
             ₹{kpis.todayRevenue.toLocaleString("en-IN")}
           </div>
-          <p className="text-[11px] text-neutral-400 relative z-10">
+          <p className="text-[11px] text-neutral-600 dark:text-neutral-400 relative z-10">
             Gross collections since 12:00 AM today
           </p>
         </div>
 
         {/* Pending Verification */}
-        <div className="p-5 rounded-3xl border border-amber-500/20 bg-neutral-900/40 backdrop-blur-xl space-y-2.5 shadow-lg relative overflow-hidden hover:-translate-y-0.5 transition-transform">
+        <div className="p-5 rounded-3xl border border-amber-500/20 bg-white dark:bg-neutral-900/40 backdrop-blur-xl space-y-2.5 shadow-xs hover:-translate-y-0.5 transition-transform relative overflow-hidden">
           <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
           <div className="flex items-center justify-between relative z-10">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
               Pending Verification
             </span>
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
               <Clock className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-white font-mono relative z-10">
+          <div className="text-2xl sm:text-3xl font-black text-neutral-900 dark:text-white font-mono relative z-10">
             ₹{kpis.pendingAmount.toLocaleString("en-IN")}
           </div>
-          <p className="text-[11px] text-neutral-400 relative z-10">
+          <p className="text-[11px] text-neutral-600 dark:text-neutral-400 relative z-10">
             {kpis.pendingCount} order{kpis.pendingCount === 1 ? "" : "s"} awaiting UTR review
           </p>
         </div>
 
         {/* Transaction Success Rate */}
-        <div className="p-5 rounded-3xl border border-purple-500/20 bg-neutral-900/40 backdrop-blur-xl space-y-2.5 shadow-lg relative overflow-hidden hover:-translate-y-0.5 transition-transform">
+        <div className="p-5 rounded-3xl border border-purple-500/20 bg-white dark:bg-neutral-900/40 backdrop-blur-xl space-y-2.5 shadow-xs hover:-translate-y-0.5 transition-transform relative overflow-hidden">
           <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl pointer-events-none" />
           <div className="flex items-center justify-between relative z-10">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-purple-400">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400">
               Success Rate
             </span>
-            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
               <ShieldCheck className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-white font-mono relative z-10">
+          <div className="text-2xl sm:text-3xl font-black text-neutral-900 dark:text-white font-mono relative z-10">
             {kpis.successRate}%
           </div>
-          <p className="text-[11px] text-neutral-400 relative z-10">
+          <p className="text-[11px] text-neutral-600 dark:text-neutral-400 relative z-10">
             {kpis.paidCount} of {kpis.totalCount} transactions completed
           </p>
         </div>

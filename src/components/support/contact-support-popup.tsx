@@ -18,6 +18,7 @@ import {
   ArrowRight,
   ShieldCheck,
   ChevronRight,
+  Video,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useToast } from "@/components/ui/toast";
@@ -388,6 +389,18 @@ export function ContactSupportPopup() {
                       <span>Technical Support Dashboard</span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
+
+                  <Link
+                    href="/meetings"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center justify-between p-3 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs font-bold text-white transition-all group"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Video className="w-4 h-4 text-rose-400" />
+                      <span>Schedule Live Zoom Call 📹</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-rose-400 group-hover:translate-x-0.5 transition-transform" />
                   </Link>
 
                   <Link

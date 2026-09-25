@@ -52,37 +52,37 @@ body {
 /* DEFAULT / FALLBACK (when no theme attribute set yet) */
 :root,
 html:not([data-theme]) {
-  --background: #090a0f;
+  --background: #06070a;
   --foreground: #f8fafc;
-  --card: #11131c;
+  --card: #0c0e17;
   --card-foreground: #f8fafc;
-  --card-border: #1f2230;
-  --popover: #11131c;
+  --card-border: #1a1e2f;
+  --popover: #0c0e17;
   --popover-foreground: #f8fafc;
   --primary: #f59e0b;
-  --primary-hover: #d97706;
-  --primary-foreground: #090a0f;
-  --secondary: #171924;
+  --primary-hover: #fbbf24;
+  --primary-foreground: #06070a;
+  --secondary: #121522;
   --secondary-foreground: #e2e8f0;
-  --muted: #151722;
+  --muted: #0f121d;
   --muted-foreground: #94a3b8;
   --accent: #f59e0b;
-  --accent-foreground: #090a0f;
+  --accent-foreground: #06070a;
   --success: #10b981;
   --success-foreground: #ffffff;
   --warning: #f59e0b;
   --warning-foreground: #ffffff;
   --destructive: #f43f5e;
   --destructive-foreground: #ffffff;
-  --border: #1f2230;
-  --input: #1f2230;
+  --border: #181d2e;
+  --input: #121522;
   --ring: #f59e0b;
   --badge-new: #10b981;
   --badge-updated: #38bdf8;
   --badge-premium: #f59e0b;
   --badge-free: #10b981;
-  --aurora-color1: rgba(168, 85, 247, 0.2);
-  --aurora-color2: rgba(79, 70, 229, 0.2);
+  --aurora-color1: rgba(245, 158, 11, 0.15);
+  --aurora-color2: rgba(56, 189, 248, 0.15);
 }
 
 @keyframes pulse {
@@ -110,7 +110,7 @@ html:not([data-theme]) {
 }
 
 /* ══════════════════════════════════════════════════════════════════ */
-/* TRUE OBSIDIAN DARK THEME (No purple, no tint - Pure Pro Tech Dark) */
+/* TRUE OBSIDIAN DARK THEME (High-End Depth - Pure Pro Tech Dark)     */
 /* ══════════════════════════════════════════════════════════════════ */
 html[data-theme="midnight"],
 [data-theme="midnight"],
@@ -132,38 +132,38 @@ html[data-theme="amoled"],
 [data-theme="amoled"],
 html.dark,
 .dark {
-  --background: #000000;
+  --background: #06070a;
   --foreground: #f8fafc;
-  --card: #08090e;
+  --card: #0c0e17;
   --card-foreground: #f8fafc;
-  --card-border: #141724;
-  --popover: #08090e;
+  --card-border: #1a1e2f;
+  --popover: #0c0e17;
   --popover-foreground: #f8fafc;
   --primary: #f59e0b;
-  --primary-hover: #d97706;
-  --primary-foreground: #000000;
-  --secondary: #0f1118;
+  --primary-hover: #fbbf24;
+  --primary-foreground: #06070a;
+  --secondary: #121522;
   --secondary-foreground: #e2e8f0;
-  --muted: #0d0f17;
+  --muted: #0f121d;
   --muted-foreground: #94a3b8;
-  --accent: #38bdf8;
-  --accent-foreground: #000000;
+  --accent: #f59e0b;
+  --accent-foreground: #06070a;
   --success: #10b981;
   --success-foreground: #ffffff;
   --warning: #f59e0b;
   --warning-foreground: #ffffff;
   --destructive: #f43f5e;
   --destructive-foreground: #ffffff;
-  --border: #141724;
-  --input: #141724;
-  --ring: #38bdf8;
+  --border: #181d2e;
+  --input: #121522;
+  --ring: #f59e0b;
   --badge-new: #10b981;
   --badge-updated: #38bdf8;
   --badge-premium: #f59e0b;
   --badge-free: #10b981;
 }
 
-/* 9. NORDIC FROST LIGHT */
+/* 9. NORDIC FROST LIGHT (Architectural Alabaster) */
 html[data-theme="nordic-light"],
 [data-theme="nordic-light"],
 html[data-theme="light"],
@@ -183,7 +183,7 @@ html.light:not([data-theme]),
   --secondary: #f1f5f9;
   --secondary-foreground: #0f172a;
   --muted: #f1f5f9;
-  --muted-foreground: #64748b;
+  --muted-foreground: #475569;
   --accent: #0284c7;
   --accent-foreground: #ffffff;
   --success: #059669;
@@ -193,7 +193,7 @@ html.light:not([data-theme]),
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
   --border: #e2e8f0;
-  --input: #e2e8f0;
+  --input: #f1f5f9;
   --ring: #0284c7;
   --badge-new: #059669;
   --badge-updated: #2563eb;
@@ -475,4 +475,121 @@ p, h1, h2, h3, h4, h5, h6, span, li, blockquote, code, pre, input, textarea {
 
 .animate-soft-pulse {
   animation: softPulse 2.5s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════════ */
+/* AWWWARDS / HIGH-END TYPOGRAPHY & TEXT STYLING (from .agents skills) */
+/* ══════════════════════════════════════════════════════════════════ */
+h1, h2, h3, h4, .font-heading {
+  letter-spacing: -0.028em;
+  text-wrap: balance;
+}
+
+h1 {
+  letter-spacing: -0.035em;
+  line-height: 1.12;
+}
+
+h2 {
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+/* Luxury Gradient Typography */
+.text-gradient-amber {
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-cyan {
+  background: linear-gradient(135deg, #38bdf8 0%, #06b6d4 50%, #2563eb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-silver {
+  background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 55%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.light .text-gradient-silver {
+  background: linear-gradient(135deg, #09090b 0%, #334155 55%, #64748b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Eyebrow Micro-Pill Tag */
+.eyebrow-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.875rem;
+  border-radius: 9999px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  border-width: 1px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Concentric Double-Bezel Hardware Architecture */
+.double-bezel {
+  position: relative;
+  padding: 0.375rem;
+  border-radius: 1.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 36px -10px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.08);
+}
+
+.light .double-bezel {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.06), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+.double-bezel-inner {
+  border-radius: calc(1.75rem - 0.375rem);
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+/* Specular Glass Capsule with specular top line */
+.glass-pill {
+  position: relative;
+  background: rgba(12, 14, 23, 0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.light .glass-pill {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* Subtle Shimmer Animation */
+@keyframes textShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.text-shimmer {
+  background: linear-gradient(90deg, #f59e0b 0%, #fff 50%, #f59e0b 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textShimmer 4s linear infinite;
 }

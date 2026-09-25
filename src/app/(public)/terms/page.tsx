@@ -26,7 +26,7 @@ export default function TermsPage() {
           Terms of Service
         </h1>
         <p className="text-xs sm:text-sm text-[var(--muted-foreground)]">
-          Last Updated: September 20, 2026 &bull; Governing All Digital Resources, Software, 4K Wallpapers &amp; Educational Materials
+          Last Updated: September 20, 2026 &bull; Governing All Digital Resources, Software, Tools &amp; Educational Materials
         </p>
       </div>
 
@@ -60,7 +60,7 @@ export default function TermsPage() {
             <span>2. Software Licenses &amp; Legitimate Distribution</span>
           </h2>
           <p>
-            NammaTech is committed to honest, verified digital distribution. All software tools, developer packages, scripts, templates, and 4K wallpapers indexed or hosted on this platform are distributed pursuant to:
+            NammaTech is committed to honest, verified digital distribution. All software tools, developer packages, scripts, and templates indexed or hosted on this platform are distributed pursuant to:
           </p>
           <ul className="list-disc pl-5 space-y-1.5 text-xs">
             <li>Applicable open-source licenses (such as MIT, Apache 2.0, GNU GPL, BSD, or Creative Commons).</li>
