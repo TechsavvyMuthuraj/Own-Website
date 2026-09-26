@@ -73,6 +73,7 @@ export default function DuploadAdminPage() {
   const [uploadFolder, setUploadFolder] = useState<string>("");
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadBytesText, setUploadBytesText] = useState("");
   const [uploadedResult, setUploadedResult] = useState<{
     name: string;
     link: string;
@@ -184,46 +185,105 @@ export default function DuploadAdminPage() {
     }
   };
 
-  // Direct File Upload
+  // Direct File Upload with Real Browser XMLHttpRequest (No Next.js body limits, Real Progress for 50MB-500MB!)
   const handleDirectUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUploadFile) return;
 
     setUploading(true);
-    setUploadProgress(15);
+    setUploadProgress(0);
+    setUploadBytesText("Requesting upload session from DUpload...");
     setUploadedResult(null);
 
-    const formData = new FormData();
-    formData.append("file", selectedUploadFile);
-    if (uploadFolder) formData.append("fld_id", uploadFolder);
-
     try {
-      const progressTimer = setInterval(() => {
-        setUploadProgress((prev) => (prev < 90 ? prev + 15 : prev));
-      }, 400);
+      // Step 1: Request upload server & session from backend
+      const serverRes = await fetch("/api/admin/dupload?action=upload_server");
+      const serverData = await serverRes.json();
 
-      const res = await fetch("/api/admin/dupload?action=upload_file", {
-        method: "POST",
-        body: formData,
-      });
-
-      clearInterval(progressTimer);
-      setUploadProgress(100);
-
-      const data = await res.json();
-      if (data.success) {
-        setUploadedResult({
-          name: data.name,
-          link: data.link,
-          file_code: data.file_code,
-          size: data.size,
-        });
-        setSelectedUploadFile(null);
-        await loadData(true);
-      } else {
-        alert(data.error || "Upload failed");
+      if (!serverData.success || !serverData.upload_url || !serverData.sess_id) {
+        throw new Error(serverData.error || "Failed to obtain DUpload upload server session");
       }
+
+      const uploadUrl = serverData.upload_url;
+      const sessId = serverData.sess_id;
+
+      // Step 2: Prepare FormData for DUpload server directly
+      const formData = new FormData();
+      formData.append("sess_id", sessId);
+      formData.append("utype", "reg");
+      if (uploadFolder) {
+        formData.append("fld_id", uploadFolder);
+      }
+      formData.append("file_0", selectedUploadFile, selectedUploadFile.name);
+
+      setUploadBytesText(`Uploading ${selectedUploadFile.name}...`);
+
+      // Step 3: Direct XMLHttpRequest to DUpload upload server (supports CORS!)
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", uploadUrl, true);
+
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const percent = Math.min(99, Math.round((event.loaded / event.total) * 100));
+            setUploadProgress(percent);
+            setUploadBytesText(
+              `${formatBytes(event.loaded)} of ${formatBytes(event.total)} (${percent}%)`
+            );
+          }
+        };
+
+        xhr.onload = async () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const resData = JSON.parse(xhr.responseText);
+              if (Array.isArray(resData) && resData[0]?.file_code) {
+                const fileCode = resData[0].file_code;
+                const link = `https://dupload.net/${fileCode}`;
+
+                // If folder was selected, ensure file moved into target folder
+                if (uploadFolder) {
+                  try {
+                    await fetch("/api/admin/dupload?action=move_file", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ file_code: fileCode, fld_id: uploadFolder }),
+                    });
+                  } catch (e) {
+                    console.warn("Folder placement warning:", e);
+                  }
+                }
+
+                setUploadProgress(100);
+                setUploadBytesText("Upload complete!");
+                setUploadedResult({
+                  name: selectedUploadFile.name,
+                  link,
+                  file_code: fileCode,
+                  size: selectedUploadFile.size,
+                });
+                setSelectedUploadFile(null);
+                await loadData(true);
+                resolve();
+              } else {
+                reject(new Error(xhr.responseText || "Unexpected server response"));
+              }
+            } catch (err: any) {
+              reject(new Error(`Failed to parse response: ${xhr.responseText.slice(0, 200)}`));
+            }
+          } else {
+            reject(new Error(`Server returned status ${xhr.status}: ${xhr.responseText}`));
+          }
+        };
+
+        xhr.onerror = () => {
+          reject(new Error("Network connection error to DUpload server"));
+        };
+
+        xhr.send(formData);
+      });
     } catch (err: any) {
+      console.error("Direct upload error:", err);
       alert(err.message || "Upload failed");
     } finally {
       setUploading(false);
@@ -971,16 +1031,23 @@ export default function DuploadAdminPage() {
 
               {/* Progress Bar when uploading */}
               {uploading && (
-                <div className="space-y-2 p-4 rounded-2xl bg-neutral-950 border border-sky-500/30">
-                  <div className="flex items-center justify-between text-xs text-sky-400 font-bold">
-                    <span>Uploading to DUpload Servers...</span>
-                    <span>{uploadProgress}%</span>
+                <div className="space-y-2.5 p-4 rounded-2xl bg-neutral-950 border border-sky-500/40 shadow-lg shadow-sky-500/10">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-white flex items-center gap-2">
+                      <RefreshCw className="w-3.5 h-3.5 text-sky-400 animate-spin" />
+                      <span>{uploadBytesText || "Uploading to DUpload Servers..."}</span>
+                    </span>
+                    <span className="text-sky-400 font-mono text-sm">{uploadProgress}%</span>
                   </div>
-                  <div className="w-full bg-neutral-900 h-2 rounded-full overflow-hidden">
+                  <div className="w-full bg-neutral-900 h-2.5 rounded-full overflow-hidden p-0.5 border border-neutral-800">
                     <div
-                      className="bg-sky-500 h-full rounded-full transition-all duration-300"
+                      className="bg-gradient-to-r from-sky-500 to-blue-500 h-full rounded-full transition-all duration-150"
                       style={{ width: `${uploadProgress}%` }}
                     />
+                  </div>
+                  <div className="text-[11px] text-neutral-400 flex items-center justify-between">
+                    <span>Direct Cloud Streaming</span>
+                    <span className="text-emerald-400 font-semibold">CORS Accelerated ⚡</span>
                   </div>
                 </div>
               )}

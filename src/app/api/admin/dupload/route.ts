@@ -125,6 +125,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(data);
     }
 
+    if (action === "upload_server") {
+      const serverRes = await fetch(`https://dupload.net/api/upload/server?key=${encodeURIComponent(apiKey)}`, {
+        cache: "no-store",
+      });
+      const serverData = await serverRes.json();
+      if (serverData.status === 200 && serverData.result && serverData.sess_id) {
+        return NextResponse.json({
+          success: true,
+          upload_url: serverData.result,
+          sess_id: serverData.sess_id,
+        });
+      }
+      return NextResponse.json({ error: serverData.msg || "Failed to obtain upload server" }, { status: 502 });
+    }
+
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });
   } catch (err: any) {
     console.error("DUpload API GET error:", err);
