@@ -33,7 +33,7 @@ INSERT INTO public.site_settings (key, value, updated_at)
 VALUES
   ('ads_enabled', 'true', NOW()),
   ('adsense_auto_ads', 'true', NOW()),
-  ('adsterra_settings', '{"enabled":true,"smartlink1Enabled":true,"smartlink2Enabled":true,"smartlink3Enabled":true,"scriptEnabled":true,"script2Enabled":true,"nativeBannerEnabled":true,"bannerZonesEnabled":true,"popupAdEnabled":true,"stickyBarEnabled":true,"popupDelaySeconds":3.5,"smartlink1":"https://demolishwrestconclusions.com/hebd0wzjqw?key=ef54880efe2cf24e942204e7b606498c","smartlink2":"https://demolishwrestconclusions.com/x0a8ik0sn4?key=01cda2b2e4e25f16daea215015495d74","smartlink3":"https://demolishwrestconclusions.com/p9zz1z9nw?key=f0d4b0285569216ca06b70c80fd36df8","scriptUrl":"https://demolishwrestconclusions.com/18/91/1b/18911b7efb81e91a2cf994b94c5589c2.js","scriptUrl2":"https://demolishwrestconclusions.com/30/9f/95/309f95fd3760f90cc4ce9941f34d920f.js","customBannerCode":"","placements":{"homepage":true,"resourceList":true,"resourceDetails":true,"article":true,"mobile":true,"desktop":true,"smartlinks":true}}', NOW())
+  ('adsterra_settings', '{"enabled":true,"smartlink1Enabled":true,"smartlink2Enabled":true,"smartlink3Enabled":true,"scriptEnabled":true,"script2Enabled":true,"nativeBannerEnabled":true,"bannerZonesEnabled":true,"popupAdEnabled":false,"stickyBarEnabled":false,"popupDelaySeconds":3.5,"smartlink1":"https://demolishwrestconclusions.com/hebd0wzjqw?key=ef54880efe2cf24e942204e7b606498c","smartlink2":"https://demolishwrestconclusions.com/x0a8ik0sn4?key=01cda2b2e4e25f16daea215015495d74","smartlink3":"https://demolishwrestconclusions.com/p9zz1z9nw?key=f0d4b0285569216ca06b70c80fd36df8","scriptUrl":"https://demolishwrestconclusions.com/18/91/1b/18911b7efb81e91a2cf994b94c5589c2.js","scriptUrl2":"https://demolishwrestconclusions.com/30/9f/95/309f95fd3760f90cc4ce9941f34d920f.js","customBannerCode":"","placements":{"homepage":true,"resourceList":true,"resourceDetails":true,"article":true,"mobile":true,"desktop":true,"smartlinks":true}}', NOW())
 ON CONFLICT (key) DO UPDATE
 SET value = EXCLUDED.value, updated_at = NOW();
 
@@ -75,7 +75,7 @@ DO $$
 BEGIN
   ALTER TABLE public.ad_placements DROP CONSTRAINT IF EXISTS ad_placements_location_check;
   ALTER TABLE public.ad_placements ADD CONSTRAINT ad_placements_location_check 
-    CHECK (location IN ('HEADER', 'HOMEPAGE', 'IN_FEED', 'SIDEBAR', 'RESOURCE_PAGE', 'DOWNLOAD_PAGE', 'FOOTER', 'POPUP'));
+    CHECK (location IN ('HEADER', 'HOMEPAGE', 'IN_FEED', 'SIDEBAR', 'RESOURCE_PAGE', 'DOWNLOAD_PAGE', 'FOOTER'));
 EXCEPTION
   WHEN OTHERS THEN NULL;
 END $$;
@@ -123,11 +123,10 @@ INSERT INTO public.ad_placements (title, location, provider, ad_code, priority, 
 SELECT 'Above-Footer Leaderboard Banner (728x90 / 320x50)', 'FOOTER', 'ADSTERRA', '<!-- Adsterra Footer Banner -->', 6, true, NOW()
 WHERE NOT EXISTS (SELECT 1 FROM public.ad_placements WHERE location = 'FOOTER');
 
-INSERT INTO public.ad_placements (title, location, provider, ad_code, priority, is_active, updated_at)
-SELECT 'Full-Website Pop-up Ad (300x250 Medium Rectangle)', 'POPUP', 'ADSTERRA', '<!-- Adsterra Pop-up Modal -->', 15, true, NOW()
-WHERE NOT EXISTS (SELECT 1 FROM public.ad_placements WHERE location = 'POPUP');
+-- 5. Delete any existing POPUP ad placement
+DELETE FROM public.ad_placements WHERE location = 'POPUP';
 
--- 5. Activate all monetization slots and set provider to ADSTERRA
+-- 6. Activate all remaining monetization slots and set provider to ADSTERRA
 UPDATE public.ad_placements
 SET is_active = true, provider = 'ADSTERRA', updated_at = NOW();
 
