@@ -49,7 +49,19 @@ export function ResourceForm({
   const [version, setVersion] = useState(initialData?.version || "");
   const [versionCode, setVersionCode] = useState(initialData?.version_code ? String(initialData.version_code) : "");
   const [packageName, setPackageName] = useState(initialData?.package_name || "");
-  const [sizeBytes, setSizeBytes] = useState(initialData?.size_bytes ? String(initialData.size_bytes) : "");
+  // Store file size in MB for human-friendly input (e.g. 23 for 23 MB)
+  const [sizeMb, setSizeMb] = useState<string>(() => {
+    if (!initialData?.size_bytes) return "";
+    const b = Number(initialData.size_bytes);
+    if (isNaN(b) || b <= 0) return "";
+    // If it was stored as bytes (>= 1024), convert back to MB
+    if (b >= 1024) {
+      const inMb = b / (1024 * 1024);
+      return parseFloat(inMb.toFixed(2)).toString();
+    }
+    // If it was stored as raw MB (e.g. 23), keep it as 23
+    return String(b);
+  });
   const [developer, setDeveloper] = useState(initialData?.developer || "");
   const [license, setLicense] = useState(initialData?.license || "MIT");
   const [officialUrl, setOfficialUrl] = useState(initialData?.official_url || "");
@@ -152,7 +164,7 @@ export function ResourceForm({
       version: version.trim() || null,
       version_code: versionCode ? Number(versionCode) : null,
       package_name: packageName.trim() || null,
-      size_bytes: sizeBytes ? Number(sizeBytes) : null,
+      size_bytes: sizeMb && Number(sizeMb) > 0 ? Math.round(Number(sizeMb) * 1024 * 1024) : null,
       developer: developer.trim() || null,
       license: license.trim() || null,
       official_url: officialUrl.trim() || null,
@@ -422,16 +434,33 @@ export function ResourceForm({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[var(--foreground)] mb-1.5">
-              File Size (in Bytes)
-            </label>
-            <input
-              type="number"
-              value={sizeBytes}
-              onChange={(e) => setSizeBytes(e.target.value)}
-              placeholder="41943040 for 40MB"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-mono text-[var(--foreground)] focus:outline-none"
-            />
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-medium text-[var(--foreground)]">
+                File Size (in MB)
+              </label>
+              {sizeMb && Number(sizeMb) > 0 && (
+                <span className="text-[10px] font-mono text-emerald-500 font-bold">
+                  ≈ {Number(sizeMb) >= 1024 ? `${(Number(sizeMb) / 1024).toFixed(2)} GB` : `${sizeMb} MB`} ({Math.round(Number(sizeMb) * 1024 * 1024).toLocaleString()} bytes)
+                </span>
+              )}
+            </div>
+            <div className="relative flex items-center">
+              <input
+                type="number"
+                step="any"
+                min="0"
+                value={sizeMb}
+                onChange={(e) => setSizeMb(e.target.value)}
+                placeholder="e.g. 23 (for 23 MB)"
+                className="w-full pr-12 pl-3.5 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--background)] text-xs font-mono text-[var(--foreground)] focus:outline-none focus:border-amber-500"
+              />
+              <span className="absolute right-3 text-xs font-bold text-amber-500 pointer-events-none">
+                MB
+              </span>
+            </div>
+            <p className="text-[10px] text-[var(--muted-foreground)] mt-1">
+              Enter size directly in Megabytes (e.g. <strong className="text-[var(--foreground)]">23</strong> for 23 MB). Converted to bytes automatically for storage.
+            </p>
           </div>
         </div>
 

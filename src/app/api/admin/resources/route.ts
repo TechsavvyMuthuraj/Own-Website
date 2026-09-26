@@ -47,8 +47,11 @@ export async function POST(request: Request) {
       platform: body.platform || null,
       version: body.version || null,
       version_code: body.version_code ? Number(body.version_code) : null,
-      package_name: body.package_name || null,
-      size_bytes: body.size_bytes ? Number(body.size_bytes) : null,
+      size_bytes: (() => {
+        const raw = body.size_bytes !== undefined && body.size_bytes !== null ? Number(body.size_bytes) : null;
+        if (!raw || isNaN(raw) || raw <= 0) return null;
+        return raw <= 1000 ? Math.round(raw * 1024 * 1024) : Math.round(raw);
+      })(),
       developer: body.developer || null,
       license: body.license || null,
       official_url: body.official_url || null,
