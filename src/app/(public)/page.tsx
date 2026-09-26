@@ -21,30 +21,17 @@ import { HeroInteractiveBanner } from "@/components/home/hero-interactive-banner
 import { CinemaShowcase } from "@/components/home/cinema-showcase";
 import { ArticlesShowcase } from "@/components/home/articles-showcase";
 import { CommunityBanner } from "@/components/home/community-banner";
+import { ALL_SEO_KEYWORDS } from "@/config/seo-keywords";
 
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: {
-    absolute: "NammaTech - Techsavvy Muthuraj | Movies, APKs, Software, AI Tools & Free Downloads",
+    absolute: "NammaTech | Movies, APKs, Software, Free Downloads & Community Hub",
   },
   description:
-    "Official technology platform by Techsavvy Muthuraj (Muthuraj C). Download verified open-source software, Android APKs, developer tools, AI utilities, and 4K cinema releases. 100% safe, fast, and malware-free.",
-  keywords: [
-    "Techsavvy Muthuraj",
-    "techsavvymuthuraj",
-    "NammaTech",
-    "Muthuraj C",
-    "Tamil tech website",
-    "Free software download",
-    "Android APK downloads safe",
-    "Tamil movies 4K download",
-    "Developer tools free",
-    "Open-source software",
-    "Freeware utilities download",
-    "Safe software downloads malware free",
-    "Tech support online live chat",
-  ],
+    "Welcome to NammaTech — Download verified open-source software, Android APKs, developer tools, 4K cinema releases, micro dramas, study notes, and join our tech community.",
+  keywords: ALL_SEO_KEYWORDS,
   alternates: {
     canonical: "https://www.techsavvymuthuraj.dev",
   },
@@ -185,42 +172,50 @@ export default async function HomePage() {
     mainEntity: [
       {
         "@type": "Question",
-        name: "What is NammaTech by Techsavvy Muthuraj?",
+        name: "What is NammaTech?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "NammaTech is a premier digital technology platform founded by Techsavvy Muthuraj (Muthuraj C), providing verified open-source software, freeware utilities, Android APKs, developer tools, and high-definition 4K cinema releases.",
+          text: "NammaTech is the premier digital platform founded by Muthuraj C (Techsavvy Muthuraj), delivering verified open-source software, free files download, Android APKs, 4K movies, micro dramas, technical study notes, and real-time community support.",
         },
       },
       {
         "@type": "Question",
-        name: "Are downloads on NammaTech safe and virus-free?",
+        name: "How do I get NammaTech free files download and software?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Yes, 100%. Every single software package, tool, and APK hosted on NammaTech undergoes strict automated hash verification, sandbox testing, and malware scanning before being published.",
+          text: "You can download verified software, tools, and free files directly through the NammaTech downloads center. All files undergo strict automated hash verification, sandbox testing, and malware scanning.",
         },
       },
       {
         "@type": "Question",
-        name: "Can I request custom software, games, or movies?",
+        name: "Where can I watch or download NammaTech Movies and Micro Dramas?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Yes, you can submit software, game, and movie requests directly through the Request portal or connect with our engineering team via Live Technical Support.",
+          text: "NammaTech features a dedicated Cinema & Micro Drama Hub offering high-definition 4K streaming and direct download links for movies, short films, and episodic micro drama series.",
         },
       },
       {
         "@type": "Question",
-        name: "How can I contact technical support for installation issues?",
+        name: "Does NammaTech offer study notes and developer interview guides?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "We offer real-time live chat assistance on our Technical Support page, along with WhatsApp and phone support at +91 99448 75726.",
+          text: "Yes, NammaTech provides comprehensive computer science study notes, engineering tutorials, DSA cheat sheets, and technical interview preparation notes for students and developers.",
         },
       },
       {
         "@type": "Question",
-        name: "Is NammaTech free to use?",
+        name: "How do I contact NammaTech live support and join the community chat?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Yes, the vast majority of resources, software, open-source utilities, and articles on NammaTech are 100% free with direct high-speed download links.",
+          text: "We offer real-time live chat assistance on our Technical Support page, along with WhatsApp and phone support at +91 99448 75726. You can also join our developer community to discuss projects and collaborate.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Who is the founder of NammaTech?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "NammaTech was founded by Muthuraj C (popularly known as Techsavvy Muthuraj), a software developer, digital architect, and tech creator passionate about building transparent, secure digital infrastructure.",
         },
       },
     ],

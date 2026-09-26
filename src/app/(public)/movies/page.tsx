@@ -4,18 +4,23 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { MoviesClient, type MovieItem, type MovieDownloadLink } from "./movies-client";
 
 export const metadata: Metadata = {
-  title: "Movies & Cinema Hub - Free & 4K VIP Downloads",
+  title: "Movies, Cinema & Micro Drama Hub",
   description:
-    "Explore blockbuster regional and global movies with multiple download link sizes in 480p, 720p, 1080p Full HD, and 4K UHD VIP high-bitrate releases.",
+    "Explore blockbuster movies, micro dramas, and cinema releases on NammaTech Movies with high-speed download links in 720p, 1080p Full HD, and 4K UHD VIP quality.",
   keywords: [
-    "movies download",
+    "NammaTech Movies",
+    "nammatech movies",
+    "nammatech micro drama",
+    "NammaTech Micro Drama",
+    "nammatech cinema",
+    "movies",
+    "micro drama",
+    "tamil movies download",
+    "tamil movies 4k download",
+    "free movie download",
     "4K UHD movies",
     "1080p FHD movies",
-    "Tamil movies download",
-    "blockbuster cinema",
-    "free movie downloads",
     "VIP 4K releases",
-    "NammaTech movies",
   ],
   alternates: {
     canonical: "https://www.techsavvymuthuraj.dev/movies",

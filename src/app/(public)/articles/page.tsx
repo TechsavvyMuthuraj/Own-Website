@@ -8,13 +8,29 @@ import { AdSlot } from "@/components/ads/ad-slot";
 import { getActiveAd } from "@/lib/ads";
 
 export const metadata: Metadata = {
-  title: "Articles & News | NammaTech Journal",
+  title: "Articles, Tech Guides & Study Notes",
   description:
-    "Read the latest articles, tech news, cinema updates, and tutorials from NammaTech. Stay informed with curated content from the NammaTech team.",
+    "Read technical articles, study notes, computer science tutorials, interview prep cheat sheets, and tech news from NammaTech.",
+  keywords: [
+    "Nammatech Articles",
+    "nammatech articles",
+    "NammaTech study notes",
+    "nammatech study notes",
+    "nammatech notes",
+    "study notes",
+    "technical interview notes",
+    "computer science notes",
+    "engineering study notes",
+    "coding tutorials",
+    "tech articles",
+  ],
+  alternates: {
+    canonical: "https://www.techsavvymuthuraj.dev/articles",
+  },
   openGraph: {
-    title: "Articles & News | NammaTech Journal",
+    title: "Articles, Tech Guides & Study Notes | NammaTech",
     description:
-      "Latest articles, tech news, cinema updates, and tutorials from NammaTech.",
+      "Latest technical articles, study notes, coding tutorials, and engineering guides from NammaTech.",
   },
 };
 

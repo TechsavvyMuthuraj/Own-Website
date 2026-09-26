@@ -1,23 +1,31 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Live Technical Support & Contact | Techsavvy Muthuraj",
+  title: "Live Technical Support & Contact",
   description:
-    "Connect with Techsavvy Muthuraj (Muthuraj C) and technical specialists via real-time live chat or direct phone/WhatsApp (+91 99448 75726) for instant software troubleshooting and inquiries.",
+    "Get instant technical support, software troubleshooting, and contact NammaTech engineering specialists via real-time live chat or direct WhatsApp (+91 99448 75726).",
   keywords: [
-    "Techsavvy Muthuraj contact",
+    "NammaTech support",
+    "nammatech support",
+    "nammatech technical support",
+    "nammatech customer support",
+    "nammatech live chat",
+    "nammatech contact",
+    "nammatech help desk",
+    "support",
+    "chat",
+    "technical support",
+    "live technical support",
+    "software troubleshooting",
     "Muthuraj C support",
-    "NammaTech technical support",
-    "live tech support chat",
-    "software troubleshooting online",
-    "NammaTech contact",
+    "Techsavvy Muthuraj support",
   ],
   alternates: {
     canonical: "https://www.techsavvymuthuraj.dev/contact",
   },
   openGraph: {
-    title: "Live Technical Support & Contact | Techsavvy Muthuraj",
-    description: "Get real-time live chat technical support and reach out to Techsavvy Muthuraj.",
+    title: "Live Technical Support & Contact | NammaTech",
+    description: "Get real-time live chat technical support and instant software assistance on NammaTech.",
     url: "https://www.techsavvymuthuraj.dev/contact",
   },
 };

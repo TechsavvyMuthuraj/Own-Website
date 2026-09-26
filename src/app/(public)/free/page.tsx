@@ -5,13 +5,29 @@ import type { Metadata } from "next";
 import { FreeClient } from "./free-client";
 
 export const metadata: Metadata = {
-  title: "Free Digital Resources & Open-Source Downloads | NammaTech",
+  title: "Free Files Download & Open-Source Software",
   description:
-    "Discover 100% free open-source software, developer tools, authorized APKs, and design templates. No hidden fees, completely verified.",
+    "Explore NammaTech free files download center — 100% verified open-source software, developer tools, clean Android APKs, and digital resources with high-speed direct downloads.",
+  keywords: [
+    "Nammatech downloads",
+    "nammatech downloads",
+    "nammatech free files download",
+    "NammaTech Free Files Download",
+    "nammatech download",
+    "free files download",
+    "nammatech apk",
+    "apk",
+    "free software download",
+    "open source software",
+    "freeware download",
+  ],
+  alternates: {
+    canonical: "https://www.techsavvymuthuraj.dev/free",
+  },
   openGraph: {
-    title: "Free Digital Resources & Open-Source Downloads | NammaTech",
+    title: "Free Files Download & Open-Source Software | NammaTech",
     description:
-      "Download verified free open-source tools and software with zero cost on NammaTech.",
+      "Download verified free open-source software, Android APKs, and developer tools with zero cost on NammaTech.",
   },
 };
 

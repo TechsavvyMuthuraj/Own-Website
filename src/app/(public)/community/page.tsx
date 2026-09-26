@@ -3,17 +3,21 @@ import type { Metadata } from "next";
 import { CommunityHub } from "@/components/community/community-hub";
 
 export const metadata: Metadata = {
-  title: "Live Community Hub & Audio/Video Lounge | NammaTech",
+  title: "Live Community Chat & Developer Forum",
   description:
-    "Join the verified NammaTech community. Connect in real-time tech channels, discuss 4K cinema releases, and join free WebRTC group voice and video stages.",
+    "Join the NammaTech community chat. Connect in real-time developer channels, discuss software, share code, talk cinema, and participate in collaborative voice stages.",
   keywords: [
     "NammaTech community",
+    "nammatech community",
+    "NammaTech chat",
+    "nammatech chat",
+    "chat",
     "developer chat",
-    "4K cinema lounge",
-    "voice search",
-    "group audio video calls",
-    "WebRTC meet",
-    "free tech tools Tamil Nadu",
+    "tech community",
+    "developer forum",
+    "coding discussion",
+    "free live chat",
+    "nammatech live chat",
   ],
   alternates: {
     canonical: "https://www.techsavvymuthuraj.dev/community",

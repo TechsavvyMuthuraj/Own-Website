@@ -6,26 +6,31 @@ import { FounderProfile } from "@/components/home/founder-profile";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "About Founder Muthuraj C & NammaTech | Techsavvy Muthuraj",
+  title: "About Founder Muthuraj C",
   description:
-    "Discover the story of Techsavvy Muthuraj (Muthuraj C) and NammaTech — engineered to deliver verified open-source software, freeware utilities, Android APKs, and 4K cinema.",
+    "Meet Muthuraj C (Techsavvy Muthuraj), founder of NammaTech — dedicated to building high-speed digital infrastructure, verified open-source software, and cinema media.",
   keywords: [
-    "Techsavvy Muthuraj",
-    "Muthuraj C",
     "NammaTech founder",
+    "nammatech founder",
+    "who is founder of nammatech",
+    "nammatech CEO",
+    "Muthuraj C",
+    "muthuraj c",
+    "Techsavvy Muthuraj",
     "techsavvymuthuraj",
+    "nammatech creator",
+    "nammatech owner",
     "Muthuraj developer",
     "NammaTech story",
     "Tamil tech creator",
-    "Muthuraj portfolio",
   ],
   alternates: {
     canonical: "https://www.techsavvymuthuraj.dev/about",
   },
   openGraph: {
-    title: "About Founder Muthuraj C & NammaTech | Techsavvy Muthuraj",
+    title: "About Founder Muthuraj C | NammaTech",
     description:
-      "Discover the story of Techsavvy Muthuraj (Muthuraj C) and NammaTech — verified software and cinema hub.",
+      "Meet Muthuraj C (Techsavvy Muthuraj), founder of NammaTech — verified software, cinema hub, and digital resources.",
     url: "https://www.techsavvymuthuraj.dev/about",
     type: "profile",
   },
