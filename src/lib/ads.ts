@@ -1,12 +1,14 @@
 import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { AdPlacement } from "@/types/database";
-
 import { unstable_cache } from "next/cache";
+import type { AdsterraConfig } from "@/config/adsterra";
+import { DEFAULT_ADSTERRA_CONFIG } from "@/config/adsterra";
 
 let cachedAdsSettings: {
   adsEnabled: boolean;
   autoAds: boolean;
+  adsterraSettings: AdsterraConfig;
   expiresAt: number;
 } | null = null;
 
@@ -20,16 +22,18 @@ export function invalidateAdsCache() {
 const fetchAdsGlobalSettingsFromDb = async (): Promise<{
   adsEnabled: boolean;
   autoAds: boolean;
+  adsterraSettings: AdsterraConfig;
 }> => {
   try {
     const supabase = createAdminClient();
     const { data } = await supabase
       .from("site_settings")
       .select("key, value")
-      .in("key", ["ads_enabled", "adsense_auto_ads"]);
+      .in("key", ["ads_enabled", "adsense_auto_ads", "adsterra_settings"]);
 
     let adsEnabled = true;
     let autoAds = true;
+    let adsterraSettings: AdsterraConfig = { ...DEFAULT_ADSTERRA_CONFIG };
 
     if (data) {
       for (const row of data) {
@@ -45,13 +49,26 @@ const fetchAdsGlobalSettingsFromDb = async (): Promise<{
           adsEnabled = val !== false;
         } else if (row.key === "adsense_auto_ads") {
           autoAds = val !== false;
+        } else if (row.key === "adsterra_settings" && typeof val === "object" && val !== null) {
+          adsterraSettings = {
+            ...DEFAULT_ADSTERRA_CONFIG,
+            ...val,
+            placements: {
+              ...DEFAULT_ADSTERRA_CONFIG.placements,
+              ...(val.placements || {}),
+            },
+          };
         }
       }
     }
 
-    return { adsEnabled, autoAds };
+    return { adsEnabled, autoAds, adsterraSettings };
   } catch {
-    return { adsEnabled: true, autoAds: true };
+    return {
+      adsEnabled: true,
+      autoAds: true,
+      adsterraSettings: DEFAULT_ADSTERRA_CONFIG,
+    };
   }
 };
 
@@ -64,12 +81,14 @@ const getCachedAdsGlobalSettings = unstable_cache(
 export const getAdsGlobalSettings = async (): Promise<{
   adsEnabled: boolean;
   autoAds: boolean;
+  adsterraSettings: AdsterraConfig;
 }> => {
   const now = Date.now();
   if (cachedAdsSettings && cachedAdsSettings.expiresAt > now) {
     return {
       adsEnabled: cachedAdsSettings.adsEnabled,
       autoAds: cachedAdsSettings.autoAds,
+      adsterraSettings: cachedAdsSettings.adsterraSettings,
     };
   }
 
@@ -78,13 +97,22 @@ export const getAdsGlobalSettings = async (): Promise<{
     cachedAdsSettings = {
       adsEnabled: res.adsEnabled,
       autoAds: res.autoAds,
+      adsterraSettings: res.adsterraSettings,
       expiresAt: now + 300000,
     };
     return res;
   } catch {
     return cachedAdsSettings
-      ? { adsEnabled: cachedAdsSettings.adsEnabled, autoAds: cachedAdsSettings.autoAds }
-      : { adsEnabled: true, autoAds: true };
+      ? {
+          adsEnabled: cachedAdsSettings.adsEnabled,
+          autoAds: cachedAdsSettings.autoAds,
+          adsterraSettings: cachedAdsSettings.adsterraSettings,
+        }
+      : {
+          adsEnabled: true,
+          autoAds: true,
+          adsterraSettings: DEFAULT_ADSTERRA_CONFIG,
+        };
   }
 };
 

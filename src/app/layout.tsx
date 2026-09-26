@@ -263,7 +263,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { adsEnabled, autoAds } = await getAdsGlobalSettings();
+  const { adsEnabled, autoAds, adsterraSettings } = await getAdsGlobalSettings();
 
   return (
     <html
@@ -277,6 +277,8 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://rixdlxqktshrwjbaxxcz.supabase.co" />
         <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+        <link rel="preconnect" href="https://demolishwrestconclusions.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://demolishwrestconclusions.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
 
@@ -300,7 +302,7 @@ export default async function RootLayout({
         <GoogleAnalytics />
         <SpeedInsights />
         <Analytics />
-        <AdsProvider adsEnabled={adsEnabled} autoAds={autoAds}>
+        <AdsProvider adsEnabled={adsEnabled} autoAds={autoAds} adsterraSettings={adsterraSettings}>
           <GoogleAdSense autoAds={autoAds} />
           <RootProviders>{children}</RootProviders>
         </AdsProvider>

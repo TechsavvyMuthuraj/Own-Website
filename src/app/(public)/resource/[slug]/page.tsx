@@ -36,6 +36,7 @@ import { DownloadLinksClient } from "./download-links-client";
 import { ResourceVisual } from "@/components/resources/resource-visual";
 import BorderGlow from "@/components/ui/BorderGlow";
 import { AdSlot } from "@/components/ads/ad-slot";
+import { AdsterraBanner } from "@/components/ads/AdsterraBanner";
 import { getActiveAd } from "@/lib/ads";
 
 import type { Metadata } from "next";
@@ -453,6 +454,17 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
             </div>
           )}
 
+          {/* Adsterra Sponsored Banner (Clearly distinct from genuine downloads) */}
+          <AdsterraBanner
+            placement="resourceDetails"
+            format="responsive"
+            linkType={1}
+            title="Sponsored Utilities & Cloud Tools"
+            description="Verified partner solutions, performance utilities, and cloud deals."
+            ctaText="View Partner Offer"
+            className="my-2"
+          />
+
           {/* Download Links — copy/paste with multiple mirrors (guarded for paid content) */}
           {secureDownloadLinks && secureDownloadLinks.length > 0 && (
             <DownloadLinksClient
@@ -635,9 +647,13 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
             </div>
 
             {/* Sidebar Ad Unit */}
-            {sidebarAd && (
+            {sidebarAd ? (
               <div className="pt-2">
                 <AdSlot ad={sidebarAd} location="SIDEBAR" format="rectangle" />
+              </div>
+            ) : (
+              <div className="pt-2">
+                <AdsterraBanner placement="resourceDetails" format="rectangle" linkType={2} />
               </div>
             )}
           </div>
@@ -645,9 +661,13 @@ export default async function ResourceDetailPage({ params }: ResourceDetailPageP
       </div>
 
       {/* Resource Bottom Ad Banner */}
-      {resourcePageAd && (
+      {resourcePageAd ? (
         <div className="mt-12 w-full">
           <AdSlot ad={resourcePageAd} location="RESOURCE_PAGE" format="auto" />
+        </div>
+      ) : (
+        <div className="mt-8 w-full">
+          <AdsterraBanner placement="resourceDetails" format="responsive" linkType={2} />
         </div>
       )}
 

@@ -10,6 +10,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { Resource, Article } from "@/types/database";
 import { ResourceGrid } from "@/components/resources/resource-grid";
 import { AdSlot } from "@/components/ads/ad-slot";
+import { AdsterraBanner } from "@/components/ads/AdsterraBanner";
+import { AdsterraNative } from "@/components/ads/AdsterraNative";
+import { AdsterraSmartLink } from "@/components/ads/AdsterraSmartLink";
 import { getActiveAd } from "@/lib/ads";
 import { FounderProfile } from "@/components/home/founder-profile";
 import { FeaturesGrid } from "@/components/home/features-grid";
@@ -283,6 +286,11 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* ADSTERRA RESPONSIVE BANNER PLACEMENT */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
+        <AdsterraBanner placement="homepage" format="responsive" linkType={1} />
+      </section>
+
       {/* 2. THEATRICAL CINEMA & 4K MASTER PRINTS */}
       {movieResources.length > 0 && (
         <div className="cv-auto">
@@ -360,6 +368,11 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* ADSTERRA NATIVE IN-FEED UNIT */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 cv-auto">
+        <AdsterraNative placement="homepage" linkType={2} />
+      </section>
+
       {/* 7. WHY NAMMATECH - SECURITY & SPEED STANDARDS */}
       <div className="cv-auto">
         <FeaturesGrid />
@@ -376,6 +389,31 @@ export default async function HomePage() {
       <div className="cv-auto">
         <YouTubeShowcase settings={hpSettings} />
       </div>
+
+      {/* 9. SPONSORED PARTNER DISCOVERY (CLEARLY IDENTIFIED) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10 cv-auto">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-3xl border border-neutral-200/80 dark:border-neutral-800/80 bg-neutral-50/60 dark:bg-neutral-900/40 backdrop-blur-md">
+          <div className="flex items-center gap-3">
+            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-500 border border-amber-500/20">
+              Sponsored
+            </span>
+            <span className="text-xs text-neutral-600 dark:text-neutral-400">
+              Discover verified developer resources &amp; cloud utilities from our monetization partners.
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+            <AdsterraSmartLink linkType={1} variant="secondary">
+              Recommended Utilities
+            </AdsterraSmartLink>
+            <AdsterraSmartLink linkType={2} variant="secondary">
+              Developer Offers
+            </AdsterraSmartLink>
+            <AdsterraSmartLink linkType={3} variant="secondary">
+              Partner Cloud Deals
+            </AdsterraSmartLink>
+          </div>
+        </div>
+      </section>
 
       {/* 10. FOUNDER & LEAD DEVELOPER PROFILE */}
       <div className="cv-auto">

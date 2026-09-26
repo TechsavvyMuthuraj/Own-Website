@@ -25,6 +25,7 @@ import {
 import type { AdPlacement } from "@/types/database";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useToast } from "@/components/ui/toast";
+import { AdsterraPanel } from "./adsterra-panel";
 
 interface AdsClientProps {
   initialAds: AdPlacement[];
@@ -38,6 +39,7 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
   const [adsEnabled, setAdsEnabled] = useState<boolean>(initialSettings.ads_enabled !== false);
   const [autoAds, setAutoAds] = useState<boolean>(initialSettings.adsense_auto_ads !== false);
   const [adsTxtStatus, setAdsTxtStatus] = useState<"VERIFIED" | "CHECKING" | "ERROR">("CHECKING");
+  const [activeTab, setActiveTab] = useState<"adsterra" | "adsense">("adsterra");
   const { showToast, confirm } = useToast();
 
   // Modal / Form states
@@ -337,8 +339,49 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
         </div>
       )}
 
-      {/* 1. Global AdSense & Monetization Hub */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Monetization Network Tabs Switcher */}
+      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 w-fit">
+        <button
+          onClick={() => setActiveTab("adsterra")}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+            activeTab === "adsterra"
+              ? "bg-amber-500 text-neutral-950 shadow-xs"
+              : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
+          }`}
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Adsterra Monetization Engine</span>
+          <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-neutral-950/20 text-neutral-950">
+            PROD
+          </span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("adsense")}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+            activeTab === "adsense"
+              ? "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs"
+              : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
+          }`}
+        >
+          <DollarSign className="w-3.5 h-3.5 text-amber-500" />
+          <span>Google AdSense Placements</span>
+          <span className="ml-1 text-[11px] text-neutral-400">({ads.length})</span>
+        </button>
+      </div>
+
+      {activeTab === "adsterra" && (
+        <AdsterraPanel
+          initialConfig={initialSettings.adsterra_settings}
+          globalAdsEnabled={adsEnabled}
+          onToggleGlobalAds={handleToggleGlobalAds}
+        />
+      )}
+
+      {activeTab === "adsense" && (
+        <div className="space-y-8">
+          {/* 1. Global AdSense & Monetization Hub */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* AdSense Publisher Credentials Card */}
         <div className="p-6 rounded-3xl border border-neutral-200/90 dark:border-neutral-800/80 bg-white dark:bg-neutral-900/40 backdrop-blur-xl shadow-xs space-y-4 lg:col-span-2">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -601,6 +644,8 @@ export function AdsClient({ initialAds, initialSettings }: AdsClientProps) {
           </div>
         </div>
       </div>
+    </div>
+  )}
 
       {/* 4. Edit / Create Modal */}
       {modalOpen && (

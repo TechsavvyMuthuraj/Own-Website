@@ -4,6 +4,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { AdPlacement } from "@/types/database";
 import { AdsClient } from "./ads-client";
 
+import { DEFAULT_ADSTERRA_CONFIG } from "@/config/adsterra";
+
 export const revalidate = 0;
 
 export default async function AdminAdsPage() {
@@ -11,18 +13,31 @@ export default async function AdminAdsPage() {
 
   const [{ data: ads }, { data: settingsData }] = await Promise.all([
     supabase.from("ad_placements").select("*").order("priority", { ascending: false }),
-    supabase.from("site_settings").select("key,value").in("key", ["ads_enabled", "adsense_auto_ads"]),
+    supabase.from("site_settings").select("key,value").in("key", ["ads_enabled", "adsense_auto_ads", "adsterra_settings"]),
   ]);
 
   const globalSettings: Record<string, any> = {
     ads_enabled: true,
     adsense_auto_ads: true,
     adsense_client_id: process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || "ca-pub-1960459798233871",
+    adsterra_settings: DEFAULT_ADSTERRA_CONFIG,
   };
 
   (settingsData || []).forEach((item: any) => {
     try {
-      globalSettings[item.key] = typeof item.value === "string" ? JSON.parse(item.value) : item.value;
+      const val = typeof item.value === "string" ? JSON.parse(item.value) : item.value;
+      if (item.key === "adsterra_settings") {
+        globalSettings.adsterra_settings = {
+          ...DEFAULT_ADSTERRA_CONFIG,
+          ...val,
+          placements: {
+            ...DEFAULT_ADSTERRA_CONFIG.placements,
+            ...(val?.placements || {}),
+          },
+        };
+      } else {
+        globalSettings[item.key] = val;
+      }
     } catch {
       globalSettings[item.key] = item.value;
     }

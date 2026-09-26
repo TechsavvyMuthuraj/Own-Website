@@ -3,6 +3,7 @@ import { Header, DEFAULT_NAV_LINKS, type NavLinkItem } from "@/components/naviga
 import { Footer } from "@/components/navigation/footer";
 import { AnnouncementBar } from "@/components/announcements/announcement-bar";
 import { AdSlot } from "@/components/ads/ad-slot";
+import { AdsterraScript } from "@/components/ads/AdsterraScript";
 import { getActiveAd } from "@/lib/ads";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AdminMaintenanceBanner } from "@/components/admin/admin-maintenance-banner";
@@ -116,6 +117,7 @@ export default async function PublicLayout({
 
   return (
     <div className="flex flex-col min-h-screen">
+      <AdsterraScript />
       <Suspense fallback={null}>
         <PageLoader />
         <TopLoader />

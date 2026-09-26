@@ -3,6 +3,7 @@ import type { Resource } from "@/types/database";
 import { ResourceCard } from "./resource-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LucideIcon } from "lucide-react";
+import { AdsterraNative } from "@/components/ads/AdsterraNative";
 
 interface ResourceGridProps {
   resources: Resource[];
@@ -11,6 +12,7 @@ interface ResourceGridProps {
   emptyIcon?: LucideIcon;
   emptyActionText?: string;
   emptyActionHref?: string;
+  showInFeedAd?: boolean;
 }
 
 export function ResourceGrid({
@@ -20,6 +22,7 @@ export function ResourceGrid({
   emptyIcon,
   emptyActionText,
   emptyActionHref,
+  showInFeedAd = true,
 }: ResourceGridProps) {
   if (!resources || resources.length === 0) {
     return (
@@ -34,10 +37,18 @@ export function ResourceGrid({
     );
   }
 
+  // Insert native ad once after 6 items if grid contains enough cards
+  const adInsertIndex = 5;
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-      {resources.map((resource) => (
-        <ResourceCard key={resource.id} resource={resource} />
+      {resources.map((resource, index) => (
+        <React.Fragment key={resource.id}>
+          <ResourceCard resource={resource} />
+          {showInFeedAd && resources.length >= 6 && index === adInsertIndex && (
+            <AdsterraNative placement="resourceList" linkType={1} />
+          )}
+        </React.Fragment>
       ))}
     </div>
   );

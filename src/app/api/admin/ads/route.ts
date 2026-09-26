@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { invalidateAdsCache } from "@/lib/ads";
+import { DEFAULT_ADSTERRA_CONFIG } from "@/config/adsterra";
 
 // Helper to verify admin identity (via designated email or DB profile role)
 async function verifyAdmin() {
@@ -48,17 +49,30 @@ export async function GET() {
     const { data: settingsData } = await supabaseAdmin
       .from("site_settings")
       .select("key,value")
-      .in("key", ["ads_enabled", "adsense_auto_ads", "adsense_client_id"]);
+      .in("key", ["ads_enabled", "adsense_auto_ads", "adsense_client_id", "adsterra_settings"]);
 
     const adSettings: Record<string, any> = {
       ads_enabled: true,
       adsense_auto_ads: true,
       adsense_client_id: process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || "ca-pub-1960459798233871",
+      adsterra_settings: DEFAULT_ADSTERRA_CONFIG,
     };
 
     (settingsData || []).forEach((item: any) => {
       try {
-        adSettings[item.key] = typeof item.value === "string" ? JSON.parse(item.value) : item.value;
+        const val = typeof item.value === "string" ? JSON.parse(item.value) : item.value;
+        if (item.key === "adsterra_settings") {
+          adSettings.adsterra_settings = {
+            ...DEFAULT_ADSTERRA_CONFIG,
+            ...val,
+            placements: {
+              ...DEFAULT_ADSTERRA_CONFIG.placements,
+              ...(val?.placements || {}),
+            },
+          };
+        } else {
+          adSettings[item.key] = val;
+        }
       } catch {
         adSettings[item.key] = item.value;
       }
@@ -190,6 +204,19 @@ export async function POST(request: Request) {
       }
       invalidateAdsCache();
       return NextResponse.json({ success: true });
+    }
+
+    // Action: Update Adsterra Monetization Settings
+    if (body.action === "update_adsterra_settings") {
+      if (body.adsterra_settings) {
+        await supabaseAdmin.from("site_settings").upsert({
+          key: "adsterra_settings",
+          value: JSON.stringify(body.adsterra_settings),
+          updated_at: new Date().toISOString(),
+        });
+        invalidateAdsCache();
+      }
+      return NextResponse.json({ success: true, settings: body.adsterra_settings });
     }
 
     // Standard Ad Placement Creation

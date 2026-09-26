@@ -27,6 +27,7 @@ import {
   Home,
   Headphones,
   Video,
+  DollarSign,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -112,7 +113,7 @@ export default function AdminLayout({
       title: "System & Marketing",
       items: [
         { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
-        { href: "/admin/ads", label: "Ad Placements", icon: Sliders },
+        { href: "/admin/ads", label: "Monetization & Ads", icon: DollarSign },
         { href: "/admin/audit-logs", label: "Audit Logs", icon: FileText },
         { href: "/admin/settings", label: "System Settings", icon: Settings },
       ],

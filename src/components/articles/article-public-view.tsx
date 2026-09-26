@@ -22,6 +22,8 @@ import { ArticleReadingControls } from "./article-reading-controls";
 import { ArticleShareBar } from "./article-share-bar";
 import { ArticleAuthorCard } from "./article-author-card";
 import { ArticlePagination } from "./article-pagination";
+import { AdsterraBanner } from "@/components/ads/AdsterraBanner";
+import { AdsterraNative } from "@/components/ads/AdsterraNative";
 
 interface ArticlePublicViewProps {
   article: Article;
@@ -172,6 +174,14 @@ export function ArticlePublicView({
           </div>
         </header>
 
+        {/* Adsterra Sponsored Banner after Article Introduction */}
+        <AdsterraBanner
+          placement="article"
+          format="responsive"
+          linkType={1}
+          className="w-full my-2"
+        />
+
         {/* ── Main Multi-Column Reading Layout ── */}
         <div
           style={baseFont ? { fontFamily: `'${baseFont}', sans-serif` } : undefined}
@@ -195,6 +205,14 @@ export function ArticlePublicView({
               <ArticleContentRenderer content={article.content} fontSize={fontSize} />
             </article>
 
+            {/* Adsterra Native In-Feed Recommendation between Content & Engagement */}
+            <AdsterraNative
+              placement="article"
+              linkType={2}
+              categoryTag="Recommended Article Partner"
+              className="my-4"
+            />
+
             {/* Social Share & Reader Feedback */}
             <ArticleShareBar title={article.title} slug={article.slug} />
 
@@ -203,6 +221,14 @@ export function ArticlePublicView({
 
             {/* Previous & Next Stories */}
             <ArticlePagination prevArticle={prevArticle} nextArticle={nextArticle} />
+
+            {/* Adsterra Sponsored Banner near Footer */}
+            <AdsterraBanner
+              placement="article"
+              format="responsive"
+              linkType={1}
+              className="w-full my-4"
+            />
 
             {/* Back to All Articles */}
             <div className="pt-2">
