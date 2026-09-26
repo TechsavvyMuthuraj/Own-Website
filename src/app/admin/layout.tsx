@@ -29,6 +29,7 @@ import {
   Video,
   DollarSign,
   MessageSquare,
+  CloudUpload,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -91,6 +92,7 @@ export default function AdminLayout({
       title: "Catalog & Content",
       items: [
         { href: "/admin/resources", label: "Resources", icon: Package },
+        { href: "/admin/dupload", label: "DUpload Cloud & Files ☁️", icon: CloudUpload },
         { href: "/admin/movies", label: "Movies & Cinema", icon: Film },
         { href: "/admin/articles", label: "Articles & News", icon: Newspaper },
         { href: "/admin/categories", label: "Categories", icon: Layers },
