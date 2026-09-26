@@ -27,17 +27,18 @@ export function AdsterraStickyBar() {
   const [dismissed, setDismissed] = useState(false);
 
   const isGlobalActive = adsEnabled && (adsterraSettings?.enabled ?? DEFAULT_ADSTERRA_CONFIG.enabled);
+  const stickyActive = isGlobalActive && (adsterraSettings?.stickyBarEnabled !== false);
   const isAllowedPath = isAdsterraAllowedPath(pathname);
 
   useEffect(() => {
     // Show after 2 seconds on page entry
-    if (isGlobalActive && isAllowedPath && !dismissed) {
+    if (stickyActive && isAllowedPath && !dismissed) {
       const timer = setTimeout(() => setIsVisible(true), 2000);
       return () => clearTimeout(timer);
     }
-  }, [pathname, isGlobalActive, isAllowedPath, dismissed]);
+  }, [pathname, stickyActive, isAllowedPath, dismissed]);
 
-  if (!isVisible || dismissed || !isGlobalActive || !isAllowedPath) {
+  if (!isVisible || dismissed || !stickyActive || !isAllowedPath) {
     return null;
   }
 

@@ -28,6 +28,11 @@ import {
   MousePointerClick,
   Activity,
   Radio,
+  Flame,
+  Star,
+  Play,
+  Sliders,
+  EyeOff,
 } from "lucide-react";
 import type { AdsterraConfig, AdsterraStatsSummary, AdsterraStatRow } from "@/config/adsterra";
 import { DEFAULT_ADSTERRA_CONFIG, ADSTERRA_ASSETS, ADSTERRA_API_CONFIG } from "@/config/adsterra";
@@ -172,13 +177,22 @@ export function AdsterraPanel({
     }
   };
 
+  const [previewZoneKey, setPreviewZoneKey] = useState<string | null>(null);
+
+  const handleTestPopup = () => {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("open-adsterra-popup"));
+      showToast({ message: "Triggered live Pop-Up Ad modal!", type: "info" });
+    }
+  };
+
   const bannerZones = [
-    { name: "Desktop Leaderboard", dims: "728x90", key: ADSTERRA_ASSETS.bannerZones.leaderboard_728x90.key, format: "iframe" },
-    { name: "Medium Rectangle", dims: "300x250", key: ADSTERRA_ASSETS.bannerZones.rectangle_300x250.key, format: "iframe" },
-    { name: "Mobile Banner", dims: "320x50", key: ADSTERRA_ASSETS.bannerZones.mobile_320x50.key, format: "iframe" },
-    { name: "Standard Banner", dims: "468x60", key: ADSTERRA_ASSETS.bannerZones.banner_468x60.key, format: "iframe" },
-    { name: "Vertical Mini", dims: "160x300", key: ADSTERRA_ASSETS.bannerZones.vertical_160x300.key, format: "iframe" },
-    { name: "Skyscraper", dims: "160x600", key: ADSTERRA_ASSETS.bannerZones.skyscraper_160x600.key, format: "iframe" },
+    { name: "Desktop Leaderboard", dims: "728x90", width: 728, height: 90, key: ADSTERRA_ASSETS.bannerZones.leaderboard_728x90.key, format: "iframe" },
+    { name: "Medium Rectangle", dims: "300x250", width: 300, height: 250, key: ADSTERRA_ASSETS.bannerZones.rectangle_300x250.key, format: "iframe" },
+    { name: "Mobile Banner", dims: "320x50", width: 320, height: 50, key: ADSTERRA_ASSETS.bannerZones.mobile_320x50.key, format: "iframe" },
+    { name: "Standard Banner", dims: "468x60", width: 468, height: 60, key: ADSTERRA_ASSETS.bannerZones.banner_468x60.key, format: "iframe" },
+    { name: "Vertical Mini", dims: "160x300", width: 160, height: 300, key: ADSTERRA_ASSETS.bannerZones.vertical_160x300.key, format: "iframe" },
+    { name: "Skyscraper", dims: "160x600", width: 160, height: 600, key: ADSTERRA_ASSETS.bannerZones.skyscraper_160x600.key, format: "iframe" },
   ];
 
   return (
@@ -900,49 +914,275 @@ export function AdsterraPanel({
         </div>
       </div>
 
-      {/* ── 3. OFFICIAL BANNER ZONES INVENTORY ── */}
+      {/* ── 2.5. HIGH-CONVERTING AD FORMATS & USER INFLUENCING DESIGN MANAGER ── */}
+      <div className="p-6 rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/5 via-white to-amber-500/10 dark:from-amber-950/20 dark:via-neutral-900/60 dark:to-neutral-950 shadow-sm space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-amber-500/20 text-amber-500 text-xs font-bold uppercase tracking-wider mb-1.5 border border-amber-500/30">
+              <Flame className="w-3.5 h-3.5" />
+              <span>Conversion-Optimized Ad Formats</span>
+            </div>
+            <h3 className="text-lg font-black text-neutral-900 dark:text-white tracking-tight flex items-center gap-2">
+              <span>Interactive Ad Formats &amp; Monetization Strategy</span>
+            </h3>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1 max-w-2xl">
+              High-CTR, user-influencing advertising experiences engineered to maximize clicks and CPM without harming user trust.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={handleTestPopup}
+              className="px-4 py-2 rounded-2xl bg-amber-500 hover:bg-amber-600 text-neutral-950 font-black text-xs flex items-center gap-2 transition-all shadow-sm cursor-pointer active:scale-95"
+            >
+              <Play className="w-3.5 h-3.5 fill-neutral-950" />
+              <span>Test Pop-up Ad Live</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Format 1: Full-Website Pop-up Ad Modal */}
+          <div className="p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/60 flex flex-col justify-between gap-3 shadow-xs">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-500" />
+                  <span>Full-Website Pop-up Ad Modal</span>
+                </span>
+                <button
+                  onClick={() => handleToggle("popupAdEnabled")}
+                  className={`px-3 py-1 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+                    config.popupAdEnabled !== false
+                      ? "bg-emerald-500 text-neutral-950"
+                      : "bg-neutral-200 dark:bg-neutral-800 text-neutral-500"
+                  }`}
+                >
+                  {config.popupAdEnabled !== false ? "ACTIVE" : "DISABLED"}
+                </button>
+              </div>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                Renders a centered 300x250 Medium Rectangle ad modal with close countdown. Automatically triggers on route visits and sponsored button clicks.
+              </p>
+            </div>
+
+            <div className="pt-3 border-t border-neutral-200/60 dark:border-neutral-800/60 flex items-center justify-between text-xs">
+              <span className="text-neutral-500 dark:text-neutral-400 font-medium flex items-center gap-1">
+                <Sliders className="w-3.5 h-3.5 text-amber-500" />
+                <span>Trigger Delay:</span>
+              </span>
+              <div className="flex items-center gap-1.5">
+                {[2, 3.5, 5, 8].map((sec) => (
+                  <button
+                    key={sec}
+                    onClick={async () => {
+                      const updated = { ...config, popupDelaySeconds: sec };
+                      setConfig(updated);
+                      await saveSettings(updated);
+                    }}
+                    className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${
+                      (config.popupDelaySeconds ?? 3.5) === sec
+                        ? "bg-amber-500 text-neutral-950 shadow-xs"
+                        : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-white"
+                    }`}
+                  >
+                    {sec}s
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Format 2: Floating Sticky Bottom Bar */}
+          <div className="p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/60 flex flex-col justify-between gap-3 shadow-xs">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-amber-500" />
+                  <span>Floating Sticky Bottom Bar</span>
+                </span>
+                <button
+                  onClick={() => handleToggle("stickyBarEnabled")}
+                  className={`px-3 py-1 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+                    config.stickyBarEnabled !== false
+                      ? "bg-emerald-500 text-neutral-950"
+                      : "bg-neutral-200 dark:bg-neutral-800 text-neutral-500"
+                  }`}
+                >
+                  {config.stickyBarEnabled !== false ? "ACTIVE" : "DISABLED"}
+                </button>
+              </div>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                Floating pill pinned to the bottom of the viewport with pulsating status indicator and direct access CTA to Smartlink 2 ($5-$20 CPM).
+              </p>
+            </div>
+
+            {/* Sticky Bar Live Mini Preview */}
+            <div className="p-2.5 rounded-xl bg-neutral-950 border border-amber-500/40 flex items-center justify-between text-[11px] text-white">
+              <div className="flex items-center gap-2 truncate">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+                <span className="font-bold truncate">⚡ High-Speed Direct Cloud Access &amp; Tools</span>
+              </div>
+              <span className="px-2 py-0.5 rounded-md bg-amber-500 text-neutral-950 font-black text-[10px] shrink-0 ml-2">
+                Direct Access ↗
+              </span>
+            </div>
+          </div>
+
+          {/* Format 3: Curated Native 4-Card Sponsored Grid */}
+          <div className="p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/60 flex flex-col justify-between gap-3 shadow-xs">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-emerald-500" />
+                  <span>Native Curated Sponsored Grid</span>
+                </span>
+                <button
+                  onClick={() => handleToggle("nativeBannerEnabled")}
+                  className={`px-3 py-1 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+                    config.nativeBannerEnabled !== false
+                      ? "bg-emerald-500 text-neutral-950"
+                      : "bg-neutral-200 dark:bg-neutral-800 text-neutral-500"
+                  }`}
+                >
+                  {config.nativeBannerEnabled !== false ? "ACTIVE" : "DISABLED"}
+                </button>
+              </div>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                Presents 4 verified developer utilities and cloud tools (VPN, VPS, Developer API, AI Studio) with ratings and badges that strongly influence user clicks.
+              </p>
+            </div>
+
+            <div className="pt-2 flex items-center gap-2 text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">
+              <ShieldCheck className="w-4 h-4" />
+              <span>4 Interactive Cards With Star Ratings &amp; Smartlinks</span>
+            </div>
+          </div>
+
+          {/* Format 4: High-CTR VIP Fast Download Mirror */}
+          <div className="p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/60 flex flex-col justify-between gap-3 shadow-xs">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-cyan-500" />
+                  <span>VIP Fast Download Mirror (Highest CTR)</span>
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full font-mono text-[10px] font-bold bg-cyan-500/15 text-cyan-500 border border-cyan-500/30">
+                  AUTO-ENABLED
+                </span>
+              </div>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                On resource download pages, displays a highlighted "⚡ High-Speed Direct Mirror (Fastest) [VIP CDN]" button above standard mirrors, driving maximal user engagement.
+              </p>
+            </div>
+
+            <a
+              href={config.smartlink3}
+              target="_blank"
+              rel="nofollow sponsored noopener"
+              className="p-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-neutral-950 font-black text-xs flex items-center justify-between shadow-xs transition-all cursor-pointer"
+            >
+              <span>⚡ High-Speed Direct Mirror (Fastest)</span>
+              <span className="px-1.5 py-0.5 rounded bg-neutral-950 text-amber-400 text-[9px] uppercase">
+                Test Mirror ↗
+              </span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 3. OFFICIAL BANNER ZONES INVENTORY WITH LIVE INTERACTIVE PREVIEWS ── */}
       <div className="p-6 rounded-3xl border border-neutral-200 dark:border-neutral-800/80 bg-white dark:bg-neutral-950 shadow-xs space-y-4">
-        <div>
-          <h3 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-            <Layout className="w-4 h-4 text-cyan-500" />
-            <span>Official Adsterra Banner Zones ({bannerZones.length})</span>
-          </h3>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            Registered zone keys and dimensions configured in <code className="font-mono text-[11px]">src/config/adsterra.ts</code>.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+              <Layout className="w-4 h-4 text-cyan-500" />
+              <span>Official Adsterra Banner Zones ({bannerZones.length}) with Live Visual Previews</span>
+            </h3>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+              Click &quot;Preview Ad&quot; on any zone to render the live ad unit directly inside the admin panel.
+            </p>
+          </div>
+          {previewZoneKey && (
+            <button
+              onClick={() => setPreviewZoneKey(null)}
+              className="px-3 py-1.5 rounded-xl bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer self-start sm:self-auto"
+            >
+              <EyeOff className="w-3.5 h-3.5" />
+              <span>Hide All Previews</span>
+            </button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {bannerZones.map((zone) => (
-            <div
-              key={zone.key}
-              className="p-3.5 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-900/40 flex flex-col justify-between gap-2 text-xs"
-            >
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-neutral-900 dark:text-white">{zone.name}</span>
-                  <span className="px-1.5 py-0.5 rounded font-mono text-[10px] font-bold bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
-                    {zone.dims}
-                  </span>
+          {bannerZones.map((zone) => {
+            const isPreviewing = previewZoneKey === zone.key;
+
+            return (
+              <div
+                key={zone.key}
+                className={`p-3.5 rounded-2xl border transition-all flex flex-col justify-between gap-2.5 text-xs ${
+                  isPreviewing
+                    ? "border-amber-500/60 bg-amber-500/5 dark:bg-amber-950/20 shadow-md col-span-1 md:col-span-2 lg:col-span-3"
+                    : "border-neutral-200 dark:border-neutral-800 bg-neutral-50/60 dark:bg-neutral-900/40"
+                }`}
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-neutral-900 dark:text-white">{zone.name}</span>
+                    <span className="px-1.5 py-0.5 rounded font-mono text-[10px] font-bold bg-neutral-200 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300">
+                      {zone.dims}
+                    </span>
+                  </div>
+                  <div className="font-mono text-[10px] text-neutral-500 dark:text-neutral-400 truncate">
+                    Key: {zone.key}
+                  </div>
                 </div>
-                <div className="font-mono text-[10px] text-neutral-500 dark:text-neutral-400 truncate">
-                  Key: {zone.key}
+
+                {/* Live Preview Iframe Container */}
+                {isPreviewing && (
+                  <div className="my-3 p-4 rounded-2xl bg-neutral-950 border border-neutral-800 flex flex-col items-center justify-center overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                    <div className="text-[10px] font-extrabold uppercase tracking-wider text-amber-400 mb-2 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Live Ad Display ({zone.dims})</span>
+                    </div>
+                    <div className="max-w-full overflow-x-auto flex justify-center py-1">
+                      <iframe
+                        title={`Live Adsterra Preview ${zone.name}`}
+                        src={`/api/ads/banner?key=${zone.key}&w=${zone.width}&h=${zone.height}&link=1`}
+                        width={zone.width}
+                        height={zone.height}
+                        className="border-0 rounded-xl overflow-hidden shadow-md max-w-full"
+                        scrolling="no"
+                        loading="eager"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pt-2 border-t border-neutral-200/50 dark:border-neutral-800/50">
+                  <button
+                    onClick={() => setPreviewZoneKey(isPreviewing ? null : zone.key)}
+                    className={`px-2.5 py-1 rounded-lg font-bold text-[10px] flex items-center gap-1.5 transition-all cursor-pointer ${
+                      isPreviewing
+                        ? "bg-amber-500 text-neutral-950"
+                        : "bg-neutral-200 dark:bg-neutral-800 hover:bg-neutral-300 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300"
+                    }`}
+                  >
+                    {isPreviewing ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3 text-cyan-400" />}
+                    <span>{isPreviewing ? "Close Preview" : "Preview Ad"}</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleCopy(zone.key, zone.key)}
+                    className="px-2 py-1 rounded-lg border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-medium flex items-center gap-1 transition-all text-[10px] cursor-pointer"
+                  >
+                    {copiedKey === zone.key ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                    <span>{copiedKey === zone.key ? "Copied" : "Copy Key"}</span>
+                  </button>
                 </div>
               </div>
-              <div className="flex items-center justify-between pt-2 border-t border-neutral-200/50 dark:border-neutral-800/50">
-                <span className="text-[10px] font-bold uppercase text-emerald-600 dark:text-emerald-400">
-                  Sandboxed Iframe
-                </span>
-                <button
-                  onClick={() => handleCopy(zone.key, zone.key)}
-                  className="px-2 py-1 rounded-lg border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 font-medium flex items-center gap-1 transition-all text-[10px] cursor-pointer"
-                >
-                  {copiedKey === zone.key ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
-                  <span>{copiedKey === zone.key ? "Copied" : "Copy Key"}</span>
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 

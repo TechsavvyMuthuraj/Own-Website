@@ -56,6 +56,9 @@ export interface AdsterraConfig {
   scriptUrl: string;
   scriptUrl2: string;
   customBannerCode?: string;
+  popupAdEnabled?: boolean;
+  stickyBarEnabled?: boolean;
+  popupDelaySeconds?: number;
   placements: AdsterraPlacements;
 }
 
@@ -128,6 +131,9 @@ export const DEFAULT_ADSTERRA_CONFIG: AdsterraConfig = {
   scriptUrl: ADSTERRA_ASSETS.scriptUrl,
   scriptUrl2: ADSTERRA_ASSETS.scriptUrl2,
   customBannerCode: "",
+  popupAdEnabled: true,
+  stickyBarEnabled: true,
+  popupDelaySeconds: 4,
   placements: {
     homepage: true,
     resourceList: true,

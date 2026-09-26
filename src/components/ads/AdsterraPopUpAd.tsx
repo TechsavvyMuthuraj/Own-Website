@@ -58,22 +58,24 @@ export function AdsterraPopUpAd() {
   const [dismissedCount, setDismissedCount] = useState(0);
 
   const isGlobalActive = adsEnabled && (adsterraSettings?.enabled ?? DEFAULT_ADSTERRA_CONFIG.enabled);
+  const popupActive = isGlobalActive && (adsterraSettings?.popupAdEnabled !== false);
   const isAllowedPath = isAdsterraAllowedPath(pathname);
 
-  // Auto-trigger pop-up ad on page visit (delayed by 3.5s for seamless UX)
+  // Auto-trigger pop-up ad on page visit
   useEffect(() => {
-    if (!isGlobalActive || !isAllowedPath) {
+    if (!popupActive || !isAllowedPath) {
       setIsOpen(false);
       return;
     }
 
+    const delayMs = ((adsterraSettings?.popupDelaySeconds ?? 3.5) || 3.5) * 1000;
     const timer = setTimeout(() => {
-      // Don't overwhelm: auto show once per route change
+      // Auto show once per route change
       setIsOpen(true);
-    }, 3500);
+    }, delayMs);
 
     return () => clearTimeout(timer);
-  }, [pathname, isGlobalActive, isAllowedPath]);
+  }, [pathname, popupActive, isAllowedPath, adsterraSettings?.popupDelaySeconds]);
 
   // Global listener for manual popup trigger (e.g. clicking sponsored download)
   useEffect(() => {
@@ -87,7 +89,7 @@ export function AdsterraPopUpAd() {
     return () => window.removeEventListener("open-adsterra-popup", handleManualOpen);
   }, [isGlobalActive, isAllowedPath]);
 
-  if (!isOpen || !isGlobalActive || !isAllowedPath) {
+  if (!isOpen || !popupActive || !isAllowedPath) {
     return null;
   }
 

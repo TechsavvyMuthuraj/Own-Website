@@ -280,16 +280,15 @@ export default async function HomePage() {
       </section>
 
       {/* HOMEPAGE FEATURE AD BANNER */}
-      {homepageAd && (
+      {homepageAd ? (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
           <AdSlot ad={homepageAd} location="HOMEPAGE" format="auto" />
         </section>
+      ) : (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
+          <AdsterraBanner placement="homepage" format="responsive" linkType={1} />
+        </section>
       )}
-
-      {/* ADSTERRA RESPONSIVE BANNER PLACEMENT */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-10">
-        <AdsterraBanner placement="homepage" format="responsive" linkType={1} />
-      </section>
 
       {/* 2. THEATRICAL CINEMA & 4K MASTER PRINTS */}
       {movieResources.length > 0 && (
