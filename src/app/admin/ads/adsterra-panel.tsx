@@ -992,13 +992,13 @@ export function AdsterraPanel({
             </div>
           </div>
 
-          {/* Format 2: Floating Sticky Bottom Bar */}
+          {/* Format 2: Floating Interactive Side Widget */}
           <div className="p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/60 flex flex-col justify-between gap-3 shadow-xs">
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-bold text-neutral-900 dark:text-white flex items-center gap-2">
                   <Zap className="w-4 h-4 text-amber-500" />
-                  <span>Floating Sticky Bottom Bar</span>
+                  <span>Floating Side Widget (High-CTR Left / Right)</span>
                 </span>
                 <button
                   onClick={() => handleToggle("stickyBarEnabled")}
@@ -1012,8 +1012,51 @@ export function AdsterraPanel({
                 </button>
               </div>
               <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
-                Floating pill pinned to the bottom of the viewport with pulsating status indicator and direct access CTA to Smartlink 2 ($5-$20 CPM).
+                Floating interactive card docked to the left or right side of the screen. Avoids bottom-dock obstruction, keeps user interaction high, and drives clicks to Smartlink 2 ($5-$20 CPM).
               </p>
+            </div>
+
+            {/* Position Selector */}
+            <div className="pt-2 border-t border-neutral-200/60 dark:border-neutral-800/60 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-neutral-500 dark:text-neutral-400 font-medium flex items-center gap-1">
+                  <Sliders className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Screen Position:</span>
+                </span>
+                <span className="font-mono text-[10px] text-amber-500 font-bold uppercase">
+                  {config.stickyBarPosition || "bottom-right"}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                {[
+                  { id: "bottom-right", label: "Right (Bottom)" },
+                  { id: "bottom-left", label: "Left (Bottom)" },
+                  { id: "right-edge", label: "Right Edge" },
+                  { id: "left-edge", label: "Left Edge" },
+                ].map((pos) => {
+                  const isSelected = (config.stickyBarPosition || "bottom-right") === pos.id;
+                  return (
+                    <button
+                      key={pos.id}
+                      onClick={async () => {
+                        const updated = {
+                          ...config,
+                          stickyBarPosition: pos.id as "bottom-right" | "bottom-left" | "right-edge" | "left-edge",
+                        };
+                        setConfig(updated);
+                        await saveSettings(updated);
+                      }}
+                      className={`px-2 py-1.5 rounded-xl font-bold text-[11px] text-center transition-all cursor-pointer ${
+                        isSelected
+                          ? "bg-amber-500 text-neutral-950 shadow-xs"
+                          : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-white"
+                      }`}
+                    >
+                      {pos.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Sticky Bar Live Mini Preview */}

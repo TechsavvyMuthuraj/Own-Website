@@ -58,6 +58,7 @@ export interface AdsterraConfig {
   customBannerCode?: string;
   popupAdEnabled?: boolean;
   stickyBarEnabled?: boolean;
+  stickyBarPosition?: "bottom-right" | "bottom-left" | "right-edge" | "left-edge";
   popupDelaySeconds?: number;
   placements: AdsterraPlacements;
 }
@@ -133,6 +134,7 @@ export const DEFAULT_ADSTERRA_CONFIG: AdsterraConfig = {
   customBannerCode: "",
   popupAdEnabled: true,
   stickyBarEnabled: true,
+  stickyBarPosition: "bottom-right",
   popupDelaySeconds: 4,
   placements: {
     homepage: true,
