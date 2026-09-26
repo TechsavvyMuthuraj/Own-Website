@@ -34,7 +34,14 @@ export function AdsterraStickyBar() {
   const position = adsterraSettings?.stickyBarPosition || "bottom-right";
 
   useEffect(() => {
-    // Show after 2 seconds on page entry
+    // On mobile viewports (< 640px) or on /community page, default to minimized floating pill so it doesn't block interactions!
+    if (typeof window !== "undefined" && (window.innerWidth < 640 || pathname === "/community")) {
+      setMinimized(true);
+    }
+  }, [pathname]);
+
+  useEffect(() => {
+    // Show after 1.5 seconds on page entry
     if (stickyActive && isAllowedPath && !dismissed) {
       const timer = setTimeout(() => setIsVisible(true), 1500);
       return () => clearTimeout(timer);
@@ -55,11 +62,11 @@ export function AdsterraStickyBar() {
 
   // Position CSS mapping
   const positionClasses = {
-    "bottom-right": "bottom-24 right-4 sm:right-6",
-    "bottom-left": "bottom-24 left-4 sm:left-6",
-    "right-edge": "top-1/2 -translate-y-1/2 right-4",
-    "left-edge": "top-1/2 -translate-y-1/2 left-4",
-  }[position] || "bottom-24 right-4 sm:right-6";
+    "bottom-right": "bottom-24 right-3 sm:right-6",
+    "bottom-left": "bottom-24 left-3 sm:left-6",
+    "right-edge": "top-1/2 -translate-y-1/2 right-3 sm:right-4",
+    "left-edge": "top-1/2 -translate-y-1/2 left-3 sm:left-4",
+  }[position] || "bottom-24 right-3 sm:right-6";
 
   const isLeft = position === "bottom-left" || position === "left-edge";
 

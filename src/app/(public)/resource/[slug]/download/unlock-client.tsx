@@ -133,13 +133,13 @@ export function DownloadUnlockExperience({ resource }: DownloadUnlockExperienceP
                     window.dispatchEvent(new CustomEvent("open-adsterra-popup"));
                   }
                 }}
-                className="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-neutral-950 font-black text-xs sm:text-sm transition-all shadow-md shadow-amber-500/20 active:scale-95 group cursor-pointer"
+                className="w-full flex items-center justify-between px-4 sm:px-5 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-neutral-950 font-black text-xs sm:text-sm transition-all shadow-md shadow-amber-500/20 active:scale-95 group cursor-pointer gap-2"
               >
-                <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4 fill-neutral-950 group-hover:scale-110 transition-transform" />
-                  <span>⚡ High-Speed Direct Mirror (Fastest)</span>
+                <div className="flex items-center gap-2 min-w-0">
+                  <Zap className="w-4 h-4 fill-neutral-950 group-hover:scale-110 transition-transform flex-shrink-0" />
+                  <span className="truncate">⚡ High-Speed Direct Mirror (Fastest)</span>
                 </div>
-                <span className="px-2 py-0.5 rounded-md bg-neutral-950 text-amber-400 text-[10px] font-extrabold uppercase">
+                <span className="px-2 py-0.5 rounded-md bg-neutral-950 text-amber-400 text-[10px] font-extrabold uppercase shrink-0">
                   VIP CDN
                 </span>
               </a>

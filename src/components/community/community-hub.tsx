@@ -138,6 +138,7 @@ export function CommunityHub() {
   const [timeoutSeconds, setTimeoutSeconds] = useState<number>(0);
   const [moderationAlert, setModerationAlert] = useState<string | null>(null);
   const [isMicModalOpen, setIsMicModalOpen] = useState(false);
+  const [isVoiceRecordingActive, setIsVoiceRecordingActive] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -619,10 +620,53 @@ export function CommunityHub() {
         </div>
       </div>
 
+      {/* Mobile Channel Switcher Chips (Fast 1-tap switching without scrolling on mobile) */}
+      <div className="lg:hidden flex items-center gap-2 overflow-x-auto no-scrollbar pb-3 mb-4 -mx-1 px-1">
+        {ROOMS.map((room) => {
+          const isActive = activeRoomId === room.id;
+          return (
+            <button
+              key={room.id}
+              type="button"
+              onClick={() => {
+                setActiveRoomId(room.id);
+                playPopSound();
+              }}
+              className={`flex items-center gap-2 px-3 py-2 rounded-2xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex-shrink-0 active:scale-95 shadow-xs ${
+                isActive
+                  ? "bg-amber-500 text-black shadow-md shadow-amber-500/20"
+                  : "bg-[var(--card)]/90 dark:bg-[#0c0c12]/90 border border-black/10 dark:border-white/10 text-[var(--foreground)] hover:bg-black/5 dark:hover:bg-white/5"
+              }`}
+            >
+              <span className="w-3.5 h-3.5 flex items-center justify-center">
+                {room.icon === "hash" && <Hash className="w-3.5 h-3.5" />}
+                {room.icon === "film" && <Film className="w-3.5 h-3.5" />}
+                {room.icon === "crown" && <Crown className="w-3.5 h-3.5" />}
+                {room.icon === "video" && <Video className="w-3.5 h-3.5" />}
+              </span>
+              <span>{room.name}</span>
+              {room.badge && (
+                <span
+                  className={`px-1.5 py-0.2 rounded-full text-[8px] font-black uppercase ${
+                    isActive
+                      ? "bg-black text-amber-400"
+                      : room.badge === "LIVE"
+                      ? "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                      : "bg-amber-500/20 text-amber-500"
+                  }`}
+                >
+                  {room.badge}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Main Grid: Left Rooms Sidebar + Center Chat/Lounge Stage */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        {/* Left Sidebar: Channels & Voice Stages */}
-        <div className="lg:col-span-4 xl:col-span-3 space-y-4">
+        {/* Left Sidebar: Channels & Voice Stages (Desktop) */}
+        <div className="hidden lg:block lg:col-span-4 xl:col-span-3 space-y-4">
           <div className="rounded-3xl border border-black/10 dark:border-white/10 bg-[var(--card)]/90 dark:bg-[#07070a]/90 backdrop-blur-2xl p-3 shadow-xl space-y-1.5">
             <div className="px-3 py-2 flex items-center justify-between text-xs font-bold text-[var(--muted-foreground)] uppercase tracking-wider">
               <span>Rooms & Stages</span>
@@ -716,7 +760,7 @@ export function CommunityHub() {
               presenceUsers={presenceUsers}
             />
           ) : (
-            <div className="relative rounded-3xl border border-black/10 dark:border-white/10 bg-[var(--card)]/90 dark:bg-[#07070a]/90 backdrop-blur-2xl shadow-2xl overflow-hidden flex flex-col h-[650px] sm:h-[720px]">
+            <div className="relative rounded-3xl border border-black/10 dark:border-white/10 bg-[var(--card)]/90 dark:bg-[#07070a]/90 backdrop-blur-2xl shadow-2xl overflow-hidden flex flex-col h-[540px] sm:h-[650px] lg:h-[720px]">
               {/* Room Top Bar */}
               <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 border-b border-black/10 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] flex-shrink-0">
                 <div className="flex items-center gap-3">
@@ -997,54 +1041,72 @@ export function CommunityHub() {
                     </div>
                   )}
 
-                  {/* Quick Emoji Strip */}
-                  <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-1 text-xs">
-                    <span className="text-[10px] text-[var(--muted-foreground)] font-semibold mr-1">
-                      Quick React:
-                    </span>
-                    {COMMON_EMOJIS.map((emoji) => (
-                      <button
-                        key={emoji}
-                        type="button"
-                        onClick={() => {
-                          if (timeoutSeconds > 0) return;
-                          setInputContent((prev) => prev + " " + emoji);
-                          playPopSound();
-                        }}
-                        disabled={timeoutSeconds > 0}
-                        className="px-2 py-0.5 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-amber-500/20 text-xs transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
+                  {/* Quick Emoji Strip (Hidden while recording to maximize screen space) */}
+                  {!isVoiceRecordingActive && (
+                    <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-1 text-xs">
+                      <span className="text-[10px] text-[var(--muted-foreground)] font-semibold mr-1">
+                        Quick React:
+                      </span>
+                      {COMMON_EMOJIS.map((emoji) => (
+                        <button
+                          key={emoji}
+                          type="button"
+                          onClick={() => {
+                            if (timeoutSeconds > 0) return;
+                            setInputContent((prev) => prev + " " + emoji);
+                            playPopSound();
+                          }}
+                          disabled={timeoutSeconds > 0}
+                          className="px-2 py-0.5 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-amber-500/20 text-xs transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Input field + Voice Recorder + Send button */}
-                  <div className="flex items-center gap-2 rounded-2xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-1.5 pl-3.5 focus-within:border-amber-500/60 transition-all shadow-inner">
-                    <input
-                      type="text"
-                      id="community-chat-input"
-                      value={inputContent}
-                      onChange={(e) => setInputContent(e.target.value)}
+                  <div
+                    className={`flex items-center gap-1.5 sm:gap-2 rounded-2xl border transition-all shadow-inner ${
+                      isVoiceRecordingActive
+                        ? "border-rose-500/50 bg-rose-500/[0.04] p-1.5"
+                        : "border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-1.5 pl-3 sm:pl-3.5 focus-within:border-amber-500/60"
+                    }`}
+                  >
+                    {/* Regular text input (hidden while voice recording) */}
+                    {!isVoiceRecordingActive && (
+                      <input
+                        type="text"
+                        id="community-chat-input"
+                        value={inputContent}
+                        onChange={(e) => setInputContent(e.target.value)}
+                        disabled={timeoutSeconds > 0}
+                        placeholder={
+                          timeoutSeconds > 0
+                            ? `Cooldown: ${timeoutSeconds}s...`
+                            : `Message #${activeRoom.name}...`
+                        }
+                        className="flex-1 min-w-0 bg-transparent text-xs sm:text-sm text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none disabled:opacity-50 py-1"
+                      />
+                    )}
+
+                    <VoiceRecorder
+                      onSendVoice={handleSendVoice}
                       disabled={timeoutSeconds > 0}
-                      placeholder={
-                        timeoutSeconds > 0
-                          ? `Safety timeout: Cooldown ${timeoutSeconds}s remaining...`
-                          : `Message #${activeRoom.name} as ${resolvedName}...`
-                      }
-                      className="flex-1 bg-transparent text-xs sm:text-sm text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none disabled:opacity-50"
+                      onRecordingStateChange={setIsVoiceRecordingActive}
                     />
 
-                    <VoiceRecorder onSendVoice={handleSendVoice} disabled={timeoutSeconds > 0} />
-
-                    <button
-                      type="submit"
-                      disabled={!inputContent.trim() || timeoutSeconds > 0}
-                      className="p-2 sm:px-4 sm:py-2 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-40 disabled:hover:bg-amber-500 text-black font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed shadow-xs active:scale-95 flex-shrink-0"
-                    >
-                      <Send className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">Send</span>
-                    </button>
+                    {/* Regular text send button (hidden while voice recording) */}
+                    {!isVoiceRecordingActive && (
+                      <button
+                        type="submit"
+                        disabled={!inputContent.trim() || timeoutSeconds > 0}
+                        className="p-2 sm:px-4 sm:py-2 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-40 disabled:hover:bg-amber-500 text-black font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:cursor-not-allowed shadow-xs active:scale-95 flex-shrink-0"
+                      >
+                        <Send className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Send</span>
+                      </button>
+                    )}
                   </div>
                 </form>
               </div>

@@ -43,7 +43,7 @@ export const revalidate = 60;
 
 export default function CommunityPage() {
   return (
-    <div className="min-h-screen pt-28 sm:pt-32 lg:pt-36 pb-16">
+    <div className="min-h-screen pt-20 sm:pt-28 lg:pt-32 pb-8 sm:pb-16">
       <CommunityHub />
     </div>
   );

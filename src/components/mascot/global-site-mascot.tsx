@@ -33,8 +33,8 @@ export function GlobalSiteMascot() {
   // Derive user's display name if authenticated
   const displayName = profile?.full_name || user?.email?.split("@")[0] || "";
 
-  // If on the /request page, hide global mascot so the cinematic request mascot is the sole star!
-  if (pathname === "/request" || isDismissed) {
+  // Hide on /request, /community, or admin pages to keep interactive zones unobstructed
+  if (pathname === "/request" || pathname === "/community" || isDismissed) {
     return null;
   }
 
@@ -45,7 +45,7 @@ export function GlobalSiteMascot() {
 
   return (
     <div
-      className="fixed bottom-5 left-5 z-40 flex items-end gap-3 pointer-events-auto select-none"
+      className="fixed bottom-4 left-3 sm:bottom-5 sm:left-5 z-40 flex items-end gap-3 pointer-events-auto select-none"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >

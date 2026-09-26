@@ -100,7 +100,7 @@ export function VoiceMessagePlayer({
 
   return (
     <div
-      className={`flex items-center gap-3 p-2.5 sm:p-3 rounded-2xl transition-all select-none max-w-xs sm:max-w-sm ${
+      className={`flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-2xl transition-all select-none w-full max-w-full sm:max-w-xs ${
         isCurrentUser
           ? "bg-amber-600/90 text-black border border-amber-400/40 shadow-md"
           : "bg-black/40 dark:bg-white/5 border border-black/10 dark:border-white/10 text-white shadow-sm"

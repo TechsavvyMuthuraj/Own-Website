@@ -102,7 +102,7 @@ export function ContactSupportPopup() {
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  if (isDedicatedSupportPage) {
+  if (isDedicatedSupportPage || pathname === "/community") {
     return null;
   }
 
@@ -112,36 +112,36 @@ export function ContactSupportPopup() {
       {!isOpen && (
         <aside
           aria-label="Contact & Support Quick Access"
-          className="fixed bottom-16 right-4 sm:bottom-20 sm:right-6 z-40 select-none animate-in fade-in slide-in-from-bottom-3 duration-200"
+          className="fixed bottom-16 right-3 sm:bottom-20 sm:right-6 z-40 select-none animate-in fade-in slide-in-from-bottom-3 duration-200"
         >
           <button
             type="button"
             onClick={() => setIsOpen(true)}
             aria-label="Open Contact & Support Hub"
-            className="group relative flex items-center gap-2.5 pl-3 pr-4 py-2 rounded-full border border-emerald-500/40 bg-neutral-950/90 hover:bg-neutral-900 text-white shadow-2xl shadow-emerald-950/50 hover:scale-105 hover:border-emerald-400 active:scale-95 transition-all duration-200 backdrop-blur-xl cursor-pointer"
+            className="group relative flex items-center gap-2 pl-2.5 pr-3 sm:pl-3 sm:pr-4 py-1.5 sm:py-2 rounded-full border border-emerald-500/40 bg-neutral-950/90 hover:bg-neutral-900 text-white shadow-2xl shadow-emerald-950/50 hover:scale-105 hover:border-emerald-400 active:scale-95 transition-all duration-200 backdrop-blur-xl cursor-pointer"
           >
             {/* Glowing Neon Ambient Ring */}
             <span className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-emerald-500/40 to-teal-500/30 blur-sm opacity-60 group-hover:opacity-100 transition-opacity" />
 
             {/* Icon with Live Pulse Indicator */}
-            <span className="relative flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 text-neutral-950 shadow-md shadow-emerald-500/30 flex-shrink-0">
-              <Headphones className="w-3.5 h-3.5 text-neutral-950 stroke-[2.5]" />
-              <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
+            <span className="relative flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 text-neutral-950 shadow-md shadow-emerald-500/30 flex-shrink-0">
+              <Headphones className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-neutral-950 stroke-[2.5]" />
+              <span className="absolute -top-0.5 -right-0.5 flex h-2 sm:h-2.5 w-2 sm:w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400 border border-neutral-950" />
+                <span className="relative inline-flex rounded-full h-2 sm:h-2.5 w-2 sm:w-2.5 bg-emerald-400 border border-neutral-950" />
               </span>
             </span>
 
             {/* Label and Status */}
             <span className="relative flex flex-col items-start leading-tight">
               <span className="text-xs font-bold text-white tracking-tight flex items-center gap-1.5">
-                <span>Support &amp; Help</span>
+                <span>Support</span>
                 <span className="px-1.5 py-0.2 rounded-full text-[8px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                   LIVE
                 </span>
               </span>
-              <span className="text-[9px] font-medium text-neutral-400 group-hover:text-emerald-300 transition-colors">
-                Instant technical assistance
+              <span className="text-[9px] font-medium text-neutral-400 group-hover:text-emerald-300 transition-colors hidden xs:inline">
+                Instant assistance
               </span>
             </span>
           </button>
@@ -150,7 +150,7 @@ export function ContactSupportPopup() {
 
       {/* ── 2. EXPANDED SUPPORT POPUP DIALOG ── */}
       {isOpen && (
-        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[460px] h-[620px] max-h-[85vh] rounded-3xl border border-neutral-800 bg-neutral-950/95 backdrop-blur-2xl shadow-2xl shadow-black/90 overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-bottom-4 duration-200">
+        <div className="fixed inset-x-2 bottom-2 sm:inset-x-auto sm:bottom-6 sm:right-6 z-50 w-auto sm:w-[460px] h-[580px] sm:h-[620px] max-h-[90vh] rounded-3xl border border-neutral-800 bg-neutral-950/98 backdrop-blur-2xl shadow-2xl shadow-black/90 overflow-hidden flex flex-col animate-in zoom-in-95 slide-in-from-bottom-4 duration-200">
           {/* Header Bar */}
           <div className="px-4 py-3.5 border-b border-neutral-800/80 bg-neutral-900/70 flex items-center justify-between gap-3 flex-shrink-0">
             <div className="flex items-center gap-3 min-w-0">
