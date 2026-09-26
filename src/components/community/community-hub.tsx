@@ -132,6 +132,7 @@ export function CommunityHub() {
   const [messages, setMessages] = useState<Record<string, CommunityMessage[]>>({});
   const [inputContent, setInputContent] = useState("");
   const [guestName, setGuestName] = useState("");
+  const [guestId, setGuestId] = useState("");
   const [onlineCount, setOnlineCount] = useState(1);
   const [showMembersDrawer, setShowMembersDrawer] = useState(false);
   const [presenceUsers, setPresenceUsers] = useState<CommunityPresenceUser[]>([]);
@@ -186,9 +187,16 @@ export function CommunityHub() {
 
   const resolvedAvatar = profile?.avatar_url || (resolvedRole === "FOUNDER" ? "/images/founder-muthuraj.webp" : null);
 
-  // Load guest name from localStorage
+  // Load guest identity & name from localStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
+      let gId = localStorage.getItem("nammatech_guest_id");
+      if (!gId) {
+        gId = `guest_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+        localStorage.setItem("nammatech_guest_id", gId);
+      }
+      setGuestId(gId);
+
       const savedGuest = localStorage.getItem("nammatech_guest_name");
       if (savedGuest) {
         setGuestName(savedGuest);
@@ -201,7 +209,7 @@ export function CommunityHub() {
     }
   }, []);
 
-  // Load cached messages from localStorage
+  // Load cached messages from localStorage for zero-flicker instant render
   useEffect(() => {
     if (typeof window !== "undefined") {
       try {
@@ -213,7 +221,33 @@ export function CommunityHub() {
     }
   }, []);
 
-  // Save messages to localStorage
+  // Fetch verified messages from SQL database for active room on mount and room switch
+  useEffect(() => {
+    let isCancelled = false;
+    const fetchRoomMessages = async () => {
+      try {
+        const res = await fetch(`/api/community/messages?room_id=${activeRoomId}&limit=100`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.messages && !isCancelled) {
+            updateAndPersistMessages((prev) => ({
+              ...prev,
+              [activeRoomId]: data.messages,
+            }));
+          }
+        }
+      } catch (err) {
+        console.error("[Community Hub] Failed to fetch room messages:", err);
+      }
+    };
+
+    fetchRoomMessages();
+    return () => {
+      isCancelled = true;
+    };
+  }, [activeRoomId]);
+
+  // Save messages to state and localStorage cache
   const updateAndPersistMessages = (updater: (prev: Record<string, CommunityMessage[]>) => Record<string, CommunityMessage[]>) => {
     setMessages((prev) => {
       const next = updater(prev);
@@ -296,6 +330,24 @@ export function CommunityHub() {
           };
         });
       })
+      .on("broadcast", { event: "update-message" }, ({ payload }: { payload: any }) => {
+        const { messageId, roomId, content, isPinned, senderRole } = payload;
+        updateAndPersistMessages((prev) => {
+          const roomMsgs = prev[roomId] || [];
+          return {
+            ...prev,
+            [roomId]: roomMsgs.map((m) => {
+              if (m.id !== messageId) return m;
+              return {
+                ...m,
+                ...(content !== undefined ? { content } : {}),
+                ...(isPinned !== undefined ? { isPinned } : {}),
+                ...(senderRole !== undefined ? { senderRole } : {}),
+              };
+            }),
+          };
+        });
+      })
       .on("broadcast", { event: "clear-room" }, ({ payload }: { payload: any }) => {
         const { roomId } = payload;
         updateAndPersistMessages((prev) => ({
@@ -355,6 +407,17 @@ export function CommunityHub() {
       };
     });
 
+    const currentUserId = user?.id || guestId || `guest-${resolvedName}`;
+
+    // Persist deletion to SQL database
+    try {
+      await fetch(`/api/community/messages?id=${messageId}&userId=${encodeURIComponent(currentUserId)}`, {
+        method: "DELETE",
+      });
+    } catch (err) {
+      console.error("[Community Hub] Delete error:", err);
+    }
+
     if (channelRef.current) {
       await channelRef.current.send({
         type: "broadcast",
@@ -376,6 +439,15 @@ export function CommunityHub() {
       ...prev,
       [activeRoomId]: [],
     }));
+
+    // Persist room clear to SQL database
+    try {
+      await fetch(`/api/admin/community?clearRoomId=${activeRoomId}`, {
+        method: "DELETE",
+      });
+    } catch (err) {
+      console.error("[Community Hub] Clear room error:", err);
+    }
 
     if (channelRef.current) {
       await channelRef.current.send({
@@ -416,10 +488,11 @@ export function CommunityHub() {
 
     setModerationAlert(null);
 
+    const currentUserId = user?.id || guestId || `guest-${resolvedName}`;
     const newMessage: CommunityMessage = {
       id: `msg-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       roomId: activeRoomId,
-      senderId: user?.id || `guest-${resolvedName}`,
+      senderId: currentUserId,
       senderName: resolvedName,
       senderAvatar: resolvedAvatar,
       senderRole: resolvedRole,
@@ -446,15 +519,36 @@ export function CommunityHub() {
     }
 
     playPopSound();
+
+    // Persist to SQL database
+    try {
+      await fetch("/api/community/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: newMessage.id,
+          roomId: activeRoomId,
+          content: newMessage.content,
+          messageType: "text",
+          guestId: !user ? currentUserId : undefined,
+          guestName: !user ? resolvedName : undefined,
+          guestAvatar: !user ? resolvedAvatar : undefined,
+          timestamp: newMessage.timestamp,
+        }),
+      });
+    } catch (err) {
+      console.error("[Community Hub] Send error:", err);
+    }
   };
 
   const handleSendVoice = async (audioUrl: string, durationSeconds: number) => {
     if (timeoutSeconds > 0) return;
 
+    const currentUserId = user?.id || guestId || `guest-${resolvedName}`;
     const newMessage: CommunityMessage = {
       id: `msg-voice-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       roomId: activeRoomId,
-      senderId: user?.id || `guest-${resolvedName}`,
+      senderId: currentUserId,
       senderName: resolvedName,
       senderAvatar: resolvedAvatar,
       senderRole: resolvedRole,
@@ -485,10 +579,31 @@ export function CommunityHub() {
     }
 
     playPopSound();
+
+    // Persist to SQL database
+    try {
+      await fetch("/api/community/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: newMessage.id,
+          roomId: activeRoomId,
+          content: newMessage.content,
+          messageType: "voice",
+          voiceData: newMessage.voiceData,
+          guestId: !user ? currentUserId : undefined,
+          guestName: !user ? resolvedName : undefined,
+          guestAvatar: !user ? resolvedAvatar : undefined,
+          timestamp: newMessage.timestamp,
+        }),
+      });
+    } catch (err) {
+      console.error("[Community Hub] Voice send error:", err);
+    }
   };
 
   const handleReaction = async (messageId: string, emoji: string) => {
-    const currentUserId = user?.id || `guest-${resolvedName}`;
+    const currentUserId = user?.id || guestId || `guest-${resolvedName}`;
 
     updateAndPersistMessages((prev) => {
       const roomMsgs = prev[activeRoomId] || [];
@@ -526,11 +641,28 @@ export function CommunityHub() {
     }
 
     playPopSound();
+
+    // Persist reaction to SQL database
+    try {
+      await fetch("/api/community/messages", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "reaction",
+          messageId,
+          emoji,
+          userId: currentUserId,
+        }),
+      });
+    } catch (err) {
+      console.error("[Community Hub] Reaction error:", err);
+    }
   };
 
   const activeRoom = ROOMS.find((r) => r.id === activeRoomId) || ROOMS[0];
   const roomMessages = messages[activeRoomId] || [];
-  const pinnedMessage = INITIAL_PINNED_MESSAGES[activeRoomId];
+  const dbPinnedMessage = [...roomMessages].reverse().find((m) => m.isPinned);
+  const pinnedMessage = dbPinnedMessage || INITIAL_PINNED_MESSAGES[activeRoomId];
 
   return (
     <div className="w-full max-w-7xl mx-auto px-2.5 sm:px-6 py-4 sm:py-8">

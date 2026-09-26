@@ -133,3 +133,112 @@ SET is_active = true, provider = 'ADSTERRA', updated_at = NOW();
 
 -- Verify configuration output
 SELECT id, title, location, provider, is_active, priority FROM public.ad_placements ORDER BY priority DESC;
+
+-- ==============================================================================
+-- 6. COMMUNITY HUB CHAT MESSAGES PERSISTENCE & REALTIME STORAGE
+-- Allows permanent storage, admin management, and full guest/member participation
+-- ==============================================================================
+
+CREATE TABLE IF NOT EXISTS public.community_messages (
+    id TEXT PRIMARY KEY,
+    room_id TEXT NOT NULL DEFAULT 'general-tech',
+    sender_id TEXT NOT NULL,
+    sender_name TEXT NOT NULL,
+    sender_avatar TEXT,
+    sender_role TEXT NOT NULL DEFAULT 'MEMBER',
+    content TEXT NOT NULL,
+    message_type TEXT NOT NULL DEFAULT 'text',
+    voice_data JSONB,
+    reactions JSONB NOT NULL DEFAULT '{}'::jsonb,
+    is_pinned BOOLEAN NOT NULL DEFAULT FALSE,
+    timestamp BIGINT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Ensure all required columns exist if the table was pre-existing
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'community_messages' AND column_name = 'room_id') THEN
+        ALTER TABLE public.community_messages ADD COLUMN room_id TEXT NOT NULL DEFAULT 'general-tech';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'community_messages' AND column_name = 'sender_avatar') THEN
+        ALTER TABLE public.community_messages ADD COLUMN sender_avatar TEXT;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'community_messages' AND column_name = 'sender_role') THEN
+        ALTER TABLE public.community_messages ADD COLUMN sender_role TEXT NOT NULL DEFAULT 'MEMBER';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'community_messages' AND column_name = 'message_type') THEN
+        ALTER TABLE public.community_messages ADD COLUMN message_type TEXT NOT NULL DEFAULT 'text';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'community_messages' AND column_name = 'voice_data') THEN
+        ALTER TABLE public.community_messages ADD COLUMN voice_data JSONB;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'community_messages' AND column_name = 'reactions') THEN
+        ALTER TABLE public.community_messages ADD COLUMN reactions JSONB NOT NULL DEFAULT '{}'::jsonb;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'community_messages' AND column_name = 'is_pinned') THEN
+        ALTER TABLE public.community_messages ADD COLUMN is_pinned BOOLEAN NOT NULL DEFAULT FALSE;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'community_messages' AND column_name = 'timestamp') THEN
+        ALTER TABLE public.community_messages ADD COLUMN timestamp BIGINT NOT NULL DEFAULT (extract(epoch from now()) * 1000)::bigint;
+    END IF;
+END $$;
+
+-- High-speed indexes for room filtering, live ordering, and admin moderation
+CREATE INDEX IF NOT EXISTS idx_community_messages_room_timestamp 
+    ON public.community_messages (room_id, timestamp ASC);
+
+CREATE INDEX IF NOT EXISTS idx_community_messages_sender 
+    ON public.community_messages (sender_id);
+
+CREATE INDEX IF NOT EXISTS idx_community_messages_pinned 
+    ON public.community_messages (room_id, is_pinned) WHERE is_pinned = TRUE;
+
+-- Enable Row-Level Security
+ALTER TABLE public.community_messages ENABLE ROW LEVEL SECURITY;
+
+-- 1. Read: Anyone (both authenticated users and guests without login) can read messages
+DROP POLICY IF EXISTS "Allow public read of community messages" ON public.community_messages;
+CREATE POLICY "Allow public read of community messages"
+    ON public.community_messages
+    FOR SELECT
+    USING (true);
+
+-- 2. Insert: Anyone (both authenticated users and guests without login) can send messages
+DROP POLICY IF EXISTS "Allow public insert of community messages" ON public.community_messages;
+CREATE POLICY "Allow public insert of community messages"
+    ON public.community_messages
+    FOR INSERT
+    WITH CHECK (true);
+
+-- 3. Update: Community reactions or admin moderation updates
+DROP POLICY IF EXISTS "Allow update of community messages" ON public.community_messages;
+CREATE POLICY "Allow update of community messages"
+    ON public.community_messages
+    FOR UPDATE
+    USING (true)
+    WITH CHECK (true);
+
+-- 4. Delete: Admin moderation and sender deletions
+DROP POLICY IF EXISTS "Allow delete of community messages" ON public.community_messages;
+CREATE POLICY "Allow delete of community messages"
+    ON public.community_messages
+    FOR DELETE
+    USING (true);
+
+-- Enable Supabase Realtime for community_messages
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_publication_tables 
+        WHERE pubname = 'supabase_realtime' 
+        AND schemaname = 'public' 
+        AND tablename = 'community_messages'
+    ) THEN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.community_messages;
+    END IF;
+EXCEPTION
+    WHEN OTHERS THEN
+        NULL;
+END $$;
+

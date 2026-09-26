@@ -266,3 +266,23 @@ export interface Article {
   // Joins
   author?: Profile | null;
 }
+
+export interface CommunityMessageRow {
+  id: string;
+  room_id: string;
+  sender_id: string;
+  sender_name: string;
+  sender_avatar: string | null;
+  sender_role: string;
+  content: string;
+  message_type: "text" | "voice";
+  voice_data: {
+    audioUrl: string;
+    duration: number;
+    mimeType?: string;
+  } | null;
+  reactions: Record<string, string[]>;
+  is_pinned: boolean;
+  timestamp: number;
+  created_at: string;
+}

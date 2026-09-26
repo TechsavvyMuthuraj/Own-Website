@@ -28,6 +28,7 @@ import {
   Headphones,
   Video,
   DollarSign,
+  MessageSquare,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -106,6 +107,7 @@ export default function AdminLayout({
         { href: "/admin/payments", label: "Payments", icon: CreditCard },
         { href: "/admin/coupons", label: "Coupons", icon: Tag },
         { href: "/admin/support-team", label: "Support Team & Roster", icon: Headphones },
+        { href: "/admin/community", label: "Community Hub Chat 💬", icon: MessageSquare },
         { href: "/admin/meetings", label: "Zoom & Video Calls 📹", icon: Video },
         { href: "/technicalsupport", label: "Specialist Terminal ⚡", icon: Headphones },
         { href: "/admin/messages", label: "Contact Inbox", icon: Mail },
