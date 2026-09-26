@@ -132,8 +132,8 @@ export const DEFAULT_ADSTERRA_CONFIG: AdsterraConfig = {
   scriptUrl: ADSTERRA_ASSETS.scriptUrl,
   scriptUrl2: ADSTERRA_ASSETS.scriptUrl2,
   customBannerCode: "",
-  popupAdEnabled: true,
-  stickyBarEnabled: true,
+  popupAdEnabled: false,
+  stickyBarEnabled: false,
   stickyBarPosition: "bottom-right",
   popupDelaySeconds: 4,
   placements: {
