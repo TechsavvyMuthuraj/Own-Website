@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Resource, DownloadLink } from "@/types/database";
 import { DownloadUnlockExperience } from "./unlock-client";
 import { AdSlot } from "@/components/ads/ad-slot";
+import { AdsterraBanner } from "@/components/ads/AdsterraBanner";
 import { getActiveAd } from "@/lib/ads";
 
 interface DownloadPageProps {
@@ -81,9 +82,13 @@ export default async function DownloadPage({ params }: DownloadPageProps) {
       <DownloadUnlockExperience resource={resource} />
 
       {/* Download Verification Ad Placement */}
-      {downloadAd && (
+      {downloadAd ? (
         <div className="w-full">
           <AdSlot ad={downloadAd} location="DOWNLOAD_PAGE" format="auto" />
+        </div>
+      ) : (
+        <div className="w-full pt-4 flex justify-center">
+          <AdsterraBanner placement="resourceDetails" format="rectangle" linkType={1} />
         </div>
       )}
     </div>

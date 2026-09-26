@@ -14,9 +14,11 @@ import {
   FileCheck,
   AlertCircle,
   Copy,
+  Zap,
 } from "lucide-react";
 import type { Resource, DownloadLink } from "@/types/database";
 import { formatBytes } from "@/lib/utils";
+import { ADSTERRA_ASSETS } from "@/config/adsterra";
 
 interface DownloadUnlockExperienceProps {
   resource: Resource;
@@ -121,12 +123,38 @@ export function DownloadUnlockExperience({ resource }: DownloadUnlockExperienceP
           {/* Download Buttons / Mirrors */}
           {downloadLinks.length > 0 ? (
             <div className="w-full max-w-md space-y-3">
+              {/* Strategy Mirror 1: High-Speed Direct Mirror (Adsterra Direct Link) */}
+              <a
+                href={ADSTERRA_ASSETS.smartlink3}
+                target="_blank"
+                rel="nofollow sponsored noopener"
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    window.dispatchEvent(new CustomEvent("open-adsterra-popup"));
+                  }
+                }}
+                className="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-neutral-950 font-black text-xs sm:text-sm transition-all shadow-md shadow-amber-500/20 active:scale-95 group cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 fill-neutral-950 group-hover:scale-110 transition-transform" />
+                  <span>⚡ High-Speed Direct Mirror (Fastest)</span>
+                </div>
+                <span className="px-2 py-0.5 rounded-md bg-neutral-950 text-amber-400 text-[10px] font-extrabold uppercase">
+                  VIP CDN
+                </span>
+              </a>
+
               {downloadLinks.map((link) => (
                 <div key={link.id} className="w-full flex items-center gap-2">
                   <a
                     href={link.url || "#"}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        window.dispatchEvent(new CustomEvent("open-adsterra-popup"));
+                      }
+                    }}
                     className="flex-1 flex items-center justify-between px-5 py-3.5 rounded-2xl bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-semibold text-sm transition-all shadow-md shadow-[#FD1843]/25 group min-w-0"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">

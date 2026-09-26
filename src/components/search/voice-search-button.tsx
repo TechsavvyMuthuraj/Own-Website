@@ -51,7 +51,7 @@ export function VoiceSearchButton({
     playMicEndSound();
   };
 
-  const startListening = () => {
+  const startListening = async () => {
     if (!isSupported) {
       showInfo("Voice search not supported in this browser.", 3000);
       return;
@@ -59,6 +59,20 @@ export function VoiceSearchButton({
 
     setInfoMessage(null);
     setInterimText("");
+
+    // Pre-flight check / trigger native browser prompt if needed
+    if (typeof navigator !== "undefined" && navigator.mediaDevices?.getUserMedia) {
+      try {
+        const testStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Immediately release microphone hardware track so recognition engine can attach
+        testStream.getTracks().forEach((track) => track.stop());
+      } catch (err: any) {
+        if (err?.name === "NotAllowedError" || err?.name === "PermissionDeniedError") {
+          showInfo("Microphone blocked. Click 🔒/🎚 in address bar & set Mic to Allow.", 4500);
+          return;
+        }
+      }
+    }
 
     try {
       const SpeechRecognition =
@@ -104,7 +118,7 @@ export function VoiceSearchButton({
         setInterimText("");
         playMicEndSound();
         if (event.error === "not-allowed" || event.error === "permission-denied") {
-          showInfo("Microphone blocked. Allow mic in browser settings to speak.", 3500);
+          showInfo("Microphone blocked. Click 🔒/🎚 in address bar & set Mic to Allow.", 4500);
         } else if (event.error === "no-speech") {
           showInfo("No speech detected. Tap mic and speak.", 2500);
         } else {

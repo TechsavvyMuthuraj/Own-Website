@@ -100,10 +100,10 @@ export function AdsterraBanner({
           <div className="w-full flex justify-center items-center overflow-hidden min-h-[250px]">
             <iframe
               title={`Adsterra 300x250 Ad - ${placement}`}
-              srcDoc={createAdsterraIframeDoc(z.key, z.width, z.height)}
+              src={`/api/ads/banner?key=${z.key}&w=${z.width}&h=${z.height}&link=${linkType}`}
               width={z.width}
               height={z.height}
-              className="border-0 overflow-hidden max-w-full"
+              className="border-0 overflow-hidden max-w-full rounded-xl"
               scrolling="no"
               loading="lazy"
             />
@@ -120,10 +120,10 @@ export function AdsterraBanner({
           <div className="w-full flex justify-center items-center overflow-hidden min-h-[600px]">
             <iframe
               title={`Adsterra 160x600 Ad - ${placement}`}
-              srcDoc={createAdsterraIframeDoc(z.key, z.width, z.height)}
+              src={`/api/ads/banner?key=${z.key}&w=${z.width}&h=${z.height}&link=${linkType}`}
               width={z.width}
               height={z.height}
-              className="border-0 overflow-hidden"
+              className="border-0 overflow-hidden rounded-xl"
               scrolling="no"
               loading="lazy"
             />
@@ -140,10 +140,10 @@ export function AdsterraBanner({
           <div className="w-full flex justify-center items-center overflow-hidden min-h-[300px]">
             <iframe
               title={`Adsterra 160x300 Ad - ${placement}`}
-              srcDoc={createAdsterraIframeDoc(z.key, z.width, z.height)}
+              src={`/api/ads/banner?key=${z.key}&w=${z.width}&h=${z.height}&link=${linkType}`}
               width={z.width}
               height={z.height}
-              className="border-0 overflow-hidden"
+              className="border-0 overflow-hidden rounded-xl"
               scrolling="no"
               loading="lazy"
             />
@@ -160,10 +160,10 @@ export function AdsterraBanner({
           <div className="w-full flex justify-center items-center overflow-hidden min-h-[60px]">
             <iframe
               title={`Adsterra 468x60 Ad - ${placement}`}
-              srcDoc={createAdsterraIframeDoc(z.key, z.width, z.height)}
+              src={`/api/ads/banner?key=${z.key}&w=${z.width}&h=${z.height}&link=${linkType}`}
               width={z.width}
               height={z.height}
-              className="border-0 overflow-hidden max-w-full"
+              className="border-0 overflow-hidden max-w-full rounded-xl"
               scrolling="no"
               loading="lazy"
             />
@@ -180,10 +180,10 @@ export function AdsterraBanner({
           <div className="w-full flex justify-center items-center overflow-hidden min-h-[50px]">
             <iframe
               title={`Adsterra 320x50 Ad - ${placement}`}
-              srcDoc={createAdsterraIframeDoc(z.key, z.width, z.height)}
+              src={`/api/ads/banner?key=${z.key}&w=${z.width}&h=${z.height}&link=${linkType}`}
               width={z.width}
               height={z.height}
-              className="border-0 overflow-hidden max-w-full"
+              className="border-0 overflow-hidden max-w-full rounded-xl"
               scrolling="no"
               loading="lazy"
             />
@@ -204,10 +204,10 @@ export function AdsterraBanner({
         <div className="hidden md:flex w-full justify-center items-center overflow-hidden min-h-[90px]">
           <iframe
             title={`Adsterra 728x90 Leaderboard - ${placement}`}
-            srcDoc={createAdsterraIframeDoc(zDesktop.key, zDesktop.width, zDesktop.height)}
+            src={`/api/ads/banner?key=${zDesktop.key}&w=${zDesktop.width}&h=${zDesktop.height}&link=${linkType}`}
             width={zDesktop.width}
             height={zDesktop.height}
-            className="border-0 overflow-hidden max-w-full"
+            className="border-0 overflow-hidden max-w-full rounded-xl"
             scrolling="no"
             loading="lazy"
           />
@@ -217,10 +217,10 @@ export function AdsterraBanner({
         <div className="flex md:hidden w-full justify-center items-center overflow-hidden min-h-[50px]">
           <iframe
             title={`Adsterra 320x50 Mobile - ${placement}`}
-            srcDoc={createAdsterraIframeDoc(zMobile.key, zMobile.width, zMobile.height)}
+            src={`/api/ads/banner?key=${zMobile.key}&w=${zMobile.width}&h=${zMobile.height}&link=${linkType}`}
             width={zMobile.width}
             height={zMobile.height}
-            className="border-0 overflow-hidden max-w-full"
+            className="border-0 overflow-hidden max-w-full rounded-xl"
             scrolling="no"
             loading="lazy"
           />

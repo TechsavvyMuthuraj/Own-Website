@@ -296,7 +296,7 @@ export function MicrophonePermissionModal({
                       1
                     </span>
                     <span>
-                      Look at the top URL bar: Click the <strong>🎚 tune / 🔒 padlock icon</strong> on the left of <code className="text-amber-400">localhost:3000</code>.
+                      Look at the top URL bar: Click the <strong>🎚 tune / 🔒 padlock icon</strong> on the left of the website address.
                     </span>
                   </div>
                   <div className="flex items-start gap-2.5">
@@ -350,7 +350,7 @@ export function MicrophonePermissionModal({
                       1
                     </span>
                     <span>
-                      Open your browser site preferences for <code className="text-amber-400">localhost:3000</code>.
+                      Open your browser site preferences for this website.
                     </span>
                   </div>
                   <div className="flex items-start gap-2.5">

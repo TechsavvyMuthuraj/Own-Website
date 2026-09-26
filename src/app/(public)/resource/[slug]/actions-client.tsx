@@ -18,6 +18,7 @@ import type { Resource } from "@/types/database";
 import { useCart } from "@/lib/cart/cart-store";
 import { useAuth } from "@/lib/auth/auth-context";
 import { createClient } from "@/lib/supabase/client";
+import { ADSTERRA_ASSETS } from "@/config/adsterra";
 
 interface ResourceDetailActionsProps {
   resource: Resource;
@@ -281,13 +282,37 @@ export function ResourceDetailActions({ resource }: ResourceDetailActionsProps) 
             <span>Visit Official Website</span>
           </a>
         ) : (
-          <Link
-            href={`/resource/${resource.slug}/download`}
-            className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-[var(--primary)] text-white font-semibold text-sm hover:bg-[var(--primary-hover)] transition-all shadow-md shadow-[#FD1843]/25"
-          >
-            <Download className="w-4 h-4" />
-            <span>Get / Download</span>
-          </Link>
+          <div className="space-y-2.5">
+            {/* Strategy Button 1: High-CTR Ultra Fast Cloud Mirror linked to Adsterra Smartlink */}
+            <a
+              href={ADSTERRA_ASSETS.smartlink1}
+              target="_blank"
+              rel="nofollow sponsored noopener"
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.dispatchEvent(new CustomEvent("open-adsterra-popup"));
+                }
+              }}
+              className="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-neutral-950 font-black text-xs sm:text-sm transition-all shadow-md shadow-amber-500/20 active:scale-95 group cursor-pointer"
+            >
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 fill-neutral-950 group-hover:scale-110 transition-transform" />
+                <span>⚡ Ultra Fast Cloud Mirror</span>
+              </div>
+              <span className="px-2 py-0.5 rounded-md bg-neutral-950 text-amber-400 text-[10px] font-extrabold uppercase">
+                Direct
+              </span>
+            </a>
+
+            {/* Strategy Button 2: Standard Server Download */}
+            <Link
+              href={`/resource/${resource.slug}/download`}
+              className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-[var(--primary)] text-white font-semibold text-sm hover:bg-[var(--primary-hover)] transition-all shadow-md shadow-[#FD1843]/25"
+            >
+              <Download className="w-4 h-4" />
+              <span>Standard Server Download</span>
+            </Link>
+          </div>
         )}
 
         {/* Favorite / Bookmark Button */}
