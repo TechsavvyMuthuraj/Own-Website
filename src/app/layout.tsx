@@ -130,9 +130,16 @@ export const metadata: Metadata = {
     google: "google38f31838101be6e4",
   },
   icons: {
-    icon: "/logo.png",
-    shortcut: "/logo.png",
-    apple: "/logo.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "48x48" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+      { url: "/logo.png", sizes: "512x512", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: [
+      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
   other: {
     "google-adsense-account": "ca-pub-1960459798233871",
@@ -169,8 +176,12 @@ const jsonLdWebsiteAndOrg = {
         "techsavvymuthuraj",
         "techsavvymuthuraj.dev",
       ],
-      url: siteUrl,
-      logo: `${siteUrl}/logo.png`,
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/logo.png`,
+        width: 512,
+        height: 512,
+      },
       sameAs: [
         "https://www.youtube.com/@TechsavvyMuthuraj",
         "https://github.com/TechsavvyMuthuraj",
@@ -289,6 +300,13 @@ export default async function RootLayout({
         <meta name="google-site-verification" content="google38f31838101be6e4" />
         {/* Google AdSense Meta Verification */}
         <meta name="google-adsense-account" content="ca-pub-1960459798233871" />
+
+        {/* Favicons & Brand Icons (Optimized for Google Search, Mobile, and Desktop) */}
+        <link rel="icon" href="/favicon.ico" sizes="48x48" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/logo.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon.png" />
         {/* Global Structured Data JSON-LD */}
         <script
           type="application/ld+json"

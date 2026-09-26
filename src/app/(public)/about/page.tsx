@@ -77,7 +77,7 @@ export default function AboutPage() {
       <div className="max-w-3xl mx-auto text-center">
         <div className="w-16 h-16 rounded-2xl overflow-hidden mx-auto mb-5 shadow-xl bg-slate-950 flex items-center justify-center border border-amber-500/30 p-2">
           <Image
-            src="/images/namma-tech-icon.svg"
+            src="/images/nammatech-logo-sm.webp"
             alt="NammaTech Logo"
             width={48}
             height={48}

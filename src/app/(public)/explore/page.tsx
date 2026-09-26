@@ -124,8 +124,8 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
         query = query.eq("category_id", selectedCat.id);
       }
     } else if (movieCat?.id) {
-      // Isolate software: exclude movies in all-category view
-      query = query.neq("category_id", movieCat.id);
+      // Isolate software: exclude movies in all-category view while preserving uncategorized
+      query = query.or(`category_id.neq.${movieCat.id},category_id.is.null`);
     }
 
     // Access type filter

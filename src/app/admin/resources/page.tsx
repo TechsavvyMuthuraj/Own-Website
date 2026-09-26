@@ -33,16 +33,20 @@ export default async function AdminResourcesPage({ searchParams }: AdminResource
     .select("*, category:categories(id, name, slug)")
     .order("created_at", { ascending: false });
 
-  // Exclude movies from general resources query
+  // Exclude movies from general resources query while preserving unassigned/general resources
   if (movieCat?.id) {
-    query = query.neq("category_id", movieCat.id);
+    query = query.or(`category_id.neq.${movieCat.id},category_id.is.null`);
   }
 
   if (q) {
     query = query.ilike("title", `%${q.trim()}%`);
   }
   if (category && category !== "ALL") {
-    query = query.eq("category_id", category);
+    if (category === "GENERAL" || category === "NONE") {
+      query = query.is("category_id", null);
+    } else {
+      query = query.eq("category_id", category);
+    }
   }
   if (status && status !== "ALL") {
     query = query.eq("status", status);

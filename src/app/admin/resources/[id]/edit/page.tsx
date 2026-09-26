@@ -30,6 +30,10 @@ export default async function EditResourcePage({ params }: EditResourcePageProps
     .select("*")
     .order("sort_order");
 
+  const softwareCategories = ((categories || []) as Category[]).filter(
+    (c) => c.slug !== "movies" && c.is_active !== false
+  );
+
   return (
     <div className="space-y-6">
       <div>
@@ -42,7 +46,7 @@ export default async function EditResourcePage({ params }: EditResourcePageProps
       </div>
 
       <ResourceForm
-        categories={(categories || []) as Category[]}
+        categories={softwareCategories}
         initialData={resource as Resource}
         isEdit={true}
       />

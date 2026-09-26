@@ -52,6 +52,14 @@ export async function PUT(
     }
 
     const body = await request.json();
+
+    if (body.status === "PUBLISHED" && (!body.category_id || typeof body.category_id !== "string" || !body.category_id.trim())) {
+      return NextResponse.json(
+        { error: "Category is required to publish this resource. Please select a category." },
+        { status: 400 }
+      );
+    }
+
     const supabaseAdmin = createAdminClient();
 
     // Fetch existing for audit log

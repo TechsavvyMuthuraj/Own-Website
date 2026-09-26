@@ -213,13 +213,13 @@ export function Footer() {
         {/* Bottom copyright & Socials */}
         <div className="pt-8 border-t border-[var(--border)] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--muted-foreground)]">
           <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-md overflow-hidden flex items-center justify-center">
+            <div className="w-6 h-6 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0">
               <Image
-                src="/images/namma-tech-icon.svg"
+                src="/images/nammatech-logo-sm.webp"
                 alt="NammaTech Logo"
                 width={24}
                 height={24}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
               />
             </div>
             <span>&copy; {currentYear} NammaTech. Founded by <strong>Muthuraj C</strong>.</span>

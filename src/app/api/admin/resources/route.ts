@@ -25,6 +25,18 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
+
+    if (!body.title || typeof body.title !== "string" || !body.title.trim()) {
+      return NextResponse.json({ error: "Title is required." }, { status: 400 });
+    }
+
+    if (!body.category_id || typeof body.category_id !== "string" || !body.category_id.trim()) {
+      return NextResponse.json(
+        { error: "Category is required. Please select a valid category before publishing." },
+        { status: 400 }
+      );
+    }
+
     const supabaseAdmin = createAdminClient();
 
     // Prepare resource fields

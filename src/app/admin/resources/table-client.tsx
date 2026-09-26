@@ -387,6 +387,7 @@ export function ResourceTableClient({
               className="appearance-none pl-3 pr-8 py-2 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 text-xs text-neutral-800 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/40 cursor-pointer transition-all"
             >
               <option value="ALL">All Categories</option>
+              <option value="GENERAL">General / Uncategorized</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
