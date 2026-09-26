@@ -289,6 +289,43 @@ export default async function AdminDashboardPage() {
         })}
       </div>
 
+      {/* 2.5 LIVE ADSTERRA MONETIZATION & ADS STATUS */}
+      <div className="p-6 rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/5 via-[var(--card)] to-amber-500/10 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 text-amber-500 text-xs font-bold uppercase tracking-wider mb-1.5 border border-amber-500/30">
+              <Zap className="w-3.5 h-3.5" />
+              <span>Live Monetization Engine</span>
+            </div>
+            <h3 className="text-lg font-black text-[var(--foreground)] tracking-tight flex items-center gap-2">
+              <span>Platform Advertisement Feed &amp; Active Display</span>
+            </h3>
+            <p className="text-xs text-[var(--muted-foreground)]">
+              All 8 advertising zones are running across public routes. Real-time banner preview rendered below:
+            </p>
+          </div>
+          <Link
+            href="/admin/ads"
+            className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-neutral-950 font-black text-xs flex items-center gap-1.5 transition-all shadow-xs self-start sm:self-auto cursor-pointer"
+          >
+            <span>Manage Ads &amp; Previews</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        {/* Live Leaderboard Banner */}
+        <div className="w-full flex justify-center py-2 overflow-hidden bg-neutral-950/80 rounded-2xl border border-neutral-800/80">
+          <iframe
+            title="Admin Dashboard Live Ad Preview"
+            src="/api/ads/banner?key=a6ecc44708171fc9f4ecde59963afc03&w=728&h=90&link=1"
+            width={728}
+            height={90}
+            className="border-0 max-w-full rounded-xl overflow-hidden shadow-xs"
+            scrolling="no"
+          />
+        </div>
+      </div>
+
       {/* 3. SAAS FULFILLMENT & ORDER PIPELINE RIBBON */}
       <div className="rounded-3xl border border-[var(--border)] bg-gradient-to-r from-[var(--card)] via-[var(--secondary)]/40 to-[var(--card)] p-5 shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">

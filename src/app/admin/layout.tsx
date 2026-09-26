@@ -32,6 +32,9 @@ import {
 import { useAuth } from "@/lib/auth/auth-context";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { TopLoader } from "@/components/navigation/top-loader";
+import { AdsterraPopUpAd } from "@/components/ads/AdsterraPopUpAd";
+import { AdsterraStickyBar } from "@/components/ads/AdsterraStickyBar";
+import { AdsterraScript } from "@/components/ads/AdsterraScript";
 
 export default function AdminLayout({
   children,
@@ -125,6 +128,9 @@ export default function AdminLayout({
       <Suspense fallback={null}>
         <TopLoader />
       </Suspense>
+      <AdsterraScript />
+      <AdsterraPopUpAd />
+      <AdsterraStickyBar />
       {/* Mobile Top Navbar */}
       <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-[var(--border)] bg-[var(--card)] sticky top-0 z-50">
         <div className="flex items-center gap-2">

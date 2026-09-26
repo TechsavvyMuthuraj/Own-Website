@@ -150,8 +150,6 @@ export const DEFAULT_ADSTERRA_CONFIG: AdsterraConfig = {
  * Under NO circumstances should advertising scripts or components load on these routes.
  */
 export const RESTRICTED_AD_PATHS = [
-  "/admin",
-  "/dashboard",
   "/login",
   "/register",
   "/auth",
