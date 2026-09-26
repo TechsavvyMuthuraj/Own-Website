@@ -242,3 +242,97 @@ EXCEPTION
         NULL;
 END $$;
 
+-- ==============================================================================
+-- 7. DUPLOAD CLOUD STORAGE & DELETED FILES REGISTRY
+-- Manages DUpload file deletion tracking, trash management, and offline cache
+-- ==============================================================================
+
+-- 1. Table to track deleted / removed DUpload files
+CREATE TABLE IF NOT EXISTS public.dupload_deleted_files (
+    file_code TEXT PRIMARY KEY,
+    file_name TEXT,
+    file_size BIGINT DEFAULT 0,
+    deleted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_by TEXT DEFAULT 'admin'
+);
+
+CREATE INDEX IF NOT EXISTS idx_dupload_deleted_files_code ON public.dupload_deleted_files (file_code);
+CREATE INDEX IF NOT EXISTS idx_dupload_deleted_files_time ON public.dupload_deleted_files (deleted_at DESC);
+
+-- Enable RLS for dupload_deleted_files
+ALTER TABLE public.dupload_deleted_files ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow public read of dupload_deleted_files" ON public.dupload_deleted_files;
+CREATE POLICY "Allow public read of dupload_deleted_files"
+    ON public.dupload_deleted_files FOR SELECT
+    USING (true);
+
+DROP POLICY IF EXISTS "Allow all on dupload_deleted_files" ON public.dupload_deleted_files;
+CREATE POLICY "Allow all on dupload_deleted_files"
+    ON public.dupload_deleted_files FOR ALL
+    USING (true)
+    WITH CHECK (true);
+
+-- 2. Table for DUpload uploaded files tracking & download counter
+CREATE TABLE IF NOT EXISTS public.dupload_files (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    file_code TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    size BIGINT DEFAULT 0,
+    link TEXT NOT NULL,
+    fld_id TEXT DEFAULT '0',
+    folder_name TEXT DEFAULT 'Root',
+    downloads INTEGER DEFAULT 0,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    uploaded_at TIMESTAMPTZ DEFAULT NOW(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_dupload_files_code ON public.dupload_files (file_code);
+CREATE INDEX IF NOT EXISTS idx_dupload_files_fld ON public.dupload_files (fld_id);
+CREATE INDEX IF NOT EXISTS idx_dupload_files_deleted ON public.dupload_files (is_deleted);
+
+ALTER TABLE public.dupload_files ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow public read of dupload_files" ON public.dupload_files;
+CREATE POLICY "Allow public read of dupload_files"
+    ON public.dupload_files FOR SELECT
+    USING (true);
+
+DROP POLICY IF EXISTS "Allow all on dupload_files" ON public.dupload_files;
+CREATE POLICY "Allow all on dupload_files"
+    ON public.dupload_files FOR ALL
+    USING (true)
+    WITH CHECK (true);
+
+-- ==============================================================================
+-- 8. RESOURCE CATEGORY INTEGRITY & DEFAULT TAXONOMY
+-- Guarantees all published resources have a valid assigned category
+-- ==============================================================================
+
+-- 1. Ensure core categories exist
+INSERT INTO public.categories (name, slug, description, icon)
+VALUES 
+  ('PC Software', 'pc-software', 'Verified PC software, tools, and utilities', 'laptop'),
+  ('Android Apps', 'apk', 'Curated Android APKs, modded tools, and games', 'smartphone'),
+  ('Websites', 'websites', 'Curated web portals, tools, and SaaS resources', 'globe'),
+  ('Movies & Cinema', 'movies', 'High-definition movies, cinema, and video resources', 'film'),
+  ('Micro Drama', 'micro-drama', 'Bite-sized micro drama series and short films', 'play-circle'),
+  ('Study Notes & Tech', 'study-notes', 'Technical interview prep, programming notes, and books', 'book-open')
+ON CONFLICT (slug) DO UPDATE
+SET name = EXCLUDED.name, description = EXCLUDED.description;
+
+-- 2. Fix any resources with NULL category_id (assign them to PC Software)
+UPDATE public.resources 
+SET category_id = (SELECT id FROM public.categories WHERE slug = 'pc-software' LIMIT 1)
+WHERE category_id IS NULL;
+
+-- 3. Upsert default DUpload configuration and deleted files tracking into site_settings
+INSERT INTO public.site_settings (key, value, updated_at)
+VALUES
+  ('dupload_settings', '{"apiKey":"20830s6d9oldmav06o1ip","username":"muthuraj2004","email":"peralprince777@gmail.com","allFilesUrl":"https://dupload.net/users/muthuraj2004","referralUrl":"https://dupload.net/free20830.html","defaultFolderId":"2553","accountType":"FREE ACCOUNT"}', NOW()),
+  ('dupload_deleted_files', '[]', NOW())
+ON CONFLICT (key) DO UPDATE
+SET updated_at = NOW();
+

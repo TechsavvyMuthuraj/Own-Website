@@ -39,6 +39,7 @@ import {
   ChevronRight,
   Layers,
   HelpCircle,
+  RotateCcw,
 } from "lucide-react";
 import {
   DEFAULT_DUPLOAD_SETTINGS,
@@ -106,6 +107,17 @@ export default function DuploadAdminPage() {
   const [shareTargetFile, setShareTargetFile] = useState<DuploadFileItem | null>(null);
   const [shareFormat, setShareFormat] = useState<"direct" | "markdown" | "html" | "community">("direct");
 
+  // Deletion & Trash State
+  const [fileToDelete, setFileToDelete] = useState<DuploadFileItem | null>(null);
+  const [deletingFileCode, setDeletingFileCode] = useState<string | null>(null);
+  const [selectedFileCodes, setSelectedFileCodes] = useState<string[]>([]);
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [deletedFiles, setDeletedFiles] = useState<Array<{ file_code: string; name?: string; size?: string | number; deleted_at?: string }>>([]);
+  const [deletedCount, setDeletedCount] = useState(0);
+  const [restoringFileCode, setRestoringFileCode] = useState<string | null>(null);
+  const [actionSuccessToast, setActionSuccessToast] = useState<string | null>(null);
+
   // Load Overview Data from Backend
   const loadData = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -121,6 +133,8 @@ export default function DuploadAdminPage() {
         setAccount(data.account);
         setFolders(data.folders || []);
         setFiles(data.files || []);
+        setDeletedFiles(data.deletedFiles || []);
+        setDeletedCount(data.deletedCount || 0);
 
         setEditApiKey(data.settings?.apiKey || DEFAULT_DUPLOAD_SETTINGS.apiKey);
         setEditUsername(data.settings?.username || DEFAULT_DUPLOAD_SETTINGS.username);
@@ -138,6 +152,140 @@ export default function DuploadAdminPage() {
       setRefreshing(false);
     }
   }, []);
+
+  // Show auto-dismissing toast
+  const triggerToast = (msg: string) => {
+    setActionSuccessToast(msg);
+    setTimeout(() => setActionSuccessToast(null), 4000);
+  };
+
+  // Delete Single File Handler
+  const handleDeleteSingleFile = async () => {
+    if (!fileToDelete) return;
+    const target = fileToDelete;
+    setDeletingFileCode(target.file_code);
+
+    try {
+      const res = await fetch("/api/admin/dupload?action=delete_file", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          file_code: target.file_code,
+          name: target.name,
+          size: target.size,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setFiles((prev) => prev.filter((f) => f.file_code !== target.file_code));
+        setSelectedFileCodes((prev) => prev.filter((c) => c !== target.file_code));
+        setDeletedFiles((prev) => [
+          { file_code: target.file_code, name: target.name, size: target.size, deleted_at: new Date().toISOString() },
+          ...prev,
+        ]);
+        setDeletedCount((prev) => prev + 1);
+        setFileToDelete(null);
+        triggerToast(`File "${target.name}" deleted successfully.`);
+        await loadData(true);
+      } else {
+        alert(data.error || "Failed to delete file");
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to delete file");
+    } finally {
+      setDeletingFileCode(null);
+    }
+  };
+
+  // Bulk Delete Files Handler
+  const handleBulkDelete = async () => {
+    if (selectedFileCodes.length === 0) return;
+    setBulkDeleting(true);
+
+    try {
+      const targets = files.filter((f) => selectedFileCodes.includes(f.file_code));
+      const res = await fetch("/api/admin/dupload?action=bulk_delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          files: targets.map((f) => ({
+            file_code: f.file_code,
+            name: f.name,
+            size: f.size,
+          })),
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        const count = selectedFileCodes.length;
+        setFiles((prev) => prev.filter((f) => !selectedFileCodes.includes(f.file_code)));
+        setSelectedFileCodes([]);
+        setShowBulkDeleteModal(false);
+        triggerToast(`${count} files deleted successfully.`);
+        await loadData(true);
+      } else {
+        alert(data.error || "Failed to delete files");
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to delete files");
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
+  // Restore File from Trash Handler
+  const handleRestoreFile = async (fileCode: string) => {
+    setRestoringFileCode(fileCode);
+    try {
+      const res = await fetch("/api/admin/dupload?action=restore_file", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ file_code: fileCode, target_fld_id: "0" }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setDeletedFiles((prev) => prev.filter((f) => f.file_code !== fileCode));
+        setDeletedCount((prev) => Math.max(0, prev - 1));
+        triggerToast("File restored back to library.");
+        await loadData(true);
+      } else {
+        alert(data.error || "Failed to restore file");
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to restore file");
+    } finally {
+      setRestoringFileCode(null);
+    }
+  };
+
+  // Empty Trash Handler
+  const handleEmptyTrash = async () => {
+    if (!confirm("Are you sure you want to permanently clear the Trash list?")) return;
+    try {
+      const res = await fetch("/api/admin/dupload?action=empty_trash", { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        setDeletedFiles([]);
+        setDeletedCount(0);
+        triggerToast("Trash list emptied.");
+        await loadData(true);
+      } else {
+        alert(data.error || "Failed to empty trash");
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to empty trash");
+    }
+  };
+
+  // Toggle Selection Helper
+  const toggleSelectFile = (fileCode: string) => {
+    setSelectedFileCodes((prev) =>
+      prev.includes(fileCode) ? prev.filter((c) => c !== fileCode) : [...prev, fileCode]
+    );
+  };
 
   useEffect(() => {
     loadData();
@@ -382,8 +530,28 @@ export default function DuploadAdminPage() {
     }
   };
 
-  // Filtered files based on search & folder
-  const filteredFiles = useMemo(() => {
+  // Filtered files based on search & folder (including Trash view)
+  const filteredFiles: DuploadFileItem[] = useMemo(() => {
+    if (selectedFolder === "trash") {
+      const mapped: DuploadFileItem[] = (deletedFiles || []).map((df) => ({
+        file_code: df.file_code,
+        name: df.name || df.file_code,
+        size: df.size || 0,
+        uploaded: df.deleted_at ? new Date(df.deleted_at).toLocaleString() : "Deleted",
+        downloads: 0,
+        public: "1",
+        fld_id: "trash",
+        link: `https://dupload.net/${df.file_code}`,
+      }));
+      return mapped.filter((f) => {
+        return (
+          searchQuery.trim() === "" ||
+          f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          f.file_code.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      });
+    }
+
     return files.filter((f) => {
       const matchesSearch =
         searchQuery.trim() === "" ||
@@ -396,7 +564,7 @@ export default function DuploadAdminPage() {
 
       return matchesSearch && matchesFolder;
     });
-  }, [files, searchQuery, selectedFolder]);
+  }, [files, deletedFiles, searchQuery, selectedFolder]);
 
   // Storage Stats Calculation
   const totalStorageBytes = 62914560000; // ~59 GB Free tier
@@ -701,7 +869,10 @@ export default function DuploadAdminPage() {
                   <button
                     key={fld.fld_id}
                     type="button"
-                    onClick={() => setSelectedFolder(String(fld.fld_id))}
+                    onClick={() => {
+                      setSelectedFolder(String(fld.fld_id));
+                      setSelectedFileCodes([]);
+                    }}
                     className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-colors text-left cursor-pointer ${
                       selectedFolder === String(fld.fld_id)
                         ? "bg-sky-500/20 text-sky-400 border border-sky-500/30 font-bold"
@@ -717,6 +888,30 @@ export default function DuploadAdminPage() {
                     </span>
                   </button>
                 ))}
+
+                {/* Trash / Deleted Section */}
+                <div className="pt-2 border-t border-neutral-800/80">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedFolder("trash");
+                      setSelectedFileCodes([]);
+                    }}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-colors text-left cursor-pointer ${
+                      selectedFolder === "trash"
+                        ? "bg-red-500/20 text-red-400 border border-red-500/30 font-bold"
+                        : "text-neutral-400 hover:bg-neutral-800/50 hover:text-white"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2 truncate">
+                      <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                      <span>Trash / Deleted</span>
+                    </span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-neutral-800 text-neutral-400 font-mono">
+                      {deletedFiles.length || deletedCount}
+                    </span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -753,6 +948,18 @@ export default function DuploadAdminPage() {
                   Showing <strong className="text-white">{filteredFiles.length}</strong> of {files.length}
                 </span>
 
+                {selectedFolder === "trash" && deletedFiles.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleEmptyTrash}
+                    className="px-3 py-2 rounded-xl bg-red-600/20 border border-red-500/30 hover:bg-red-600/30 text-xs font-bold text-red-400 transition-colors flex items-center gap-1.5 cursor-pointer"
+                    title="Clear all deleted files history"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Empty Trash</span>
+                  </button>
+                )}
+
                 <button
                   type="button"
                   onClick={() => {
@@ -772,6 +979,48 @@ export default function DuploadAdminPage() {
               </div>
             </div>
 
+            {/* Bulk Selection Bar */}
+            {selectedFileCodes.length > 0 && selectedFolder !== "trash" && (
+              <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-gradient-to-r from-sky-500/10 via-neutral-900 to-neutral-950 border border-sky-500/30 text-xs animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-400 font-bold border border-sky-500/30">
+                    {selectedFileCodes.length} Selected
+                  </span>
+                  <span className="text-neutral-300 font-medium">files selected</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const links = files.filter(f => selectedFileCodes.includes(f.file_code)).map(f => f.link).join("\n");
+                      handleCopy(links, "bulk-copy");
+                    }}
+                    className="px-3 py-1.5 rounded-xl border border-neutral-800 bg-neutral-900 hover:bg-neutral-800 text-neutral-200 font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Copy className="w-3.5 h-3.5 text-sky-400" />
+                    <span>Copy Selected URLs</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowBulkDeleteModal(true)}
+                    className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold transition-all shadow-md shadow-red-600/20 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Selected ({selectedFileCodes.length})</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFileCodes([])}
+                    className="px-2 py-1.5 text-neutral-400 hover:text-white transition-colors cursor-pointer text-xs"
+                  >
+                    Deselect
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Files Table Card */}
             <div className="rounded-3xl border border-neutral-800 bg-neutral-900/60 backdrop-blur-md overflow-hidden shadow-xl">
               {loading ? (
@@ -782,31 +1031,53 @@ export default function DuploadAdminPage() {
               ) : filteredFiles.length === 0 ? (
                 <div className="p-12 text-center text-neutral-400 space-y-3">
                   <Folder className="w-12 h-12 mx-auto text-neutral-600 stroke-[1.5]" />
-                  <h4 className="text-base font-bold text-white">No files found</h4>
+                  <h4 className="text-base font-bold text-white">
+                    {selectedFolder === "trash" ? "Trash is Empty" : "No files found"}
+                  </h4>
                   <p className="text-xs text-neutral-500 max-w-sm mx-auto">
-                    {searchQuery
+                    {selectedFolder === "trash"
+                      ? "No deleted files in your Trash bin."
+                      : searchQuery
                       ? "No files matched your search keyword."
                       : "No files in this folder yet. Use Direct Upload or Remote Leech to add files!"}
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("upload")}
-                    className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-neutral-950 font-bold text-xs transition-colors cursor-pointer"
-                  >
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Upload First File</span>
-                  </button>
+                  {selectedFolder !== "trash" && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("upload")}
+                      className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-neutral-950 font-bold text-xs transition-colors cursor-pointer"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>Upload First File</span>
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
                       <tr className="border-b border-neutral-800 bg-neutral-950/70 text-neutral-400 font-bold">
+                        <th className="py-3 px-3 w-8">
+                          {selectedFolder !== "trash" && (
+                            <input
+                              type="checkbox"
+                              checked={filteredFiles.length > 0 && selectedFileCodes.length === filteredFiles.length}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedFileCodes(filteredFiles.map((f) => f.file_code));
+                                } else {
+                                  setSelectedFileCodes([]);
+                                }
+                              }}
+                              className="rounded border-neutral-700 bg-neutral-900 text-sky-500 focus:ring-0 cursor-pointer"
+                            />
+                          )}
+                        </th>
                         <th className="py-3 px-4">Filename / File Code</th>
                         <th className="py-3 px-4">Size</th>
-                        <th className="py-3 px-4">Uploaded</th>
-                        <th className="py-3 px-4 text-center">Downloads</th>
-                        <th className="py-3 px-4">Folder</th>
+                        <th className="py-3 px-4">{selectedFolder === "trash" ? "Deleted At" : "Uploaded"}</th>
+                        <th className="py-3 px-4 text-center">{selectedFolder === "trash" ? "Status" : "Downloads"}</th>
+                        <th className="py-3 px-4">{selectedFolder === "trash" ? "Location" : "Folder"}</th>
                         <th className="py-3 px-4 text-right">Actions & Share</th>
                       </tr>
                     </thead>
@@ -816,6 +1087,18 @@ export default function DuploadAdminPage() {
                           key={file.file_code}
                           className="hover:bg-neutral-800/30 transition-colors group"
                         >
+                          {/* Selection Checkbox */}
+                          <td className="py-3 px-3 w-8">
+                            {selectedFolder !== "trash" && (
+                              <input
+                                type="checkbox"
+                                checked={selectedFileCodes.includes(file.file_code)}
+                                onChange={() => toggleSelectFile(file.file_code)}
+                                className="rounded border-neutral-700 bg-neutral-900 text-sky-500 focus:ring-0 cursor-pointer"
+                              />
+                            )}
+                          </td>
+
                           {/* File Name & Code */}
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-3">
@@ -849,72 +1132,114 @@ export default function DuploadAdminPage() {
                             {file.uploaded}
                           </td>
 
-                          {/* Downloads */}
+                          {/* Downloads / Status */}
                           <td className="py-3 px-4 text-center whitespace-nowrap">
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-neutral-800 text-sky-400 font-bold text-[11px]">
-                              <Download className="w-3 h-3" />
-                              <span>{file.downloads}</span>
-                            </span>
+                            {selectedFolder === "trash" ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-500/15 text-red-400 font-bold text-[10px] border border-red-500/20">
+                                In Trash
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-neutral-800 text-sky-400 font-bold text-[11px]">
+                                <Download className="w-3 h-3" />
+                                <span>{file.downloads}</span>
+                              </span>
+                            )}
                           </td>
 
                           {/* Folder Selector */}
                           <td className="py-3 px-4 whitespace-nowrap">
-                            <select
-                              value={String(file.fld_id || "0")}
-                              onChange={(e) => handleMoveFile(file.file_code, e.target.value)}
-                              className="px-2 py-1 rounded-lg bg-neutral-950 border border-neutral-800 text-[11px] text-neutral-300 focus:outline-none focus:border-sky-500 cursor-pointer"
-                              title="Move to another folder"
-                            >
-                              <option value="0">Root (No Folder)</option>
-                              {folders.map((f) => (
-                                <option key={f.fld_id} value={String(f.fld_id)}>
-                                  {f.name}
-                                </option>
-                              ))}
-                            </select>
+                            {selectedFolder === "trash" ? (
+                              <span className="text-neutral-400 font-mono text-[11px]">Trash / Bin</span>
+                            ) : (
+                              <select
+                                value={String(file.fld_id || "0")}
+                                onChange={(e) => handleMoveFile(file.file_code, e.target.value)}
+                                className="px-2 py-1 rounded-lg bg-neutral-950 border border-neutral-800 text-[11px] text-neutral-300 focus:outline-none focus:border-sky-500 cursor-pointer"
+                                title="Move to another folder"
+                              >
+                                <option value="0">Root (No Folder)</option>
+                                {folders.map((f) => (
+                                  <option key={f.fld_id} value={String(f.fld_id)}>
+                                    {f.name}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
                           </td>
 
-                          {/* Actions */}
+                          {/* Actions & Share */}
                           <td className="py-3 px-4 text-right whitespace-nowrap">
-                            <div className="inline-flex items-center gap-1.5">
-                              {/* 1-Click Copy Download Link */}
+                            {selectedFolder === "trash" ? (
                               <button
                                 type="button"
-                                onClick={() => handleCopy(file.link, file.file_code)}
-                                className={`p-1.5 rounded-lg border text-xs transition-colors cursor-pointer ${
-                                  copiedLink === file.file_code
-                                    ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
-                                    : "border-neutral-800 bg-neutral-950 hover:bg-neutral-800 text-neutral-300 hover:text-white"
-                                }`}
-                                title="Copy Direct Download Link"
+                                onClick={() => handleRestoreFile(file.file_code)}
+                                disabled={restoringFileCode === file.file_code}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 font-bold text-xs transition-colors cursor-pointer disabled:opacity-50"
+                                title="Restore file back to active library"
                               >
-                                {copiedLink === file.file_code ? (
-                                  <Check className="w-3.5 h-3.5" />
+                                {restoringFileCode === file.file_code ? (
+                                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                                 ) : (
-                                  <Copy className="w-3.5 h-3.5" />
+                                  <RotateCcw className="w-3.5 h-3.5" />
                                 )}
+                                <span>Restore</span>
                               </button>
+                            ) : (
+                              <div className="inline-flex items-center gap-1.5">
+                                {/* 1-Click Copy Download Link */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleCopy(file.link, file.file_code)}
+                                  className={`p-1.5 rounded-lg border text-xs transition-colors cursor-pointer ${
+                                    copiedLink === file.file_code
+                                      ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
+                                      : "border-neutral-800 bg-neutral-950 hover:bg-neutral-800 text-neutral-300 hover:text-white"
+                                  }`}
+                                  title="Copy Direct Download Link"
+                                >
+                                  {copiedLink === file.file_code ? (
+                                    <Check className="w-3.5 h-3.5" />
+                                  ) : (
+                                    <Copy className="w-3.5 h-3.5" />
+                                  )}
+                                </button>
 
-                              {/* Share in Community Hub */}
-                              <Link
-                                href={`/admin/community`}
-                                className="p-1.5 rounded-lg border border-neutral-800 bg-neutral-950 hover:bg-neutral-800 text-neutral-300 hover:text-sky-400 transition-colors"
-                                title="Share in Community Hub"
-                              >
-                                <Share2 className="w-3.5 h-3.5" />
-                              </Link>
+                                {/* Share in Community Hub */}
+                                <Link
+                                  href={`/admin/community`}
+                                  className="p-1.5 rounded-lg border border-neutral-800 bg-neutral-950 hover:bg-neutral-800 text-neutral-300 hover:text-sky-400 transition-colors"
+                                  title="Share in Community Hub"
+                                >
+                                  <Share2 className="w-3.5 h-3.5" />
+                                </Link>
 
-                              {/* Open link */}
-                              <a
-                                href={file.link}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="p-1.5 rounded-lg border border-neutral-800 bg-neutral-950 hover:bg-neutral-800 text-neutral-300 hover:text-white transition-colors"
-                                title="Open on DUpload"
-                              >
-                                <ExternalLink className="w-3.5 h-3.5" />
-                              </a>
-                            </div>
+                                {/* Open link */}
+                                <a
+                                  href={file.link}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="p-1.5 rounded-lg border border-neutral-800 bg-neutral-950 hover:bg-neutral-800 text-neutral-300 hover:text-white transition-colors"
+                                  title="Open on DUpload"
+                                >
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                </a>
+
+                                {/* Delete Option */}
+                                <button
+                                  type="button"
+                                  onClick={() => setFileToDelete(file)}
+                                  disabled={deletingFileCode === file.file_code}
+                                  className="p-1.5 rounded-lg border border-neutral-800 bg-neutral-950 hover:bg-red-500/15 hover:border-red-500/40 text-neutral-400 hover:text-red-400 transition-colors cursor-pointer disabled:opacity-50"
+                                  title="Delete File from DUpload"
+                                >
+                                  {deletingFileCode === file.file_code ? (
+                                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-red-400" />
+                                  ) : (
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  )}
+                                </button>
+                              </div>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -1611,6 +1936,140 @@ export default function DuploadAdminPage() {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* ── Single File Delete Confirmation Modal ── */}
+      {fileToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md p-6 rounded-3xl border border-neutral-800 bg-neutral-900 shadow-2xl space-y-5">
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-2xl bg-red-500/15 border border-red-500/30 text-red-400 shrink-0">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <div className="space-y-1 min-w-0 flex-1">
+                <h3 className="text-base font-bold text-white">Delete File?</h3>
+                <p className="text-xs text-neutral-400 leading-relaxed">
+                  Are you sure you want to delete this file from your DUpload storage?
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-neutral-950 border border-neutral-800 space-y-1.5 text-xs">
+              <div className="font-bold text-white truncate" title={fileToDelete.name}>
+                {fileToDelete.name}
+              </div>
+              <div className="flex items-center gap-3 text-[11px] text-neutral-400 font-mono">
+                <span>Code: {fileToDelete.file_code}</span>
+                <span>•</span>
+                <span>Size: {formatBytes(fileToDelete.size)}</span>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-xl bg-neutral-800/40 border border-neutral-700/50 text-[11px] text-neutral-400 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>This file will be removed from your active library and moved to Trash.</span>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setFileToDelete(null)}
+                disabled={deletingFileCode !== null}
+                className="px-4 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950 hover:bg-neutral-800 text-xs font-semibold text-neutral-300 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteSingleFile}
+                disabled={deletingFileCode !== null}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold shadow-lg shadow-red-600/25 transition-all cursor-pointer disabled:opacity-50"
+              >
+                {deletingFileCode ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Yes, Delete File</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Bulk Delete Confirmation Modal ── */}
+      {showBulkDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md p-6 rounded-3xl border border-neutral-800 bg-neutral-900 shadow-2xl space-y-5">
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-2xl bg-red-500/15 border border-red-500/30 text-red-400 shrink-0">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <div className="space-y-1 min-w-0 flex-1">
+                <h3 className="text-base font-bold text-white">Delete Selected Files?</h3>
+                <p className="text-xs text-neutral-400 leading-relaxed">
+                  Are you sure you want to delete <strong className="text-white">{selectedFileCodes.length} selected files</strong>?
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-neutral-950 border border-neutral-800 max-h-36 overflow-y-auto space-y-1 text-xs">
+              {files.filter(f => selectedFileCodes.includes(f.file_code)).map(f => (
+                <div key={f.file_code} className="flex items-center justify-between text-neutral-300 text-[11px]">
+                  <span className="truncate max-w-[240px] font-medium">{f.name}</span>
+                  <span className="font-mono text-neutral-500 shrink-0">{formatBytes(f.size)}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-3 rounded-xl bg-neutral-800/40 border border-neutral-700/50 text-[11px] text-neutral-400 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>Selected files will be removed from your active library and moved to Trash.</span>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowBulkDeleteModal(false)}
+                disabled={bulkDeleting}
+                className="px-4 py-2.5 rounded-xl border border-neutral-800 bg-neutral-950 hover:bg-neutral-800 text-xs font-semibold text-neutral-300 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleBulkDelete}
+                disabled={bulkDeleting}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold shadow-lg shadow-red-600/25 transition-all cursor-pointer disabled:opacity-50"
+              >
+                {bulkDeleting ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deleting {selectedFileCodes.length} Files...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete All {selectedFileCodes.length} Files</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Global Floating Toast Notification ── */}
+      {actionSuccessToast && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl bg-neutral-900 border border-emerald-500/40 text-emerald-400 text-xs font-bold shadow-2xl shadow-emerald-500/20 animate-in slide-in-from-bottom-5">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{actionSuccessToast}</span>
         </div>
       )}
     </div>

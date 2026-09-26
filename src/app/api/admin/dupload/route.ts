@@ -50,6 +50,158 @@ async function getDuploadSettings(): Promise<DuploadSettings> {
   return DEFAULT_DUPLOAD_SETTINGS;
 }
 
+// Helper to retrieve all deleted file codes and items
+async function getDeletedFilesData(): Promise<{ codes: Set<string>; items: any[] }> {
+  const codes = new Set<string>();
+  const items: any[] = [];
+  try {
+    const supabaseAdmin = createAdminClient();
+
+    // 1. Check site_settings for dupload_deleted_files
+    const { data: settingData } = await supabaseAdmin
+      .from("site_settings")
+      .select("value")
+      .eq("key", "dupload_deleted_files")
+      .maybeSingle();
+
+    if (settingData?.value) {
+      try {
+        const parsed = typeof settingData.value === "string" ? JSON.parse(settingData.value) : settingData.value;
+        if (Array.isArray(parsed)) {
+          for (const item of parsed) {
+            const code = typeof item === "string" ? item : item?.file_code;
+            if (code && !codes.has(code)) {
+              codes.add(code);
+              items.push(typeof item === "string" ? { file_code: code, name: "", size: 0 } : item);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("Error parsing dupload_deleted_files:", e);
+      }
+    }
+
+    // 2. Check dupload_deleted_files table if it exists
+    const { data: tableData, error } = await supabaseAdmin
+      .from("dupload_deleted_files")
+      .select("*");
+
+    if (!error && Array.isArray(tableData)) {
+      for (const row of tableData) {
+        if (row.file_code && !codes.has(row.file_code)) {
+          codes.add(row.file_code);
+          items.push({
+            file_code: row.file_code,
+            name: row.file_name || "",
+            size: row.file_size || 0,
+            deleted_at: row.deleted_at,
+          });
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Error reading deleted files data:", err);
+  }
+
+  return { codes, items };
+}
+
+// Record a deleted file in both site_settings and dupload_deleted_files table
+async function recordDeletedFile(fileCode: string, name?: string, size?: number) {
+  const supabaseAdmin = createAdminClient();
+
+  // 1. Save in site_settings (works immediately without waiting for SQL migration)
+  try {
+    const { data: settingData } = await supabaseAdmin
+      .from("site_settings")
+      .select("value")
+      .eq("key", "dupload_deleted_files")
+      .maybeSingle();
+
+    let currentList: any[] = [];
+    if (settingData?.value) {
+      try {
+        currentList = typeof settingData.value === "string" ? JSON.parse(settingData.value) : settingData.value;
+        if (!Array.isArray(currentList)) currentList = [];
+      } catch {
+        currentList = [];
+      }
+    }
+
+    const alreadyExists = currentList.some((item) =>
+      typeof item === "string" ? item === fileCode : item?.file_code === fileCode
+    );
+
+    if (!alreadyExists) {
+      currentList.push({
+        file_code: fileCode,
+        name: name || "",
+        size: Number(size) || 0,
+        deleted_at: new Date().toISOString(),
+      });
+
+      await supabaseAdmin.from("site_settings").upsert(
+        {
+          key: "dupload_deleted_files",
+          value: JSON.stringify(currentList),
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "key" }
+      );
+    }
+  } catch (e) {
+    console.error("Error saving deleted file to site_settings:", e);
+  }
+
+  // 2. Save in dupload_deleted_files table (if table exists)
+  try {
+    await supabaseAdmin.from("dupload_deleted_files").upsert(
+      {
+        file_code: fileCode,
+        file_name: name || "",
+        file_size: Number(size) || 0,
+        deleted_at: new Date().toISOString(),
+      },
+      { onConflict: "file_code" }
+    );
+  } catch (e) {
+    // Expected before user runs database_updates.sql
+  }
+}
+
+// Restore a deleted file
+async function restoreDeletedFile(fileCode: string) {
+  const supabaseAdmin = createAdminClient();
+  try {
+    const { data: settingData } = await supabaseAdmin
+      .from("site_settings")
+      .select("value")
+      .eq("key", "dupload_deleted_files")
+      .maybeSingle();
+
+    if (settingData?.value) {
+      let currentList = typeof settingData.value === "string" ? JSON.parse(settingData.value) : settingData.value;
+      if (Array.isArray(currentList)) {
+        currentList = currentList.filter((item) =>
+          typeof item === "string" ? item !== fileCode : item?.file_code !== fileCode
+        );
+        await supabaseAdmin.from("site_settings").upsert(
+          {
+            key: "dupload_deleted_files",
+            value: JSON.stringify(currentList),
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "key" }
+        );
+      }
+    }
+
+    await supabaseAdmin.from("dupload_deleted_files").delete().eq("file_code", fileCode);
+  } catch (e) {
+    console.error("Error restoring file:", e);
+  }
+}
+
 export async function GET(request: NextRequest) {
   const { authorized } = await verifyAdmin();
   if (!authorized) {
@@ -63,6 +215,8 @@ export async function GET(request: NextRequest) {
 
   try {
     if (action === "overview") {
+      const { codes: deletedCodes, items: deletedItems } = await getDeletedFilesData();
+
       // Fetch Account Info, Folders, and Recent Files in parallel
       const [accRes, foldersRes, filesRes] = await Promise.allSettled([
         fetch(`https://dupload.net/api/account/info?key=${encodeURIComponent(apiKey)}`, { cache: "no-store" }),
@@ -89,24 +243,38 @@ export async function GET(request: NextRequest) {
       if (filesRes.status === "fulfilled" && filesRes.value.ok) {
         const filesJson = await filesRes.value.json();
         if (filesJson.status === 200 && filesJson.result?.files) {
-          files = filesJson.result.files;
-          totalFiles = Number(filesJson.result.results_total || files.length);
+          const rawFiles = filesJson.result.files;
+          // Filter out deleted files and files in Trash folder
+          files = rawFiles.filter(
+            (f: any) => !deletedCodes.has(f.file_code) && String(f.fld_id) !== "2558"
+          );
+          totalFiles = files.length;
         }
       }
+
+      // Filter visible folders (exclude Trash folder from general listing)
+      const visibleFolders = folders.filter((f: any) => f.name?.toLowerCase() !== "trash");
+      const trashFolder = folders.find((f: any) => f.name?.toLowerCase() === "trash");
 
       return NextResponse.json({
         success: true,
         settings,
         account,
-        folders,
+        folders: visibleFolders,
+        trashFolder: trashFolder || null,
         files,
         totalFiles,
+        deletedFiles: deletedItems,
+        deletedCount: deletedCodes.size,
       });
     }
 
     if (action === "files") {
       const fldId = searchParams.get("fld_id") || "";
       const page = searchParams.get("page") || "1";
+      const includeDeleted = searchParams.get("include_deleted") === "true";
+      const { codes: deletedCodes } = await getDeletedFilesData();
+
       const url = new URL("https://dupload.net/api/file/list");
       url.searchParams.set("key", apiKey);
       url.searchParams.set("page", page);
@@ -116,7 +284,20 @@ export async function GET(request: NextRequest) {
 
       const res = await fetch(url.toString(), { cache: "no-store" });
       const data = await res.json();
+
+      if (!includeDeleted && data.result?.files && Array.isArray(data.result.files)) {
+        data.result.files = data.result.files.filter(
+          (f: any) => !deletedCodes.has(f.file_code) && String(f.fld_id) !== "2558"
+        );
+        data.result.results_total = data.result.files.length;
+      }
+
       return NextResponse.json(data);
+    }
+
+    if (action === "deleted_files") {
+      const { items } = await getDeletedFilesData();
+      return NextResponse.json({ success: true, deletedFiles: items });
     }
 
     if (action === "folders") {
@@ -367,6 +548,121 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json({ success: true, settings: updated });
+    }
+
+    // 6. Delete Single File (Exclude locally, save to DB & move to Trash folder on DUpload)
+    if (action === "delete_file") {
+      const { file_code, name, size } = await request.json();
+      if (!file_code) {
+        return NextResponse.json({ error: "file_code is required" }, { status: 400 });
+      }
+
+      // Step A: Record as deleted in DB & site_settings
+      await recordDeletedFile(file_code, name, size);
+
+      // Step B: Auto-move file to Trash folder (#2558) on DUpload
+      try {
+        await fetch(
+          `https://dupload.net/api/file/set_folder?key=${encodeURIComponent(apiKey)}&file_code=${encodeURIComponent(file_code)}&fld_id=2558`,
+          { cache: "no-store" }
+        );
+      } catch (moveErr) {
+        console.warn("Could not move file to Trash folder on DUpload:", moveErr);
+      }
+
+      // Step C: Also try DUpload deletion API (in case account tier supports it)
+      try {
+        await fetch(
+          `https://dupload.net/api/file/del?key=${encodeURIComponent(apiKey)}&file_code=${encodeURIComponent(file_code)}`,
+          { cache: "no-store" }
+        );
+      } catch {}
+
+      return NextResponse.json({
+        success: true,
+        message: "File deleted successfully and moved to Trash",
+        file_code,
+      });
+    }
+
+    // 7. Bulk Delete Files
+    if (action === "bulk_delete") {
+      const body = await request.json();
+      const filesToDelete: any[] = Array.isArray(body.files)
+        ? body.files
+        : Array.isArray(body.file_codes)
+        ? body.file_codes.map((c: string) => ({ file_code: c }))
+        : [];
+
+      if (filesToDelete.length === 0) {
+        return NextResponse.json({ error: "No files provided for deletion" }, { status: 400 });
+      }
+
+      for (const item of filesToDelete) {
+        const code = typeof item === "string" ? item : item.file_code;
+        const itemName = typeof item === "object" ? item.name : "";
+        const itemSize = typeof item === "object" ? item.size : 0;
+        if (!code) continue;
+
+        await recordDeletedFile(code, itemName, itemSize);
+
+        try {
+          await fetch(
+            `https://dupload.net/api/file/set_folder?key=${encodeURIComponent(apiKey)}&file_code=${encodeURIComponent(code)}&fld_id=2558`,
+            { cache: "no-store" }
+          );
+        } catch {}
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: `${filesToDelete.length} files deleted successfully`,
+      });
+    }
+
+    // 8. Restore File from Trash
+    if (action === "restore_file") {
+      const { file_code, target_fld_id } = await request.json();
+      if (!file_code) {
+        return NextResponse.json({ error: "file_code is required" }, { status: 400 });
+      }
+
+      await restoreDeletedFile(file_code);
+
+      // Move back to root or target folder on DUpload
+      try {
+        await fetch(
+          `https://dupload.net/api/file/set_folder?key=${encodeURIComponent(apiKey)}&file_code=${encodeURIComponent(file_code)}&fld_id=${encodeURIComponent(target_fld_id || "0")}`,
+          { cache: "no-store" }
+        );
+      } catch {}
+
+      return NextResponse.json({
+        success: true,
+        message: "File restored successfully",
+        file_code,
+      });
+    }
+
+    // 9. Empty Trash (Clear deleted tracking records)
+    if (action === "empty_trash") {
+      const supabaseAdmin = createAdminClient();
+      try {
+        await supabaseAdmin.from("site_settings").upsert({
+          key: "dupload_deleted_files",
+          value: JSON.stringify([]),
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "key" });
+
+        await supabaseAdmin.from("dupload_deleted_files").delete().neq("file_code", "");
+      } catch (err) {
+        console.error("Error emptying trash in DB:", err);
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: "Trash emptied successfully",
+      });
     }
 
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });
