@@ -106,7 +106,7 @@ export function AdsterraNative({
             <span className="flex h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
             <h3 className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-[var(--foreground)] flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              <span>Sponsored Recommendations &amp; Verified Partner Offers</span>
+              <span>Sponsored Recommendations & Verified Partner Offers</span>
             </h3>
           </div>
           <span className="text-[10px] font-bold text-amber-500/90 uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 self-start sm:self-auto">

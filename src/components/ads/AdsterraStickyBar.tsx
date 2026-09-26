@@ -167,11 +167,11 @@ export function AdsterraStickyBar() {
             <span className="p-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 shrink-0">
               <Zap className="w-3.5 h-3.5 fill-amber-400" />
             </span>
-            <span>High-Speed Cloud Access &amp; Verified Developer Utilities</span>
+            <span>High-Speed Cloud Access & Verified Developer Utilities</span>
           </h4>
 
           <p className="text-[11px] text-neutral-400 leading-relaxed pl-8">
-            Deploy fast VPN tunnels, developer utilities, &amp; VIP CDN hosting packs. Tested and verified for the community.
+            Deploy fast VPN tunnels, developer utilities, & VIP CDN hosting packs. Tested and verified for the community.
           </p>
 
           <div className="flex items-center gap-3 pt-1 pl-8 text-[10px] text-neutral-400">

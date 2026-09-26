@@ -407,7 +407,7 @@ export function Header({ navLinks }: HeaderProps) {
                         className="flex items-center gap-2 px-3 py-2 rounded-xl text-[var(--foreground)] hover:bg-black/5 dark:hover:bg-white/5 transition-colors font-medium"
                       >
                         <Headphones className="w-3.5 h-3.5 text-emerald-500" />
-                        <span>Contact &amp; Live Support</span>
+                        <span>Contact & Live Support</span>
                       </Link>
 
                       {isAdmin && (

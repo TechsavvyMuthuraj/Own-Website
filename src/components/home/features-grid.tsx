@@ -24,7 +24,7 @@ export function FeaturesGrid() {
           <span>The NammaTech Engineering Standard</span>
         </span>
         <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-[var(--foreground)] tracking-tight max-w-3xl leading-tight">
-          Engineered for <span className="text-gradient-amber">Extreme Speed</span>, Zero Malware &amp; Verifiable Trust
+          Engineered for <span className="text-gradient-amber">Extreme Speed</span>, Zero Malware & Verifiable Trust
         </h2>
         <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mt-3 max-w-xl leading-relaxed">
           Replacing bloated third-party download traps with direct cloud mirrors, SHA-256 integrity audits, and real-time technical assistance.
@@ -89,7 +89,7 @@ export function FeaturesGrid() {
           </div>
 
           <div className="mt-6 pt-4 border-t border-[var(--border)] text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-            VirusTotal &amp; Defender Audited
+            VirusTotal & Defender Audited
           </div>
         </SpotlightCard>
 
@@ -143,7 +143,7 @@ export function FeaturesGrid() {
             </div>
 
             <h3 className="text-xl sm:text-2xl font-black text-[var(--foreground)] tracking-tight mb-2 group-hover:text-purple-400 transition-colors">
-              Developer Pipeline &amp; Transparent Attribution
+              Developer Pipeline & Transparent Attribution
             </h3>
             <p className="text-xs sm:text-sm text-[var(--muted-foreground)] leading-relaxed max-w-xl">
               Full attribution directly linking back to official creator repositories (GitHub, GitLab, developer sites). Submit custom requests directly to our lead software architect for 24-hour verification.
@@ -151,7 +151,7 @@ export function FeaturesGrid() {
           </div>
 
           <div className="mt-6 pt-4 border-t border-[var(--border)] flex items-center justify-between text-xs font-semibold text-purple-600 dark:text-purple-400">
-            <span>MIT, GPL, Freeware &amp; Creative Commons</span>
+            <span>MIT, GPL, Freeware & Creative Commons</span>
             <Link href="/requests" className="inline-flex items-center gap-1 hover:underline">
               <span>Submit Resource Request</span>
               <ArrowUpRight className="w-3.5 h-3.5" />

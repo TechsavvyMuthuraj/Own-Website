@@ -410,7 +410,7 @@ export function ContactSupportPopup() {
                   >
                     <div className="flex items-center gap-2">
                       <Mail className="w-4 h-4 text-blue-400" />
-                      <span>Official Contact &amp; Inquiry Form</span>
+                      <span>Official Contact & Inquiry Form</span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:translate-x-0.5 transition-transform" />
                   </Link>
